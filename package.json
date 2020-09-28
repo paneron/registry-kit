@@ -1,6 +1,6 @@
 {
   "name": "@riboseinc/paneron-registry-kit",
-  "version": "1.0.0-dev",
+  "version": "1.0.0-dev1",
   "main": "index.js",
   "author": "Ribose Inc. <open.source@ribose.com>",
   "scripts": {
@@ -13,9 +13,9 @@
     "RegistryView.js",
     "RegistryView.js.map",
     "RegistryView.d.ts",
-    "types/index.js",
-    "types/index.js.map",
-    "types/index.d.ts"
+    "types/*.js",
+    "types/*.js.map",
+    "types/*.d.ts"
   ],
   "devDependencies": {
     "@babel/cli": "^7.1.5",
