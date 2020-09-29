@@ -1,5 +1,5 @@
 import { RegisterStakeholder } from './stakeholder';
-import { Locale } from './util';
+import { LocalizedAlternative } from './util';
 
 
 export type Payload = Record<string, any>
@@ -18,12 +18,7 @@ export interface RegisterItemClass {
   id: string
   title: string
   description: string
-  alternativeNames: LocalizedAlternative<string>
-}
-
-interface LocalizedAlternative<T> {
-  alternative: T
-  locale: Locale
+  alternativeNames: LocalizedAlternative<string>[]
 }
 
 export interface RegisterItem<P extends Payload> {

@@ -15,3 +15,9 @@ export interface Citation {
   publicationDate: Date
   otherCitationDetails: string
 }
+
+
+export interface LocalizedAlternative<T> {
+  alternative: T
+  locale: Locale
+}

@@ -33,16 +33,24 @@ export interface ChangeRequest {
   controlBodyNotes?: string
   registerManagerNotes?: string
 }
+export const PROPOSAL_TYPES = [
+  'addition',
+  'clarification',
+  'amendment',
+] as const;
 
 interface BaseProposal {
   itemID: string
+  type: typeof PROPOSAL_TYPES[number]
 }
 
 interface Addition extends BaseProposal {
+  type: 'addition'
   payload: Payload
 }
 
 interface Clarification extends BaseProposal {
+  type: 'clarification'
   payload: Payload
 }
 
@@ -51,6 +59,7 @@ export const AMENDMENT_TYPES = [
   'retirement',
 ] as const;
 interface BaseAmendment extends BaseProposal {
+  type: 'amendment'
   amendmentType: typeof AMENDMENT_TYPES[number]
 }
 interface Retirement extends BaseAmendment {

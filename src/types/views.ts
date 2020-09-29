@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { RepositoryViewProps } from '@riboseinc/paneron-plugin-kit/types';
-import { Payload } from './item';
+import { Payload, RegisterItemClass } from './item';
 
 
 export interface RegistryViewProps extends RepositoryViewProps {
@@ -19,7 +19,7 @@ interface RegistryItemViewProps<P extends Payload> {
 }
 
 export interface ItemClassConfiguration<P extends Payload> {
-  title: string
+  meta: RegisterItemClass
   defaults: RegistryItemPayloadDefaults<P>
   validatePayload: (item: P) => Promise<boolean>
   sanitizePayload: (item: P) => Promise<P>
@@ -28,7 +28,7 @@ export interface ItemClassConfiguration<P extends Payload> {
     detailView: React.FC<RegistryItemViewProps<P>>
     createView: React.FC<{
       defaults: RegistryItemPayloadDefaults<P>
-      onCreate: (newData: P) => void
+      onChange: (newData: P) => void
     }>
     editView: React.FC<RegistryItemViewProps<P> & {
       onChange: (newData: P) => void
