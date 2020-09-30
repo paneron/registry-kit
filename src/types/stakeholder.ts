@@ -10,18 +10,16 @@ interface _RegisterStakeholder {
   role: typeof STAKEHOLDER_ROLES[number]
   name: string
   parties: Party[]
+  gitServerUsername?: string
 }
 interface NonEditingStakeholder extends _RegisterStakeholder {
   role: 'owner'
 }
 export interface EditingStakeholder extends _RegisterStakeholder {
   role: 'manager' | 'submitter'
-
-  // Use for identifying authors.
-  gitServerUsername: string
 }
 
-type Individual = {
+export type Individual = {
   positionName: string
   organization?: Organization
 } | {
@@ -34,7 +32,7 @@ type Organization = {
   name: string
 }
 type Party = (Individual | Organization) & {
-  contacts: { label: string, value: string, notes: string }[]
+  contacts: { label: string, value: string, notes?: string }[]
 }
 
 export type RegisterStakeholder = EditingStakeholder | NonEditingStakeholder

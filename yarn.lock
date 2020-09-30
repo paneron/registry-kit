@@ -966,10 +966,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@riboseinc/paneron-plugin-kit@^1.0.0-dev2":
-  version "1.0.0-dev6"
-  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-plugin-kit/-/paneron-plugin-kit-1.0.0-dev6.tgz#94699d722248da6939c63263670be7e74137eabc"
-  integrity sha512-tN4jLuQW5XdXU5qHnVEYa0T5IIUl8NqSxe9g/fiAifCRmPFKvdqBcBIxkJllp22xYDQYnYUZO/7BoJKJFfCtVw==
+"@riboseinc/paneron-plugin-kit@^1.0.0-alpha1":
+  version "1.0.0-alpha1"
+  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-plugin-kit/-/paneron-plugin-kit-1.0.0-alpha1.tgz#9457d55da595e1217b83e4337a7f086896fa7cc9"
+  integrity sha512-Za4h2ZZKdKdUBFuhSvERjVpa33FSgF5egSIJJn6ZbF9K3y7h0dJwRrglKDRW3pP2akoELGtAXH+JPEBeDY9pdg==
 
 "@types/dom4@^2.0.1":
   version "2.0.1"
@@ -1673,6 +1673,11 @@ has@^1.0.3:
   integrity sha512-f2dvO0VU6Oej7RkWJGrehjbzMAjFp5/VKPp5tTpWIV4JHHZK1/BxbFRtf/siA2SWTe09caDmVtYYzWEIbBS4zw==
   dependencies:
     function-bind "^1.1.1"
+
+immutability-helper@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/immutability-helper/-/immutability-helper-3.1.1.tgz#2b86b2286ed3b1241c9e23b7b21e0444f52f77b7"
+  integrity sha512-Q0QaXjPjwIju/28TsugCHNEASwoCcJSyJV3uO1sOIQGI0jKgm9f41Lvz0DZj3n46cNCyAZTsEYoY4C2bVRUzyQ==
 
 import-fresh@^3.1.0:
   version "3.2.1"

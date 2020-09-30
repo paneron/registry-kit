@@ -14,6 +14,13 @@ const ITEM_STATUSES = [
 
 type ItemStatus = typeof ITEM_STATUSES[number];
 
+
+export interface RegisterItemID {
+  classID: string
+  itemID: string
+}
+
+
 export interface RegisterItemClass {
   id: string
   title: string
@@ -21,20 +28,19 @@ export interface RegisterItemClass {
   alternativeNames: LocalizedAlternative<string>[]
 }
 
+export interface RegisterItemRevision<P extends Payload> {
+  timestamp: Date
+  parents: string[] // Revision IDs
+  status: ItemStatus
+  data: P
+  changeRequestID?: string
+  author: RegisterStakeholder
+}
+
 export interface RegisterItem<P extends Payload> {
   id: string // UUID
-  classID: string // Item class ID
-  revisions: {
-    current: string // Revision ID
-    tree: {
-      [revisionID: string]: {
-        timestamp: Date
-        parents: string[] // Revision IDs
-        status: ItemStatus
-        data: P
-        changeRequestID?: string
-        author: RegisterStakeholder
-      }
-    }
-  }
+  status: string
+  dateAccepted: Date
+  data: P
+  changeRequestID?: string
 }

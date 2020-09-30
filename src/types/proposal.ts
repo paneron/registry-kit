@@ -1,5 +1,5 @@
 import { Payload } from './item';
-import { EditingStakeholder } from './stakeholder';
+import { RegisterStakeholder } from './stakeholder';
 
 
 export const DECISION_STATUSES = [
@@ -17,14 +17,14 @@ export const DISPOSITION_OPTIONS = [
 export interface ChangeRequest {
   // Supplied by sponsor
   justification: string // Justification for proposal
-  proposals: ChangeProposal[]
+  proposals: { [itemIDWithClass: string]: ChangeProposal }
 
   // Enforced by the system
   id: string
   timeStarted: Date
-  timeProposed: Date
+  timeProposed?: Date
   timeDisposed?: Date
-  sponsor: EditingStakeholder
+  sponsor: RegisterStakeholder
 
   // Supplied by register manager
   status: typeof DECISION_STATUSES[number] // Default filled in by the system but changeable
@@ -40,7 +40,7 @@ export const PROPOSAL_TYPES = [
 ] as const;
 
 interface BaseProposal {
-  itemID: string
+  //itemID: RegisterItemID
   type: typeof PROPOSAL_TYPES[number]
 }
 
@@ -67,8 +67,8 @@ interface Retirement extends BaseAmendment {
 }
 interface Supersession extends BaseAmendment {
   amendmentType: 'supersession'
-  superseding_item_id: string
+  supersedingItemID: string
 }
 type Amendment = Supersession | Retirement
 
-type ChangeProposal = Amendment | Clarification | Addition
+export type ChangeProposal = Amendment | Clarification | Addition
