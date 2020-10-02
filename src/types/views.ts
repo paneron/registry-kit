@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { ObjectDataRequest, PluginFC, RepositoryViewProps, ValueHook } from '@riboseinc/paneron-plugin-kit/types';
+import type { ObjectDataRequest, PluginFC, RepositoryViewProps, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { Payload, RegisterItem, RegisterItemClass } from './item';
 
 

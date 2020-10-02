@@ -10,7 +10,7 @@ import {
   HTMLSelect
 } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-plugin-kit/types';
+import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import { ChangeRequest, Register, RegisterStakeholder, RegistryViewProps } from '../types';
 import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 

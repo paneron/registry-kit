@@ -14,7 +14,7 @@ import {
   ITreeNode, Menu, NonIdealState, Popover, Spinner, Tag, TextArea, Tree
 } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-plugin-kit/types';
+import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
   ChangeProposal, ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
   ItemClassConfiguration, ItemDetailView, ItemEditView, Payload, PROPOSAL_TYPES,

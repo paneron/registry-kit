@@ -3,7 +3,7 @@
 import { H3, Navbar, NavbarDivider } from '@blueprintjs/core';
 
 import { css, jsx } from '@emotion/core';
-import { PluginFC } from '@riboseinc/paneron-plugin-kit/types';
+import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 
 
 export const MainView: PluginFC<{

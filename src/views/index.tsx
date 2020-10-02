@@ -18,7 +18,7 @@ import { RegisterInformation } from './RegisterInformation';
 import { ChangeRequestView, CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
 import { Toolbar } from './Toolbar';
-import { ObjectDataRequest } from '@riboseinc/paneron-plugin-kit/types';
+import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
 
 
 function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {

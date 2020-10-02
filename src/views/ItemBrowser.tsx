@@ -7,7 +7,7 @@ import { FixedSizeList as List } from 'react-window';
 import { css, jsx } from '@emotion/core';
 import { Button, Classes, Colors, HTMLSelect, IOptionProps, NonIdealState } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-plugin-kit/types';
+import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration

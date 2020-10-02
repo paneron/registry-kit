@@ -5,7 +5,7 @@ import update, { Spec } from 'immutability-helper';
 
 import { Button, ControlGroup, FormGroup, HTMLSelect, HTMLTable, InputGroup, TextArea } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-plugin-kit/types';
+import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import { Locale, Register, RegisterStakeholder, STAKEHOLDER_ROLES } from '../types';
 import { MainView } from './MainView';
 
