@@ -119,10 +119,6 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
   const items = useRegisterItemData(registerItemQuery);
 
-  log.debug("Item browser: Got items", objectPaths, registerItemQuery, Object.keys(items.value));
-
-  //log.debug("Item browser: got items", objectPaths, objectData, items);
-
   const getRelatedClass = _getRelatedClass(itemClasses);
 
   return (

@@ -55,10 +55,6 @@ function ({
       find(s => s.gitServerUsername === remoteUsername)
     : undefined;
 
-  useObjectsChangedEvent(async ({ objects }) => {
-    log.debug("Event: Repo contents changed", objects);
-  }, []);
-
   const useRegisterItemData: RegisterItemDataHook = (paths: ObjectDataRequest) => {
     const dataRequest: ObjectDataRequest = Object.keys(paths).map(path => {
       return { [`${path}.yaml`]: 'utf-8' as const };
@@ -83,7 +79,6 @@ function ({
   async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
     if (!isBusy) {
       setBusy(true);
-      log.debug("Saving register information", value, oldValue);
       try {
         await changeObjects({
           'register.yaml': {
@@ -101,7 +96,6 @@ function ({
   async function handleSaveCR(crID: string, value: ChangeRequest | null, oldValue: ChangeRequest) {
     if (!isBusy && crID === selectedCRID) {
       setBusy(true);
-      log.debug("Saving CR", value, oldValue);
       try {
         await changeObjects({
           [`change-requests/${crID}.yaml`]: {
