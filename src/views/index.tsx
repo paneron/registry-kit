@@ -60,15 +60,11 @@ function ({
   }, []);
 
   const useRegisterItemData: RegisterItemDataHook = (paths: ObjectDataRequest) => {
-    console.debug("Querying register items", paths);
-
     const dataRequest: ObjectDataRequest = Object.keys(paths).map(path => {
       return { [`${path}.yaml`]: 'utf-8' as const };
     }).reduce((p, c) => ({ ...p, ...c }), {});
 
     const data = useObjectData(dataRequest);
-
-    console.debug("Got register items raw", Object.keys(data.value));
 
     const parsedData = Object.entries(data.value).
     filter(([ path, data ]) => data !== null && data.encoding === 'utf-8').
