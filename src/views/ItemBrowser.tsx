@@ -36,11 +36,15 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
     return <NonIdealState title="Please select item class" />;
   }
 
-  const classSelector = <ItemClassSelector
-    React={React}
-    itemClasses={itemClassConfiguration}
-    selectedClassID={selectedClass}
-    onSelectClass={selectClass} />;
+  const classSelector = <div css={css`display: flex; flex-flow: row nowrap; align-items: center; white-space: nowrap;`}>
+    Item class
+    &emsp;
+    <ItemClassSelector
+      React={React}
+      itemClasses={itemClassConfiguration}
+      selectedClassID={selectedClass}
+      onSelectClass={selectClass} />
+  </div>;
 
   return (
     <MainView React={React} title={classSelector}>
