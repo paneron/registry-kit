@@ -109,7 +109,7 @@ const CRSelector: PluginFC<
     ...crs.map(cr => ({
       value: cr.id,
       label: `${(cr.justification || cr.id).substring(0, 40)}…`,
-    }))
+    })),
   ];
 
   return (

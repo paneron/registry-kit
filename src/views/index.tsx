@@ -74,7 +74,7 @@ function ({
       ...data,
       value: parsedData
     };
-  }
+  };
 
   async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
     if (!isBusy) {
