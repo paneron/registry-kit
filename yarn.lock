@@ -966,10 +966,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@riboseinc/paneron-extension-kit@^1.0.0-alpha3":
-  version "1.0.0-alpha3"
-  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-1.0.0-alpha3.tgz#2a81aa437fb33dc453b1a366cbc2b1a18a469732"
-  integrity sha512-9vQKaNXH9y6XTDxdUnaRlPXRUnEVr/0qZK1W8LKhRqNhD93KBe6Ve6fEjy6dxwdMLPVIYYH++R6fQ32m3ifkcA==
+"@riboseinc/paneron-extension-kit@^1.0.0-alpha4":
+  version "1.0.0-alpha4"
+  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-1.0.0-alpha4.tgz#c8abfabefc7bf49286ba5b2b12618ee3b7e52684"
+  integrity sha512-ijesbZwOYg8anSOi7S41PiiiYCJZQRszqKxc48nioMtGcdpR01NpIc8nw1+QZQ3YAlh8Ac367dqutF5VX7S8jA==
 
 "@types/dom4@^2.0.1":
   version "2.0.1"
