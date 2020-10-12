@@ -1,0 +1,178 @@
+= Paneron registry kit
+
+A common case of structured data is _registers_, as defined by ISO 19135-1 standard.
+
+Registry kit defines a model for expressing ISO 19135-1 register data as a collection of YAML files,
+and simplifies creating Paneron extensions that work with that data.
+
+== Extension development
+
+Paneron extensions are written in TypeScript based on React, and can make use of Blueprint 3 UI components.
+
+== Extensions for editing registry data
+
+An extension is essentially a React component that is given as props
+some functions that simplify interaction with underlying data repository.
+
+In case of registry type extensions, instead of writing your own repository view component from scratch,
+with the registry kit you can import its registry view component
+and pass it a configuration of register item classes that your register supports
+alongside props passed by Paneron to your extension.
+
+The configuration of register item classes includes the following:
+
+- General item metadata
+-- Machine-readable class identifier, which will also serve as the name of the directory item contents reside in
+-- Human-readable item class title, as well as alternative names (if any)
+-- Item class description, as plain string
+- Default values for register item data
+- React components that serve as views of a given register item
+-- Displaying item data
+-- Editing item data
+-- Displaying item in list
+
+
+For an example of a Paneron extension built with registry kit, see the
+link:https://github.com/paneron/extension-geodetic-registry/[ISO/TC 211 Geodetic registry extension].
+
+
+=== Setup
+
+These steps apply to Paneron extension development is general.
+
+. Create a new repository using Paneron extension template repository (https://github.com/paneron/extension-template-basic).
+
+. For testing purposes, obtain Paneron source code (clone https://github.com/paneron/paneron) and build the project locally.
+
+. Create a directory named `paneron-extension-dev` somewhere on your machine.
+
+. Follow https://github.com/paneron/extension-geodetic-registry/blob/master/src/RepoView.tsx to change your repository view
+  and pass it your item configuration.
+
+==== Iteration
+
+After you make changes:
+
+. Rebuild your extension from its repository root:
++
+[source,sh]
+--
+$ yarn build
+--
+
+. Copy the _contents_ of `dist/` into `paneron-extension-dev/@riboseinc/paneron-extension-<your-extension-name>`.
+
+. Launch your local build of Paneron using a command like this, from within Paneron repository root:
++
+[source,sh]
+--
+$ env PANERON_PLUGIN_DIR=/path/to/your/paneron-extension-dev/directory yarn dev
+--
+
+==== Release
+
+An extension must be released as a separate NPM package, specifying entry as `plugin.js`
+(see template extension for example packaging).
+
+When ready & tested, release your extension on NPM:
+
+[source,sh]
+--
+$ npm publish
+--
+
+NOTE: Currently, only extensions released under `@riboseinc` NPM scope are supported.
+Plugin name must be prefixed with `paneron-extension-` (e.g., `@riboseinc/paneron-extension-foo-registry`).
+
+=== Rules of Paneron extensions
+
+There are some extra constraints placed upon extension component code, mostly due to limitations
+of extension mechanism at this point in time.
+
+. An extension must not have any dependencies specified in package.json.
+  Anything you want to import should be provided by Paneron (see below what is).
+  (You can use devDependencies, though.)
+
+. An extension cannot call browser window’s native functions.
+  If you need `setTimeout()`, use `setTimeout` prop passed to your top-level extension component.
+
+. An extension cannot import and use React’s tools (e.g., hooks like `useState()`).
+  Instead, React instance passed via the `React` prop must be used.
+
+If these rules are not observed, you may end up getting a confusing blank screen
+after opening a repository using your extension and “DevTools was disconnected from the page” in console.
+
+Here’s how using a `useState()` hook might look like:
+
+[source,tsx]
+--
+// This is only to enable JSX support.
+import React from 'react';
+
+const MyRepositoryView: React.FC<RepositoryViewProps> = function (props) {
+  const [value, setValue] = props.React.useState(null);
+  return <div style={{ padding: '1rem' }}>Welcome to repository {props.title}!</div>;
+};
+--
+
+As usual, for a more complete example check out the basic extension template repository.
+
+==== Modules you can import
+
+Here are the modules you can import:
+
+* "@blueprintjs/core"
+* "@blueprintjs/datetime"
+* "@blueprintjs/icons"
+* "@blueprintjs/select"
+* "@emotion/core"
+* "@riboseinc/paneron-extension-kit"
+* "@riboseinc/paneron-registry-kit"
+* "electron-log"
+* "js-yaml"
+* "react" (but note quirks above)
+* "react-window"
+* "throttle-debounce"
+
+Again, you must not have anything in your dependencies,
+but you may want to add what you use from the above to your _devDependencies_
+for TypeScript development convenience.
+
+=== Using Emotion for styling components
+
+Taking the above example, here is how it could be written using Emotion:
+
+[source,tsx]
+--
+/** @jsx jsx */
+
+import { css, jsx } from '@emotion/core';
+
+const MyRepositoryView: React.FC<RepositoryViewProps> = function (props) {
+  const [value, setValue] = props.React.useState(null);
+  return <div css={css`padding: 1rem;`}>Welcome to repository {props.title}!</div>;
+};
+--
+
+[NOTE]
+====
+If using React fragment shorthand syntax (`<>…</>`),
+keep the React import and add `@jsxFrag` pragma:
+
+[source,tsx]
+--
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+
+import React from 'react';
+
+import { css, jsx } from '@emotion/core';
+
+const MyRepositoryView: React.FC<RepositoryViewProps> = function (props) {
+  const [value, setValue] = props.React.useState(null);
+  return <>
+    <div css={css`padding: 1rem;`}>Welcome to repository {props.title}!</div>
+  </>;
+};
+--
+====
