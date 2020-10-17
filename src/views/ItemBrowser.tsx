@@ -1,6 +1,5 @@
 /** @jsx jsx */
 
-//import log from 'electron-log';
 import { debounce } from 'throttle-debounce';
 
 import { FixedSizeList as List } from 'react-window';
