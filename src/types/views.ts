@@ -40,6 +40,7 @@ export type LazyItemView = PluginFC<{ itemID: string }>;
 
 export interface ItemClassConfiguration<P extends Payload> {
   meta: RegisterItemClass
+  itemSorter: (a: P, b: P) => number
   defaults: RegistryItemPayloadDefaults<P>
   validatePayload: (item: P) => Promise<boolean>
   sanitizePayload: (item: P) => Promise<P>
