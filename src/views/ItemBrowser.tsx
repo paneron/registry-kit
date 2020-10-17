@@ -109,7 +109,9 @@ const ItemBrowser: PluginFC<{
 }> =
 function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectPaths, useRegisterItemData }) {
 
-  const pathPrefix = itemClasses[selectedClassID].meta.id || '_NONEXISTENT_CLASS';
+  const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
+
+  const pathPrefix = classConfig.meta.id;
 
   const objectPaths = useObjectPaths({
     pathPrefix,
@@ -124,11 +126,14 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
   const getRelatedClass = _getRelatedClass(itemClasses);
 
+  let orderedItems = Object.values(items.value);
+  orderedItems.sort((a, b) => classConfig.itemSorter(a.data, b.data));
+
   return (
     <div css={css`flex-shrink: 0; flex-basis: 30vw; background: ${Colors.WHITE}`}>
       <ItemList
         React={React}
-        items={Object.values(items.value)}
+        items={orderedItems}
         classConfig={itemClasses[selectedClassID]}
         getRelatedClassConfig={getRelatedClass}
         selectedItem={selectedItem}
