@@ -126,7 +126,7 @@ function ({
         await changeObjects({
           [`change-requests/${newID}.yaml`]: {
             oldValue: null,
-            newValue: yaml.dump(makeBlankCR(newID, stakeholder)),
+            newValue: yaml.dump(makeBlankCR(newID, stakeholder), { noRefs: true }),
             encoding: 'utf-8',
           },
         }, `CR: Start ${newID}`);
