@@ -4,9 +4,10 @@ import { debounce } from 'throttle-debounce';
 
 import log from 'electron-log';
 
+import React from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
-import { Button, Classes, Colors, ControlGroup, HTMLSelect, IOptionProps, NonIdealState } from '@blueprintjs/core';
+import { Button, Classes, Colors, ControlGroup, HTMLSelect, InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
@@ -18,6 +19,10 @@ import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
 
 
+type BrowserCtx = { jumpToItem: (classID: string, itemID: string) => void }
+const BrowserCtx = React.createContext<BrowserCtx>({ jumpToItem: () => {} });
+
+
 export const RegisterItemBrowser: PluginFC<
   Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration'> & {
   useRegisterItemData: RegisterItemDataHook
@@ -27,6 +32,11 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
   const [selectedClass, selectClass] = React.useState<string | undefined>(undefined);
 
   const itemClasses = Object.keys(itemClassConfiguration);
+
+  const jumpToItem = (classID: string, itemID: string) => {
+    selectClass(classID);
+    selectItem(itemID);
+  }
 
   React.useEffect(() => {
     if (selectedClass === undefined && itemClasses.length > 0) {
@@ -49,29 +59,31 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
   </div>;
 
   return (
-    <MainView React={React} title={classSelector}>
+    <BrowserCtx.Provider value={{ jumpToItem }}>
+      <MainView React={React} title={classSelector}>
 
-      <ItemBrowser
-        React={React}
-        itemClasses={itemClassConfiguration}
+        <ItemBrowser
+          React={React}
+          itemClasses={itemClassConfiguration}
 
-        selectedClassID={selectedClass}
-        selectedItem={selectedItem}
+          selectedClassID={selectedClass}
+          selectedItem={selectedItem}
 
-        onSelectItem={selectItem}
-        useObjectData={useObjectData}
-        useObjectPaths={useObjectPaths}
-        useRegisterItemData={useRegisterItemData}
-      />
+          onSelectItem={selectItem}
+          useObjectData={useObjectData}
+          useObjectPaths={useObjectPaths}
+          useRegisterItemData={useRegisterItemData}
+        />
 
-      <ItemDetails
-        React={React}
-        useRegisterItemData={useRegisterItemData}
-        getRelatedClass={_getRelatedClass(itemClassConfiguration)}
-        itemClass={itemClassConfiguration[selectedClass]}
-        itemID={selectedItem} />
+        <ItemDetails
+          React={React}
+          useRegisterItemData={useRegisterItemData}
+          getRelatedClass={_getRelatedClass(itemClassConfiguration)}
+          itemClass={itemClassConfiguration[selectedClass]}
+          itemID={selectedItem} />
 
-    </MainView>
+      </MainView>
+    </BrowserCtx.Provider>
   );
 };
 
@@ -129,11 +141,15 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
   const getRelatedClass = _getRelatedClass(itemClasses);
 
-  let orderedItems = Object.values(items.value);
-  orderedItems.sort((a, b) => classConfig.itemSorter(a.data, b.data));
+  let el: JSX.Element;
 
-  return (
-    <div css={css`flex-shrink: 0; flex-basis: 30vw; background: ${Colors.WHITE}`}>
+  if (items.isUpdating) {
+    el = <NonIdealState icon={<Spinner />} />;
+  } else {
+    let orderedItems = Object.values(items.value);
+    orderedItems.sort((a, b) => classConfig.itemSorter(a.data, b.data));
+
+    el = (
       <ItemList
         React={React}
         items={orderedItems}
@@ -141,6 +157,12 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
         getRelatedClassConfig={getRelatedClass}
         selectedItem={selectedItem}
         onSelectItem={onSelectItem} />
+    );
+  }
+
+  return (
+    <div css={css`flex-shrink: 0; flex-basis: 30vw; background: ${Colors.WHITE}`}>
+      {el}
     </div>
   );
 };
@@ -241,7 +263,9 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
 
   log.debug("Rendering generic related item view", itemRef);
 
-  const itemData = (useRegisterItemData({
+  const browserCtx: BrowserCtx = React.useContext(BrowserCtx);
+
+  const item = (useRegisterItemData({
     [itemPath]: 'utf-8' as const,
   }).value?.[itemPath] || null) as RegisterItem<any> | null;
 
@@ -249,16 +273,19 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
 
   const Item = cfg.itemView;
 
-  log.debug("Rendering generic related item view: got item data", itemData);
+  log.debug("Rendering generic related item view: got item", item);
 
   return (
     <ControlGroup className={className}>
       <Button disabled>{cfg.title}</Button>
-      <Button icon={itemData === null ? 'error' : 'link'} disabled={itemData === null}>
-        {itemData !== null
+      <Button
+          icon={item === null ? 'error' : 'locate'}
+          disabled={item === null || !browserCtx.jumpToItem}
+          onClick={() => browserCtx.jumpToItem(classID, itemID)}>
+        {item !== null
           ? <Item
               React={React}
-              itemData={itemData}
+              itemData={item.data}
               getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
             />
           : <span>Item not found: {itemRef.itemID}</span>}
@@ -274,21 +301,24 @@ const ItemDetails: PluginFC<{
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
   itemID?: string
 }> = function ({ React, itemClass, itemID, getRelatedClass, useRegisterItemData }) {
-  let el: JSX.Element
+  let details: JSX.Element
 
   const itemPath = `${itemClass.meta.id}/${itemID}`;
 
-  const item = useRegisterItemData({
+  const item = (useRegisterItemData({
     [itemPath]: 'utf-8' as const,
-  }).value?.[itemPath];
+  }).value?.[itemPath] || null) as (null | RegisterItem<any>);
+
+  const ItemTitle = itemClass.views.listItemView;
 
   if (itemID === undefined) {
-    el = <NonIdealState title="No item is selected" />;
+    details = <NonIdealState title="No item is selected" />;
 
   } else if (item) {
-    const View = itemClass.views.detailView;
-    el = (
-      <View
+    const DetailView = itemClass.views.detailView;
+
+    details = (
+      <DetailView
         React={React}
         GenericRelatedItemView={GenericRelatedItemView}
         getRelatedItemClassConfiguration={getRelatedClass}
@@ -298,24 +328,42 @@ const ItemDetails: PluginFC<{
     );
 
   } else {
-    el = <NonIdealState title="Item data not available" />;
+    details = <NonIdealState title="Item data not available" />;
   }
 
   return (
     <div className={Classes.ELEVATION_1} css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem;`}>
       {item
         ? <div css={css`flex-shrink: 0; margin-bottom: 1rem; display: flex; flex-flow: column nowrap;`}>
-            <small css={css`overflow: hidden; text-overflow: ellipsis`}>{item?.id}</small>
-            <div>
-              Status: {item?.status || '—'}&emsp;•&emsp;Acceped on {item?.dateAccepted?.toLocaleDateString() || '—'}
-            </div>
+            <ControlGroup>
+              <Tooltip content="Internal unique item ID">
+                <InputGroup disabled value={item?.id || ''} fill />
+              </Tooltip>
+              <Button
+                  disabled
+                  intent={item.status === 'valid' ? 'success' : undefined}
+                  title="Item status"
+                  icon={item.status === 'valid' ? 'tick-circle' : 'blank'}>
+                {item.status || 'unknown status'}
+              </Button>
+              <InputGroup
+                disabled
+                leftIcon="calendar"
+                value={`acceped ${item.dateAccepted?.toLocaleDateString() || '—'}`}
+              />
+            </ControlGroup>
+            <ItemTitle
+              React={React}
+              itemData={item.data}
+              getRelatedItemClassConfiguration={getRelatedClass}
+              css={css`margin-top: 1em; font-weight: bold; font-size: 110%;`} />
           </div>
         : null}
 
       <div
           css={css`flex: 1; overflow-y: auto; padding: 1rem; border-radius: .5rem; background: ${Colors.WHITE}`}
           className={Classes.ELEVATION_3}>
-        {el}
+        {details}
       </div>
     </div>
   );
