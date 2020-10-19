@@ -265,9 +265,10 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
 
   const browserCtx: BrowserCtx = React.useContext(BrowserCtx);
 
-  const item = (useRegisterItemData({
+  const itemResult = useRegisterItemData({
     [itemPath]: 'utf-8' as const,
-  }).value?.[itemPath] || null) as RegisterItem<any> | null;
+  });
+  const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
 
   const cfg = getRelatedItemClassConfiguration(itemRef.classID);
 
@@ -279,10 +280,11 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
     <ControlGroup className={className}>
       <Button disabled>{cfg.title}</Button>
       <Button
+          loading={itemResult.isUpdating}
           icon={item === null ? 'error' : 'locate'}
           disabled={item === null || !browserCtx.jumpToItem}
           onClick={() => browserCtx.jumpToItem(classID, itemID)}>
-        {item !== null
+        {item !== null && !itemResult.isUpdating
           ? <Item
               React={React}
               itemData={item.data}
