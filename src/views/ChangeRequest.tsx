@@ -24,6 +24,7 @@ import {
 } from '../types';
 import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
+import { GenericRelatedItemView } from './ItemBrowser';
 
 
 const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
@@ -610,6 +611,7 @@ const ProposalDetails: PluginFC<{
     const View = ItemView as ItemDetailView<any>;
     itemView = <View
       React={React}
+      GenericRelatedItemView={GenericRelatedItemView}
       useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       itemData={itemData} />;

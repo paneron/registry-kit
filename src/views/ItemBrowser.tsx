@@ -2,12 +2,15 @@
 
 import { debounce } from 'throttle-debounce';
 
-import { FixedSizeList as List } from 'react-window';
+import log from 'electron-log';
+
 import { css, jsx } from '@emotion/core';
-import { Button, Classes, Colors, HTMLSelect, IOptionProps, NonIdealState } from '@blueprintjs/core';
+import { FixedSizeList as List } from 'react-window';
+import { Button, Classes, Colors, ControlGroup, HTMLSelect, IOptionProps, NonIdealState } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
+  GenericRelatedItemViewProps,
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
@@ -229,6 +232,42 @@ const ItemList: PluginFC<{
 const ITEM_HEIGHT = 30;
 
 
+export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = function ({
+  React, itemRef, className,
+  useRegisterItemData, getRelatedItemClassConfiguration,
+}) {
+  const { classID, itemID } = itemRef;
+  const itemPath = `${classID}/${itemID}`;
+
+  log.debug("Rendering generic related item view", itemRef);
+
+  const itemData = (useRegisterItemData({
+    [itemPath]: 'utf-8' as const,
+  }).value?.[itemPath] || null) as RegisterItem<any> | null;
+
+  const cfg = getRelatedItemClassConfiguration(itemRef.classID);
+
+  const Item = cfg.itemView;
+
+  log.debug("Rendering generic related item view: got item data", itemData);
+
+  return (
+    <ControlGroup className={className}>
+      <Button disabled>{cfg.title}</Button>
+      <Button icon={itemData === null ? 'error' : 'link'} disabled={itemData === null}>
+        {itemData !== null
+          ? <Item
+              React={React}
+              itemData={itemData}
+              getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+            />
+          : <span>Item not found: {itemRef.itemID}</span>}
+      </Button>
+    </ControlGroup>
+  );
+};
+
+
 const ItemDetails: PluginFC<{
   itemClass: ItemClassConfiguration<any>
   useRegisterItemData: RegisterItemDataHook
@@ -251,6 +290,7 @@ const ItemDetails: PluginFC<{
     el = (
       <View
         React={React}
+        GenericRelatedItemView={GenericRelatedItemView}
         getRelatedItemClassConfiguration={getRelatedClass}
         useRegisterItemData={useRegisterItemData}
         itemData={item.data}
