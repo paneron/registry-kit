@@ -21,6 +21,9 @@ export interface Citation {
 
   otherDetails: string
 
+  isbn: string | null
+  issn: string | null
+
   //alternateTitles: string[]
   //publicationDate: Date
 }
