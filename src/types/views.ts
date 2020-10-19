@@ -27,6 +27,7 @@ export type RelatedItemClassConfiguration = {
 export interface RegistryItemViewProps<P extends Payload> {
   itemData: P
   getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
+  className?: string
 }
 
 export interface GenericRelatedItemViewProps {
