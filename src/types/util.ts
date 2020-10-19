@@ -11,9 +11,18 @@ export interface Locale {
 
 export interface Citation {
   title: string
-  alternateTitles: string[]
-  publicationDate: Date
-  otherCitationDetails: string
+
+  seriesIssueID: string | null
+  seriesName: string | null
+  seriesPage: string | null
+
+  edition: string | null
+  editionDate: Date | null
+
+  otherDetails: string
+
+  //alternateTitles: string[]
+  //publicationDate: Date
 }
 
 
