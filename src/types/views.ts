@@ -18,22 +18,32 @@ export type RegistryView = React.FC<RegistryViewProps>
 type RegistryItemPayloadDefaults<P extends Payload> =
   Partial<Omit<P, 'id'>>;
 
-
 export type RelatedItemClassConfiguration = {
   title: string
   itemView: ItemListView<any>
 }
 
-interface RegistryItemViewProps<P extends Payload> {
+
+export interface RegistryItemViewProps<P extends Payload> {
   itemData: P
   getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
 }
+
+export interface GenericRelatedItemViewProps {
+  itemRef: { classID: string, itemID: string }
+  useRegisterItemData: RegisterItemDataHook
+  getRelatedItemClassConfiguration: RegistryItemViewProps<any>["getRelatedItemClassConfiguration"]
+  className?: string
+  onJump?: () => void
+}
+
 
 export type ItemEditView<P> = PluginFC<RegistryItemViewProps<P> & {
   onChange?: (newData: P) => void
 }>;
 export type ItemDetailView<P> = PluginFC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook
+  GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps>
 }>;
 export type ItemListView<P> = PluginFC<RegistryItemViewProps<P>>;
 export type LazyItemView = PluginFC<{ itemID: string }>;
