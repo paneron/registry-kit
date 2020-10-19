@@ -270,7 +270,18 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
   });
   const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
 
-  const cfg = getRelatedItemClassConfiguration(itemRef.classID);
+  let classConfigured: boolean
+  let cfg: RelatedItemClassConfiguration
+  try {
+    cfg = getRelatedItemClassConfiguration(itemRef.classID);
+    classConfigured = true;
+  } catch (e) {
+    cfg = {
+      title: itemRef.classID,
+      itemView: () => <span>{itemID}</span>
+    }
+    classConfigured = false;
+  }
 
   const Item = cfg.itemView;
 
@@ -282,7 +293,7 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
       <Button
           loading={itemResult.isUpdating}
           icon={item === null ? 'error' : 'locate'}
-          disabled={item === null || !browserCtx.jumpToItem}
+          disabled={item === null || !browserCtx.jumpToItem || !classConfigured}
           onClick={() => browserCtx.jumpToItem(classID, itemID)}>
         {item !== null && !itemResult.isUpdating
           ? <Item
