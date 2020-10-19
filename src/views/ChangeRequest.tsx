@@ -8,10 +8,10 @@ import update from 'immutability-helper';
 import { jsx, css } from '@emotion/core';
 
 import {
-  Button, ButtonGroup, Classes,
+  Button, ButtonGroup, Callout, Classes,
   Colors,
   FormGroup, H4, HTMLSelect, IconName, InputGroup, IOptionProps,
-  ITreeNode, Menu, NonIdealState, Popover, Spinner, Tag, TextArea, Tree
+  ITreeNode, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
 } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
@@ -112,6 +112,12 @@ export const ChangeRequestView: PluginFC<
         }
       }
       onSave(originalCR.id, { ...cr, status: newStatus, disposition: newDisposition, ...extraProps }, originalCR);
+    }
+
+    async function handleAddProposal(id: string, defaults: Record<string, any>) {
+      updateEdited(update(cr, { proposals: {
+        [id]: { $set: { type: 'addition', payload: defaults } },
+      } }))
     }
 
     async function handleAcceptProposal(itemID: string, clsID: string, proposal: ChangeProposal) {
@@ -289,6 +295,39 @@ export const ChangeRequestView: PluginFC<
           ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
           : undefined}
       />;
+    } else if (selectedItem === 'proposals') {
+      detailView = <NonIdealState
+        description={
+          canEdit
+          ? <React.Fragment>
+              <Callout style={{ textAlign: 'left', marginBottom: '1rem' }} title="Managing your proposals" intent="primary">
+                <p>
+                  Select a proposed change on the left to&nbsp;view or&nbsp;edit&nbsp;it.
+                </p>
+                <p>
+                  To propose a change, close this CR, navigate to an item you want to change in item list, and&nbsp;click “Propose&nbsp;a&nbsp;change”.
+                </p>
+                <p>
+                  You won’t be able to edit your change request once you have submitted it.
+                </p>
+              </Callout>
+              <Menu className={Classes.ELEVATION_1} style={{ marginBottom: '1rem' }}>
+                <Menu.Divider title="New item" />
+                {Object.entries(itemClassConfiguration).map(([classID, classCfg]) =>
+                  <Menu.Item
+                    key={classID}
+                    icon="add"
+                    text={classCfg.meta.title}
+                    onClick={async () => handleAddProposal(`${classCfg.meta.id}/${await makeRandomID()}`, classCfg.defaults)}
+                  />
+                )}
+              </Menu>
+            </React.Fragment>
+          : <Callout style={{ textAlign: 'left' }} title="Reviewing proposed changes" intent="primary">
+              Select a proposed change on the left.
+            </Callout>
+        }
+      />;
     } else if (cr.proposals[selectedItem] && (itemData[selectedItem] || cr.proposals[selectedItem].type === 'addition')) {
       const proposal = cr.proposals[selectedItem];
       const classID = selectedItem.split('/')[0];
@@ -344,14 +383,6 @@ export const ChangeRequestView: PluginFC<
             itemData={itemData}
             onSelect={selectItem}
             selectedItem={selectedItem}
-            makeRandomID={makeRandomID}
-
-            onAddProposal={canEdit
-              ? async (id, defaults) => updateEdited(update(cr, { proposals: {
-                  [id]: { $set: { type: 'addition', payload: defaults } },
-                } }))
-              : undefined}
-
             enableControlBodyInput={canReview || cr.controlBodyDecisionEvent !== undefined || cr.controlBodyNotes !== undefined}
             enableManagerNotes={canReview || cr.registerManagerNotes !== undefined}
           />
@@ -372,43 +403,22 @@ export const ChangeRequestView: PluginFC<
 
 
 const CRNavigation: PluginFC<
-  Pick<RegistryViewProps, 'itemClassConfiguration' | 'makeRandomID'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
   proposals: ChangeRequest["proposals"]
   enableControlBodyInput: boolean
   enableManagerNotes: boolean
   itemData: Record<string, RegisterItem<any>>,
   selectedItem: string
   onSelect: (item: string) => void
-  onAddProposal?: (itemIDWithClass: string, defaults: Payload) => void
 }> =
 function ({
     React, itemData, proposals, itemClassConfiguration,
-    onSelect, onAddProposal, makeRandomID,
+    onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
 
   function handleSelect(node: ITreeNode) {
-    if (node.id !== 'proposals') {
-      onSelect(node.id as string);
-    }
+    onSelect(node.id as string);
   }
-
-  async function handleAddNew(classCfg: ItemClassConfiguration<any>) {
-    if (!onAddProposal) { return; }
-    return onAddProposal(
-      `${classCfg.meta.id}/${await makeRandomID()}`,
-      classCfg.defaults);
-  }
-
-  const addMenu: JSX.Element | null = onAddProposal ? (
-    <Popover
-        content={<Menu>
-          {Object.entries(itemClassConfiguration).map(([classID, classCfg]) =>
-            <Menu.Item key={classID} text={classCfg.meta.title} onClick={() => handleAddNew(classCfg)} />
-          )}
-        </Menu>}>
-      <Button minimal small icon="add" />
-    </Popover>
-  ) : null;
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
@@ -430,7 +440,8 @@ function ({
     id: 'proposals',
     label: "Proposals",
     isExpanded: true,
-    secondaryLabel: addMenu,
+    isSelected: selectedItem === 'proposals',
+    hasCaret: Object.keys(proposals).length > 0,
     childNodes: [ ...Object.entries(proposals).map(([itemIDWithClass, proposal]) => {
       const classID = itemIDWithClass.split('/')[0]
       const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
