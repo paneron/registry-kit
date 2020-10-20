@@ -55,7 +55,7 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
       React={React}
       itemClasses={itemClassConfiguration}
       selectedClassID={selectedClass}
-      onSelectClass={selectClass} />
+      onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
   </div>;
 
   return (
