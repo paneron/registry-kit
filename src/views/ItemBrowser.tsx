@@ -318,14 +318,18 @@ const ItemDetails: PluginFC<{
 
   const itemPath = `${itemClass.meta.id}/${itemID}`;
 
-  const item = (useRegisterItemData({
+  const itemResponse = useRegisterItemData({
     [itemPath]: 'utf-8' as const,
-  }).value?.[itemPath] || null) as (null | RegisterItem<any>);
+  });
+  const item = (itemResponse.value?.[itemPath] || null) as (null | RegisterItem<any>);
 
   const ItemTitle = itemClass.views.listItemView;
 
-  if (itemID === undefined) {
-    details = <NonIdealState title="No item is selected" />;
+  if (itemResponse.isUpdating) {
+    return <NonIdealState icon={<Spinner />} />;
+
+  } else if (itemID === undefined) {
+    return <NonIdealState title="No item is selected" />;
 
   } else if (item) {
     const DetailView = itemClass.views.detailView;
@@ -346,30 +350,32 @@ const ItemDetails: PluginFC<{
 
   return (
     <div className={Classes.ELEVATION_1} css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem;`}>
-      {item
+      {itemID
         ? <div css={css`flex-shrink: 0; margin-bottom: 1rem; display: flex; flex-flow: column nowrap;`}>
             <ControlGroup>
               <Tooltip content="Internal unique item ID">
-                <InputGroup disabled value={item?.id || ''} fill />
+                <InputGroup disabled value={item?.id || itemID || ''} fill />
               </Tooltip>
               <Button
                   disabled
-                  intent={item.status === 'valid' ? 'success' : undefined}
+                  intent={item?.status === 'valid' ? 'success' : undefined}
                   title="Item status"
-                  icon={item.status === 'valid' ? 'tick-circle' : 'blank'}>
-                {item.status || 'unknown status'}
+                  icon={item?.status === 'valid' ? 'tick-circle' : 'blank'}>
+                {item?.status || 'unknown status'}
               </Button>
               <InputGroup
                 disabled
                 leftIcon="calendar"
-                value={`acceped ${item.dateAccepted?.toLocaleDateString() || '—'}`}
+                value={`acceped ${item?.dateAccepted?.toLocaleDateString() || '—'}`}
               />
             </ControlGroup>
-            <ItemTitle
-              React={React}
-              itemData={item.data}
-              getRelatedItemClassConfiguration={getRelatedClass}
-              css={css`margin-top: 1em; font-weight: bold; font-size: 110%;`} />
+            {item
+              ? <ItemTitle
+                  React={React}
+                  itemData={item.data}
+                  getRelatedItemClassConfiguration={getRelatedClass}
+                  css={css`margin-top: 1em; font-weight: bold; font-size: 110%;`} />
+              : null}
           </div>
         : null}
 
