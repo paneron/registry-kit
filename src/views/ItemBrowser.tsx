@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
 import { debounce } from 'throttle-debounce';
 
@@ -7,7 +8,7 @@ import log from 'electron-log';
 import React from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
-import { Button, Classes, Colors, ControlGroup, HTMLSelect, InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip } from '@blueprintjs/core';
+import { Button, Callout, Classes, Colors, ControlGroup, HTMLSelect, InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
@@ -58,6 +59,38 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
       onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
   </div>;
 
+  class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
+    constructor(props: any) {
+      super(props);
+      this.state = { error: undefined };
+    }
+    componentDidCatch(error: Error, info: any) {
+      log.error("Error rendering item details", error, info);
+      this.setState({ error: `${error.name}: ${error.message}` });
+    }
+    render() {
+      if (this.state.error !== undefined) {
+        return <NonIdealState
+          icon="heart-broken"
+          title="Error rendering view"
+          description={
+            <>
+              <p>
+                This could be caused by invalid register&nbsp;item&nbsp;data&nbsp;format.
+              </p>
+              <Callout style={{ textAlign: 'left', transform: 'scale(0.9)' }} title="Technical details">
+                <pre style={{ overflow: 'auto', paddingBottom: '1em' }}>
+                  {this.state.error}
+                </pre>
+              </Callout>
+            </>
+          }
+        />;
+      }
+      return this.props.children;
+    }
+  }
+
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
       <MainView React={React} title={classSelector}>
@@ -75,12 +108,14 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
           useRegisterItemData={useRegisterItemData}
         />
 
-        <ItemDetails
-          React={React}
-          useRegisterItemData={useRegisterItemData}
-          getRelatedClass={_getRelatedClass(itemClassConfiguration)}
-          itemClass={itemClassConfiguration[selectedClass]}
-          itemID={selectedItem} />
+        <ErrorBoundary>
+          <ItemDetails
+            React={React}
+            useRegisterItemData={useRegisterItemData}
+            getRelatedClass={_getRelatedClass(itemClassConfiguration)}
+            itemClass={itemClassConfiguration[selectedClass]}
+            itemID={selectedItem} />
+        </ErrorBoundary>
 
       </MainView>
     </BrowserCtx.Provider>
