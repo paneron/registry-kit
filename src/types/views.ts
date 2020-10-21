@@ -44,8 +44,8 @@ export type ItemEditView<P> = PluginFC<RegistryItemViewProps<P> & {
 }>;
 export type ItemDetailView<P> = PluginFC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook
-  GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps>
 }>;
+
 export type ItemListView<P> = PluginFC<RegistryItemViewProps<P>>;
 export type LazyItemView = PluginFC<{ itemID: string }>;
 

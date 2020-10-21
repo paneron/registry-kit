@@ -12,16 +12,11 @@ import { Button, Callout, Classes, Colors, ControlGroup, HTMLSelect, InputGroup,
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import {
-  GenericRelatedItemViewProps,
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
 import { MainView } from './MainView';
-import { _getRelatedClass } from './util';
-
-
-type BrowserCtx = { jumpToItem: (classID: string, itemID: string) => void }
-const BrowserCtx = React.createContext<BrowserCtx>({ jumpToItem: () => {} });
+import { BrowserCtx, _getRelatedClass } from './util';
 
 
 export const RegisterItemBrowser: PluginFC<
@@ -123,7 +118,6 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
 };
 
 
-
 const ItemClassSelector: PluginFC<{
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   selectedClassID: string | undefined
@@ -132,7 +126,7 @@ const ItemClassSelector: PluginFC<{
 
   const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
   map(([classID, classData]) => {
-    return { value: classID, label: classData.meta.title };
+    return { value: classID, label: classData.meta.description };
   });
 
   return (
@@ -163,11 +157,9 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
   const pathPrefix = classConfig.meta.id;
 
-  const objectPaths = useObjectPaths({
-    pathPrefix,
-  }).value;
+  const objectPathsQuery = useObjectPaths({ pathPrefix });
 
-  const registerItemQuery = objectPaths.
+  const registerItemQuery = objectPathsQuery.value.
     filter(path => path !== '.DS_Store').
     map(path => ({ [path.replace('.yaml', '')]: 'utf-8' as const })).
     reduce((prev, curr) => ({ ...prev, ...curr }), {})
@@ -178,7 +170,7 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
   let el: JSX.Element;
 
-  if (items.isUpdating) {
+  if (objectPathsQuery.isUpdating || items.isUpdating) {
     el = <NonIdealState icon={<Spinner />} />;
   } else {
     let orderedItems = Object.values(items.value);
@@ -289,60 +281,6 @@ const ItemList: PluginFC<{
 const ITEM_HEIGHT = 30;
 
 
-export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = function ({
-  React, itemRef, className,
-  useRegisterItemData, getRelatedItemClassConfiguration,
-}) {
-  const { classID, itemID } = itemRef;
-  const itemPath = `${classID}/${itemID}`;
-
-  log.debug("Rendering generic related item view", itemRef);
-
-  const browserCtx: BrowserCtx = React.useContext(BrowserCtx);
-
-  const itemResult = useRegisterItemData({
-    [itemPath]: 'utf-8' as const,
-  });
-  const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
-
-  let classConfigured: boolean
-  let cfg: RelatedItemClassConfiguration
-  try {
-    cfg = getRelatedItemClassConfiguration(itemRef.classID);
-    classConfigured = true;
-  } catch (e) {
-    cfg = {
-      title: itemRef.classID,
-      itemView: () => <span>{itemID}</span>
-    }
-    classConfigured = false;
-  }
-
-  const Item = cfg.itemView;
-
-  log.debug("Rendering generic related item view: got item", item);
-
-  return (
-    <ControlGroup className={className}>
-      <Button disabled>{cfg.title}</Button>
-      <Button
-          loading={itemResult.isUpdating}
-          icon={item === null ? 'error' : 'locate'}
-          disabled={item === null || !browserCtx.jumpToItem || !classConfigured}
-          onClick={() => browserCtx.jumpToItem(classID, itemID)}>
-        {item !== null && !itemResult.isUpdating
-          ? <Item
-              React={React}
-              itemData={item.data}
-              getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
-            />
-          : <span>Item not found: {itemRef.itemID}</span>}
-      </Button>
-    </ControlGroup>
-  );
-};
-
-
 const ItemDetails: PluginFC<{
   itemClass: ItemClassConfiguration<any>
   useRegisterItemData: RegisterItemDataHook
@@ -361,10 +299,10 @@ const ItemDetails: PluginFC<{
   const ItemTitle = itemClass.views.listItemView;
 
   if (itemResponse.isUpdating) {
-    return <NonIdealState icon={<Spinner />} />;
+    details = <NonIdealState icon={<Spinner />} />;
 
   } else if (itemID === undefined) {
-    return <NonIdealState title="No item is selected" />;
+    details = <NonIdealState title="No item is selected" />;
 
   } else if (item) {
     const DetailView = itemClass.views.detailView;
@@ -372,7 +310,6 @@ const ItemDetails: PluginFC<{
     details = (
       <DetailView
         React={React}
-        GenericRelatedItemView={GenericRelatedItemView}
         getRelatedItemClassConfiguration={getRelatedClass}
         useRegisterItemData={useRegisterItemData}
         itemData={item.data}
@@ -415,7 +352,10 @@ const ItemDetails: PluginFC<{
         : null}
 
       <div
-          css={css`flex: 1; overflow-y: auto; padding: 1rem; border-radius: .5rem; background: ${Colors.WHITE}`}
+          css={css`
+            flex: 1; overflow-y: auto; padding: 1rem; border-radius: .5rem; background: ${Colors.WHITE};
+            position: relative;
+          `}
           className={Classes.ELEVATION_3}>
         {details}
       </div>
