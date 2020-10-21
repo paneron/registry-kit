@@ -36,7 +36,7 @@ function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 export const RegistryView: React.FC<RegistryViewProps> =
 function ({
     React, makeRandomID, title,
-    useObjectsChangedEvent, useObjectPaths, useObjectData,
+    useObjectPaths, useObjectData,
     useRemoteUsername,
     itemClassConfiguration,
     changeObjects }) {
@@ -160,7 +160,6 @@ function ({
         itemClassConfiguration={itemClassConfiguration}
 
         useObjectData={useObjectData}
-        useObjectPaths={useObjectPaths}
         changeObjects={changeObjects}
         useRegisterItemData={useRegisterItemData}
         makeRandomID={makeRandomID}

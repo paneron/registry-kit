@@ -39,7 +39,7 @@ export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
 
 
 export const ChangeRequestView: PluginFC<
-  Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration' | 'makeRandomID' | 'changeObjects'> & {
+  Pick<RegistryViewProps, 'useObjectData' | 'itemClassConfiguration' | 'makeRandomID' | 'changeObjects'> & {
   id: string
   stakeholder?: RegisterStakeholder
   useRegisterItemData: RegisterItemDataHook
@@ -47,7 +47,7 @@ export const ChangeRequestView: PluginFC<
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
 }> = function ({
     React,
-    useObjectData, useObjectPaths, makeRandomID,
+    useObjectData, makeRandomID,
     itemClassConfiguration, id, stakeholder,
     changeObjects,
     useRegisterItemData,
