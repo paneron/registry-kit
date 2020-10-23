@@ -8,11 +8,15 @@ import log from 'electron-log';
 import React from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
-import { Button, Callout, Classes, Colors, ControlGroup, HTMLSelect, InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip } from '@blueprintjs/core';
+import {
+  Button, Callout, Classes, Colors, ControlGroup, HTMLSelect,
+  InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
+} from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
+import { PluginFC, PluginComponentProps } from '@riboseinc/paneron-extension-kit/types';
 import {
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
+  RegistryItemViewProps,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
 import { MainView } from './MainView';
@@ -252,6 +256,7 @@ const ItemList: PluginFC<{
           React={React}
           getRelatedItemClassConfiguration={getRelatedClassConfig}
           itemData={item.data}
+          css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
         />
       </Button>
     );
@@ -287,7 +292,7 @@ const ItemDetails: PluginFC<{
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
   itemID?: string
 }> = function ({ React, itemClass, itemID, getRelatedClass, useRegisterItemData }) {
-  let details: JSX.Element
+  let details: JSX.Element;
 
   const itemPath = `${itemClass.meta.id}/${itemID}`;
 
@@ -298,11 +303,11 @@ const ItemDetails: PluginFC<{
 
   const ItemTitle = itemClass.views.listItemView;
 
-  if (itemResponse.isUpdating) {
-    details = <NonIdealState icon={<Spinner />} />;
+  if (itemID === undefined) {
+    return <NonIdealState title="No item is selected" />;
 
-  } else if (itemID === undefined) {
-    details = <NonIdealState title="No item is selected" />;
+  } else if (itemResponse.isUpdating) {
+    details = <div className={Classes.SKELETON}>Loading…</div>;
 
   } else if (item) {
     const DetailView = itemClass.views.detailView;
@@ -318,6 +323,21 @@ const ItemDetails: PluginFC<{
 
   } else {
     details = <NonIdealState title="Item data not available" />;
+  }
+
+  function StyledTitle(props: PluginComponentProps & RegistryItemViewProps<any>) {
+    const Component = itemResponse.isUpdating
+      ? (props: { className?: string }) => <span className={props.className}><span className={Classes.SKELETON}>Loading…</span>&emsp;</span>
+      : ItemTitle;
+
+    return <Component
+      css={css`
+        margin-top: 1em; font-weight: bold; font-size: 110%;
+        line-height: 1;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      `}
+      {...props}
+    />;
   }
 
   return (
@@ -341,13 +361,10 @@ const ItemDetails: PluginFC<{
                 value={`acceped ${item?.dateAccepted?.toLocaleDateString() || '—'}`}
               />
             </ControlGroup>
-            {item
-              ? <ItemTitle
-                  React={React}
-                  itemData={item.data}
-                  getRelatedItemClassConfiguration={getRelatedClass}
-                  css={css`margin-top: 1em; font-weight: bold; font-size: 110%;`} />
-              : null}
+            <StyledTitle
+              React={React}
+              itemData={item?.data || {}}
+              getRelatedItemClassConfiguration={getRelatedClass} />
           </div>
         : null}
 
