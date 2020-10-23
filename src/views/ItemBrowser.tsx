@@ -192,7 +192,7 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
   }
 
   return (
-    <div css={css`flex-shrink: 0; flex-basis: 30vw; background: ${Colors.WHITE}`}>
+    <div css={css`flex-shrink: 0; flex-basis: 300px; background: ${Colors.WHITE}`}>
       {el}
     </div>
   );
