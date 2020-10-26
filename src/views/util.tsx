@@ -14,9 +14,14 @@ type BrowserCtx = { jumpToItem: (classID: string, itemID: string) => void }
 export const BrowserCtx = React.createContext<BrowserCtx>({ jumpToItem: () => {} });
 
 
-export const PropertyDetailView: React.FC<{ inline?: IFormGroupProps["inline"], title: string }> = function ({ title, inline, children }) {
+export const PropertyDetailView: React.FC<{
+  title: IFormGroupProps["label"]
+  secondaryTitle?: IFormGroupProps["labelInfo"]
+  inline?: IFormGroupProps["inline"]
+}> = function ({ title, inline, children, secondaryTitle }) {
   return <FormGroup
       label={`${title}:`}
+      labelInfo={secondaryTitle}
       css={css`&, &.bp3-inline { label.bp3-label { font-weight: bold; line-height: unset } }`}
       inline={inline}>
     {children}
