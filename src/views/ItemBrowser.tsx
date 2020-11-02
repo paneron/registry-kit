@@ -5,7 +5,7 @@ import { debounce } from 'throttle-debounce';
 
 import log from 'electron-log';
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
 import {
@@ -27,9 +27,9 @@ export const RegisterItemBrowser: PluginFC<
   Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration'> & {
   useRegisterItemData: RegisterItemDataHook
 }> =
-function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useRegisterItemData }) {
-  const [selectedItem, selectItem] = React.useState<string | undefined>(undefined);
-  const [selectedClass, selectClass] = React.useState<string | undefined>(undefined);
+function ({ itemClassConfiguration, useObjectData, useObjectPaths, useRegisterItemData }) {
+  const [selectedItem, selectItem] = useState<string | undefined>(undefined);
+  const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
   const itemClasses = Object.keys(itemClassConfiguration);
 
@@ -38,7 +38,7 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
     selectItem(itemID);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedClass === undefined && itemClasses.length > 0) {
       selectClass(itemClasses[0]);
     }
@@ -52,7 +52,6 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
     Item class
     &emsp;
     <ItemClassSelector
-      React={React}
       itemClasses={itemClassConfiguration}
       selectedClassID={selectedClass}
       onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
@@ -92,10 +91,9 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
 
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
-      <MainView React={React} title={classSelector}>
+      <MainView title={classSelector}>
 
         <ItemBrowser
-          React={React}
           itemClasses={itemClassConfiguration}
 
           selectedClassID={selectedClass}
@@ -109,7 +107,6 @@ function ({ React, itemClassConfiguration, useObjectData, useObjectPaths, useReg
 
         <ErrorBoundary>
           <ItemDetails
-            React={React}
             useRegisterItemData={useRegisterItemData}
             getRelatedClass={_getRelatedClass(itemClassConfiguration)}
             itemClass={itemClassConfiguration[selectedClass]}
@@ -155,7 +152,7 @@ const ItemBrowser: PluginFC<{
   useObjectData: RegistryViewProps["useObjectData"]
   onSelectItem: (item: string | undefined) => void
 }> =
-function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectPaths, useRegisterItemData }) {
+function ({ itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectPaths, useRegisterItemData }) {
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 
@@ -182,7 +179,6 @@ function ({ React, itemClasses, selectedItem, selectedClassID, onSelectItem, use
 
     el = (
       <ItemList
-        React={React}
         items={orderedItems}
         classConfig={itemClasses[selectedClassID]}
         getRelatedClassConfig={getRelatedClass}
@@ -205,16 +201,16 @@ const ItemList: PluginFC<{
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
-}> = function ({ React, items, selectedItem, onSelectItem, classConfig, getRelatedClassConfig }) {
+}> = function ({ items, selectedItem, onSelectItem, classConfig, getRelatedClassConfig }) {
 
   const CONTAINER_PADDINGS = 0;
   const itemCount = items.length;
 
-  const listContainer = React.useRef<HTMLDivElement>(null);
-  const listEl = React.useRef<List>(null);
-  const [listHeight, setListHeight] = React.useState<number>(CONTAINER_PADDINGS);
+  const listContainer = useRef<HTMLDivElement>(null);
+  const listEl = useRef<List>(null);
+  const [listHeight, setListHeight] = useState<number>(CONTAINER_PADDINGS);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const updateListHeight = debounce(100, () => {
       setListHeight(listContainer.current?.parentElement?.offsetHeight || CONTAINER_PADDINGS);
       setImmediate(() => {
@@ -253,7 +249,6 @@ const ItemList: PluginFC<{
                     & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }`}
           onClick={handleClick}>
         <View
-          React={React}
           getRelatedItemClassConfiguration={getRelatedClassConfig}
           itemData={item.data}
           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
@@ -291,7 +286,7 @@ const ItemDetails: PluginFC<{
   useRegisterItemData: RegisterItemDataHook
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
   itemID?: string
-}> = function ({ React, itemClass, itemID, getRelatedClass, useRegisterItemData }) {
+}> = function ({ itemClass, itemID, getRelatedClass, useRegisterItemData }) {
   let details: JSX.Element;
 
   const itemPath = `${itemClass.meta.id}/${itemID}`;
@@ -314,7 +309,6 @@ const ItemDetails: PluginFC<{
 
     details = (
       <DetailView
-        React={React}
         getRelatedItemClassConfiguration={getRelatedClass}
         useRegisterItemData={useRegisterItemData}
         itemData={item.data}
@@ -362,7 +356,6 @@ const ItemDetails: PluginFC<{
               />
             </ControlGroup>
             <StyledTitle
-              React={React}
               itemData={item?.data || {}}
               getRelatedItemClassConfiguration={getRelatedClass} />
           </div>

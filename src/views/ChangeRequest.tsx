@@ -1,9 +1,12 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
 import log from 'electron-log';
 
 import yaml from 'js-yaml';
 import update from 'immutability-helper';
+
+import React, { useState } from 'react';
 
 import { jsx, css } from '@emotion/core';
 
@@ -46,14 +49,13 @@ export const ChangeRequestView: PluginFC<
   onSave?: (crID: string, newValue: ChangeRequest, oldValue: ChangeRequest) => Promise<void>
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
 }> = function ({
-    React,
     useObjectData, makeRandomID,
     itemClassConfiguration, id, stakeholder,
     changeObjects,
     useRegisterItemData,
     onSave, onDelete }) {
 
-  const [selectedItem, selectItem] = React.useState<string>('justification');
+  const [selectedItem, selectItem] = useState<string>('justification');
 
   const objectPath = `change-requests/${id}.yaml`;
   const crData = useObjectData({ [objectPath]: 'utf-8' as const });
@@ -71,7 +73,7 @@ export const ChangeRequestView: PluginFC<
 
   const itemData: Record<string, RegisterItem<any>> = useRegisterItemData(itemDataRequest).value;
 
-  const [edited, updateEdited] = React.useState<ChangeRequest | null>(null);
+  const [edited, updateEdited] = useState<ChangeRequest | null>(null);
 
   let el: JSX.Element;
 
@@ -272,7 +274,6 @@ export const ChangeRequestView: PluginFC<
     let detailView: JSX.Element;
     if (selectedItem === 'justification') {
       detailView = <CRJustification
-        React={React}
         value={cr.justification}
         onChange={canEdit
           ? (justification) => updateEdited({ ...cr, justification })
@@ -280,7 +281,6 @@ export const ChangeRequestView: PluginFC<
       />;
     } else if (selectedItem === 'control-body') {
       detailView = <CRControlBodyInput
-        React={React}
         value={{ notes: cr.controlBodyNotes, event: cr.controlBodyDecisionEvent }}
         onChange={canReview
           ? (controlBodyNotes, controlBodyDecisionEvent) =>
@@ -289,7 +289,6 @@ export const ChangeRequestView: PluginFC<
       />;
     } else if (selectedItem === 'manager') {
       detailView = <CRManagerNotes
-        React={React}
         value={cr.registerManagerNotes}
         onChange={canReview
           ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
@@ -299,7 +298,7 @@ export const ChangeRequestView: PluginFC<
       detailView = <NonIdealState
         description={
           canEdit
-          ? <React.Fragment>
+          ? <>
               <Callout style={{ textAlign: 'left', marginBottom: '1rem' }} title="Managing your proposals" intent="primary">
                 <p>
                   Select a proposed change on the left to&nbsp;view or&nbsp;edit&nbsp;it.
@@ -322,7 +321,7 @@ export const ChangeRequestView: PluginFC<
                   />
                 )}
               </Menu>
-            </React.Fragment>
+            </>
           : <Callout style={{ textAlign: 'left' }} title="Reviewing proposed changes" intent="primary">
               Select a proposed change on the left.
             </Callout>
@@ -337,7 +336,6 @@ export const ChangeRequestView: PluginFC<
       if (classConfig && (existingItemData || proposal.type === 'addition')) {
         try {
           detailView = <ProposalDetails
-            React={React}
             value={proposal}
             classConfig={classConfig}
             existingItemData={existingItemData || undefined}
@@ -374,10 +372,9 @@ export const ChangeRequestView: PluginFC<
     }
 
     el = (
-      <MainView React={React} title="Change request" secondaryTitle={actions}>
+      <MainView title="Change request" secondaryTitle={actions}>
         <div css={css`flex-shrink: 0; width: 30vw; display: flex; flex-flow: column nowrap; background: ${Colors.WHITE}`}>
           <CRNavigation
-            React={React}
             itemClassConfiguration={itemClassConfiguration}
             proposals={cr.proposals}
             itemData={itemData}
@@ -412,7 +409,7 @@ const CRNavigation: PluginFC<
   onSelect: (item: string) => void
 }> =
 function ({
-    React, itemData, proposals, itemClassConfiguration,
+    itemData, proposals, itemClassConfiguration,
     onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
 
@@ -456,13 +453,11 @@ function ({
         label = <View
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
-          React={React}
           itemData={proposal.payload} />;
       } else if (data !== undefined) {
         label = <View
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
-          React={React}
           itemData={data} />;
       } else {
         label = <span>Unable to read item</span>;
@@ -510,7 +505,7 @@ const CRJustification: PluginFC<{
 const CRControlBodyInput: PluginFC<{
   value: { notes: string | undefined, event: string | undefined }
   onChange?: (notes: string | undefined, event: string | undefined) => void
-}> = function ({ React, value, onChange }) {
+}> = function ({ value, onChange }) {
   function handleNotesChange(evt: React.FormEvent<HTMLTextAreaElement>) {
     onChange ? onChange(evt.currentTarget.value || undefined, value.event) : void 0;
   }
@@ -518,7 +513,7 @@ const CRControlBodyInput: PluginFC<{
     onChange ? onChange(value.notes, evt.currentTarget.value || undefined) : void 0;
   }
   return (
-    <React.Fragment>
+    <>
       <FormGroup label="Control body notes">
         <TextArea fill
           disabled={!onChange} value={value.notes || ''}
@@ -529,7 +524,7 @@ const CRControlBodyInput: PluginFC<{
           disabled={!onChange} value={value.event || ''}
           onChange={handleEventChange} />
       </FormGroup>
-    </React.Fragment>
+    </>
   );
 };
 
@@ -562,7 +557,7 @@ const ProposalDetails: PluginFC<{
   onChange?: (val: ChangeProposal) => void
   onDelete?: () => void
 }> = function ({
-    React, value, onChange, ItemView,
+    value, onChange, ItemView,
     existingItemData, classConfig, getRelatedClass,
     useRegisterItemData }) {
   let itemView: JSX.Element;
@@ -600,7 +595,6 @@ const ProposalDetails: PluginFC<{
   } else if (onChange && value.type !== 'amendment') {
     const View = ItemView as ItemEditView<any>;
     itemView = <View
-      React={React}
       itemData={itemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       onChange={onChange
@@ -609,7 +603,6 @@ const ProposalDetails: PluginFC<{
   } else {
     const View = ItemView as ItemDetailView<any>;
     itemView = <View
-      React={React}
       useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       itemData={itemData} />;

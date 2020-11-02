@@ -1,5 +1,7 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
+import React from 'react';
 import { H3, Navbar, NavbarDivider } from '@blueprintjs/core';
 
 import { css, jsx } from '@emotion/core';
@@ -10,7 +12,7 @@ export const MainView: PluginFC<{
   title: JSX.Element | string
   secondaryTitle?: JSX.Element
 }> =
-function ({ React, title, secondaryTitle, children }) {
+function ({ title, secondaryTitle, children }) {
   return (
     <div css={css`flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
       <Navbar>
@@ -21,12 +23,12 @@ function ({ React, title, secondaryTitle, children }) {
         </Navbar.Group>
         {secondaryTitle
           ? <Navbar.Group align="right">
-              <React.Fragment>
+              <>
                 <NavbarDivider />
                 <div>
                   {secondaryTitle}
                 </div>
-              </React.Fragment>
+              </>
             </Navbar.Group>
           : null}
       </Navbar>

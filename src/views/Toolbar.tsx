@@ -2,6 +2,8 @@
 
 import yaml from 'js-yaml';
 
+import { useState } from 'react';
+
 import { css, jsx } from '@emotion/core';
 
 import {
@@ -24,7 +26,7 @@ export const Toolbar: PluginFC<
   onSelectCR?: (crID: string | undefined) => void
   register: Partial<Register>
   stakeholder: RegisterStakeholder | undefined
-}> = function ({ React, register, stakeholder,
+}> = function ({ register, stakeholder,
     useObjectData, useObjectPaths,
     selectedCRID, onSelectCR,
     registerInfoOpen, onOpenRegisterInfo }) {
@@ -71,7 +73,6 @@ export const Toolbar: PluginFC<
       {stakeholder
         ? <Navbar.Group align="right">
             <CRSelector
-              React={React}
               selectedCRID={selectedCRID}
               onSelectCR={onSelectCR}
               useObjectData={useObjectData}
@@ -87,8 +88,8 @@ const CRSelector: PluginFC<
   Pick<RegistryViewProps, 'useObjectPaths' | 'useObjectData'> & {
   selectedCRID?: string
   onSelectCR?: (crID: string | undefined) => void
-}> = function ({ React, selectedCRID, useObjectPaths, useObjectData, onSelectCR }) {
-  const [_selectedCR, _selectCR] = React.useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
+}> = function ({ selectedCRID, useObjectPaths, useObjectData, onSelectCR }) {
+  const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
 
   const crObjectPaths = useObjectPaths({ pathPrefix: 'change-requests' }).value;
 

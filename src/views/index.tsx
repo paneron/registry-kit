@@ -3,6 +3,7 @@
 import yaml from 'js-yaml';
 import log from 'electron-log';
 
+import React, { useState } from 'react';
 import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
@@ -35,15 +36,15 @@ function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 
 export const RegistryView: React.FC<RegistryViewProps> =
 function ({
-    React, makeRandomID, title,
+    makeRandomID, title,
     useObjectPaths, useObjectData,
     useRemoteUsername,
     itemClassConfiguration,
     changeObjects }) {
 
-  const [registerInfoOpen, setRegisterInfoOpen] = React.useState(false);
-  const [selectedCRID, selectCR] = React.useState<string | undefined>(undefined);
-  const [isBusy, setBusy] = React.useState(false);
+  const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
+  const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
+  const [isBusy, setBusy] = useState(false);
 
   const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
@@ -144,7 +145,6 @@ function ({
 
   if (registerInfoOpen) {
     mainViewEl = <RegisterInformation
-      React={React}
       register={registerInfo}
       stakeholder={stakeholder}
       onSave={(!isBusy && (stakeholder?.role === 'owner' || registerInfo?.stakeholders === undefined))
@@ -155,7 +155,6 @@ function ({
   } else if (selectedCRID) {
     if (stakeholder) {
       mainViewEl = <ChangeRequestView
-        React={React}
         id={selectedCRID}
         itemClassConfiguration={itemClassConfiguration}
 
@@ -180,7 +179,6 @@ function ({
     }
   } else {
     mainViewEl = <RegisterItemBrowser
-      React={React}
       itemClassConfiguration={itemClassConfiguration}
       useRegisterItemData={useRegisterItemData}
       useObjectData={useObjectData}
@@ -194,7 +192,6 @@ function ({
       {mainViewEl}
 
       <Toolbar
-        React={React}
         title={title}
 
         registerInfoOpen={registerInfoOpen}

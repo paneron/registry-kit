@@ -3,6 +3,8 @@
 import { jsx, css } from '@emotion/core';
 import update, { Spec } from 'immutability-helper';
 
+import { useState } from 'react';
+
 import { Button, ControlGroup, FormGroup, HTMLSelect, HTMLTable, InputGroup, TextArea } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
@@ -14,9 +16,9 @@ export const RegisterInformation: PluginFC<{
   register: Partial<Register> | null
   stakeholder?: RegisterStakeholder
   onSave?: (value: Partial<Register>, oldValue: Partial<Register> | null) => void
-}> = function ({ React, register, stakeholder, onSave }) {
+}> = function ({ register, stakeholder, onSave }) {
 
-  const [editedValue, setEditedValue] = React.useState<Partial<Register> | null>(null);
+  const [editedValue, setEditedValue] = useState<Partial<Register> | null>(null);
 
   const _r = editedValue || register;
 
@@ -31,8 +33,8 @@ export const RegisterInformation: PluginFC<{
     : undefined;
 
   return (
-    <MainView React={React} title="Register information" secondaryTitle={saveAction}>
-      <RegisterForm React={React} value={_r || {}} onChange={onSave ? setEditedValue : undefined} />
+    <MainView title="Register information" secondaryTitle={saveAction}>
+      <RegisterForm value={_r || {}} onChange={onSave ? setEditedValue : undefined} />
     </MainView>
   );
 };
@@ -41,7 +43,7 @@ export const RegisterInformation: PluginFC<{
 const RegisterForm: PluginFC<{
   value: Partial<Register>
   onChange?: (newValue: Partial<Register>) => void
-}> = function ({ React, value, onChange }) {
+}> = function ({ value, onChange }) {
 
   function handleNameChange(evt: React.FormEvent<HTMLInputElement>) {
     onChange!({ ...value, name: evt.currentTarget.value });
