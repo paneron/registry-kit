@@ -8,8 +8,8 @@ import { css, jsx } from '@emotion/core';
 
 import {
   Button, Colors, ControlGroup, IButtonProps, IOptionProps,
-  Navbar, NavbarDivider, NavbarHeading,
-  HTMLSelect
+  Navbar, NavbarHeading,
+  HTMLSelect,
 } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
@@ -26,10 +26,14 @@ export const Toolbar: PluginFC<
   onSelectCR?: (crID: string | undefined) => void
   register: Partial<Register>
   stakeholder: RegisterStakeholder | undefined
-}> = function ({ register, stakeholder,
-    useObjectData, useObjectPaths,
-    selectedCRID, onSelectCR,
-    registerInfoOpen, onOpenRegisterInfo }) {
+}> = function ({
+  register, stakeholder,
+  useObjectData, useObjectPaths,
+  selectedCRID,
+  onSelectCR,
+  registerInfoOpen,
+  onOpenRegisterInfo,
+}) {
 
   const registerInfoComplete = (
     register.id !== undefined &&
@@ -42,7 +46,6 @@ export const Toolbar: PluginFC<
   );
 
   const registerInfoButtonProps: Partial<IButtonProps> = {
-    minimal: true,
     disabled: !onOpenRegisterInfo,
     active: registerInfoOpen,
     onClick: () => onOpenRegisterInfo ? onOpenRegisterInfo(!registerInfoOpen) : void 0,
@@ -55,10 +58,11 @@ export const Toolbar: PluginFC<
           {register.name || '(unnamed register)'}
         </NavbarHeading>
 
-        <NavbarDivider />
+      </Navbar.Group>
 
+      <Navbar.Group align="right">
         {!registerInfoComplete
-          ? <Button icon="warning-sign" rightIcon="edit" intent="warning" {...registerInfoButtonProps}>
+          ? <Button icon="warning-sign" rightIcon="edit" {...registerInfoButtonProps}>
               Complete register information
             </Button>
           : stakeholder?.role === 'owner'
@@ -68,17 +72,15 @@ export const Toolbar: PluginFC<
             : <Button icon="info-sign" {...registerInfoButtonProps}>
                 View register information
               </Button>}
-      </Navbar.Group>
 
-      {stakeholder
-        ? <Navbar.Group align="right">
-            <CRSelector
-              selectedCRID={selectedCRID}
-              onSelectCR={onSelectCR}
-              useObjectData={useObjectData}
-              useObjectPaths={useObjectPaths} />
-          </Navbar.Group>
-        : null}
+        <Navbar.Divider />
+
+        <CRSelector
+          selectedCRID={selectedCRID}
+          onSelectCR={onSelectCR}
+          useObjectData={useObjectData}
+          useObjectPaths={useObjectPaths} />
+      </Navbar.Group>
     </Navbar>
   );
 };

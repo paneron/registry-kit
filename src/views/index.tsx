@@ -36,11 +36,14 @@ function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 
 export const RegistryView: React.FC<RegistryViewProps> =
 function ({
-    makeRandomID, title,
-    useObjectPaths, useObjectData,
-    useRemoteUsername,
-    itemClassConfiguration,
-    changeObjects }) {
+  title,
+  itemClassConfiguration,
+  subregisters,
+  makeRandomID,
+  useObjectPaths, useObjectData,
+  useRemoteUsername,
+  changeObjects
+}) {
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
@@ -150,12 +153,13 @@ function ({
       onSave={(!isBusy && (stakeholder?.role === 'owner' || registerInfo?.stakeholders === undefined))
         ? handleSaveRegisterInfo
         : undefined}
-
     />;
+
   } else if (selectedCRID) {
     if (stakeholder) {
       mainViewEl = <ChangeRequestView
         id={selectedCRID}
+        stakeholder={stakeholder}
         itemClassConfiguration={itemClassConfiguration}
 
         useObjectData={useObjectData}
@@ -163,7 +167,6 @@ function ({
         useRegisterItemData={useRegisterItemData}
         makeRandomID={makeRandomID}
 
-        stakeholder={stakeholder}
         onDelete={(!isBusy && stakeholder !== undefined)
           ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
           : undefined}
@@ -171,12 +174,14 @@ function ({
           ? handleSaveCR
           : undefined}
       />;
+
     } else {
       mainViewEl = <NonIdealState
         icon="heart-broken"
         title="Cannot open change request"
         description="Your stakeholder information is missing" />;
     }
+
   } else {
     mainViewEl = <RegisterItemBrowser
       itemClassConfiguration={itemClassConfiguration}
@@ -188,8 +193,6 @@ function ({
 
   return (
     <div css={css`flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-
-      {mainViewEl}
 
       <Toolbar
         title={title}
@@ -210,6 +213,9 @@ function ({
         useObjectData={useObjectData}
         useObjectPaths={useObjectPaths}
       />
+
+      {mainViewEl}
+
     </div>
   );
 };

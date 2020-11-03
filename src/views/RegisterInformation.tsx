@@ -33,7 +33,7 @@ export const RegisterInformation: PluginFC<{
     : undefined;
 
   return (
-    <MainView title="Register information" secondaryTitle={saveAction}>
+    <MainView actions={saveAction}>
       <RegisterForm value={_r || {}} onChange={onSave ? setEditedValue : undefined} />
     </MainView>
   );

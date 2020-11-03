@@ -26,8 +26,13 @@ import { BrowserCtx, _getRelatedClass } from './util';
 export const RegisterItemBrowser: PluginFC<
   Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration'> & {
   useRegisterItemData: RegisterItemDataHook
-}> =
-function ({ itemClassConfiguration, useObjectData, useObjectPaths, useRegisterItemData }) {
+}> = function ({
+  itemClassConfiguration,
+  useObjectData,
+  useObjectPaths,
+  useRegisterItemData,
+}) {
+
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
@@ -47,15 +52,6 @@ function ({ itemClassConfiguration, useObjectData, useObjectPaths, useRegisterIt
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
   }
-
-  const classSelector = <div css={css`display: flex; flex-flow: row nowrap; align-items: center; white-space: nowrap;`}>
-    Item class
-    &emsp;
-    <ItemClassSelector
-      itemClasses={itemClassConfiguration}
-      selectedClassID={selectedClass}
-      onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
-  </div>;
 
   class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
     constructor(props: any) {
@@ -91,19 +87,38 @@ function ({ itemClassConfiguration, useObjectData, useObjectPaths, useRegisterIt
 
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
-      <MainView title={classSelector}>
+      <MainView>
 
-        <ItemBrowser
-          itemClasses={itemClassConfiguration}
+        <div
+            className={Classes.ELEVATION_1}
+            css={css`
+              flex-shrink: 0;
+              flex-basis: 300px;
+              display: flex;
+              flex-flow: column nowrap;
+              background: ${Colors.WHITE};
+            `}>
 
-          selectedClassID={selectedClass}
-          selectedItem={selectedItem}
+          <ItemClassSelector
+            css={css`select { font-weight: bold; }`}
+            itemClasses={itemClassConfiguration}
+            selectedClassID={selectedClass}
+            onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
 
-          onSelectItem={selectItem}
-          useObjectData={useObjectData}
-          useObjectPaths={useObjectPaths}
-          useRegisterItemData={useRegisterItemData}
-        />
+          <ItemBrowser
+            css={css`flex: 1`}
+            itemClasses={itemClassConfiguration}
+
+            selectedClassID={selectedClass}
+            selectedItem={selectedItem}
+
+            onSelectItem={selectItem}
+            useObjectData={useObjectData}
+            useObjectPaths={useObjectPaths}
+            useRegisterItemData={useRegisterItemData}
+          />
+
+        </div>
 
         <ErrorBoundary>
           <ItemDetails
@@ -123,7 +138,13 @@ const ItemClassSelector: PluginFC<{
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   selectedClassID: string | undefined
   onSelectClass: (classID: string) => void
-}> = function ({ itemClasses, selectedClassID, onSelectClass }) {
+  className?: string
+}> = function ({
+  itemClasses,
+  selectedClassID,
+  onSelectClass,
+  className,
+}) {
 
   const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
   map(([classID, classData]) => {
@@ -132,6 +153,7 @@ const ItemClassSelector: PluginFC<{
 
   return (
     <HTMLSelect
+      className={className}
       fill
       minimal
       options={itemClassChoices}
@@ -151,8 +173,17 @@ const ItemBrowser: PluginFC<{
   useObjectPaths: RegistryViewProps["useObjectPaths"]
   useObjectData: RegistryViewProps["useObjectData"]
   onSelectItem: (item: string | undefined) => void
-}> =
-function ({ itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectPaths, useRegisterItemData }) {
+
+  className?: string
+}> = function ({
+  itemClasses,
+  selectedItem,
+  selectedClassID,
+  onSelectItem,
+  useObjectPaths,
+  useRegisterItemData,
+  className,
+}) {
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 
@@ -173,6 +204,7 @@ function ({ itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectP
 
   if (objectPathsQuery.isUpdating || items.isUpdating) {
     el = <NonIdealState icon={<Spinner />} />;
+
   } else {
     let orderedItems = Object.values(items.value);
     orderedItems.sort((a, b) => classConfig.itemSorter(a.data, b.data));
@@ -188,7 +220,7 @@ function ({ itemClasses, selectedItem, selectedClassID, onSelectItem, useObjectP
   }
 
   return (
-    <div css={css`flex-shrink: 0; flex-basis: 300px; background: ${Colors.WHITE}`}>
+    <div className={className}>
       {el}
     </div>
   );
@@ -201,7 +233,13 @@ const ItemList: PluginFC<{
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
-}> = function ({ items, selectedItem, onSelectItem, classConfig, getRelatedClassConfig }) {
+}> = function ({
+  items,
+  selectedItem,
+  classConfig,
+  onSelectItem,
+  getRelatedClassConfig,
+}) {
 
   const CONTAINER_PADDINGS = 0;
   const itemCount = items.length;
@@ -321,7 +359,11 @@ const ItemDetails: PluginFC<{
 
   function StyledTitle(props: PluginComponentProps & RegistryItemViewProps<any>) {
     const Component = itemResponse.isUpdating
-      ? (props: { className?: string }) => <span className={props.className}><span className={Classes.SKELETON}>Loading…</span>&emsp;</span>
+      ? (props: { className?: string }) =>
+          <span className={props.className}>
+            <span className={Classes.SKELETON}>Loading…</span>
+            &emsp;
+          </span>
       : ItemTitle;
 
     return <Component
@@ -335,7 +377,7 @@ const ItemDetails: PluginFC<{
   }
 
   return (
-    <div className={Classes.ELEVATION_1} css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem;`}>
+    <div css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem;`}>
       {itemID
         ? <div css={css`flex-shrink: 0; margin-bottom: 1rem; display: flex; flex-flow: column nowrap;`}>
             <ControlGroup>
@@ -363,7 +405,8 @@ const ItemDetails: PluginFC<{
 
       <div
           css={css`
-            flex: 1; overflow-y: auto; padding: 1rem; border-radius: .5rem; background: ${Colors.WHITE};
+            flex: 1; overflow-y: auto; padding: 1rem;
+            border-radius: .5rem; background: ${Colors.WHITE};
             position: relative;
           `}
           className={Classes.ELEVATION_3}>

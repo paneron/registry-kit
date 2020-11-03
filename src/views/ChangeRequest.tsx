@@ -372,7 +372,7 @@ export const ChangeRequestView: PluginFC<
     }
 
     el = (
-      <MainView title="Change request" secondaryTitle={actions}>
+      <MainView actions={actions}>
         <div css={css`flex-shrink: 0; width: 30vw; display: flex; flex-flow: column nowrap; background: ${Colors.WHITE}`}>
           <CRNavigation
             itemClassConfiguration={itemClassConfiguration}
