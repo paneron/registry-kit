@@ -3,7 +3,7 @@
 import yaml from 'js-yaml';
 import log from 'electron-log';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
@@ -34,8 +34,7 @@ function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 };
 
 
-export const RegistryView: React.FC<RegistryViewProps> =
-function ({
+export const RegistryView: React.FC<RegistryViewProps> = function ({
   title,
   itemClassConfiguration,
   subregisters,
@@ -46,18 +45,28 @@ function ({
 }) {
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
+  const [selectedSubregisterID, selectSubregisterID] = useState<undefined | string>(undefined);
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
   const [isBusy, setBusy] = useState(false);
 
   const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
   const registerObject = useObjectData({ 'register.yaml': 'utf-8' }).value['register.yaml']?.value;
-  const registerInfo: Partial<Register> | null = registerObject ? yaml.load(registerObject as string) : null;
+  const registerInfo: Partial<Register> | null = registerObject
+    ? yaml.load(registerObject as string)
+    : null;
 
   const stakeholder: RegisterStakeholder | undefined = remoteUsername
     ? (registerInfo?.stakeholders || []).
       find(s => s.gitServerUsername === remoteUsername)
     : undefined;
+
+  useEffect(() => {
+    const subregisterIDs = Object.keys(subregisters || {});
+    if (subregisterIDs.length > 0) {
+      selectSubregisterID(subregisterIDs[0]);
+    }
+  }, [Object.keys(subregisters || {}).length]);
 
   const useRegisterItemData: RegisterItemDataHook = (paths: ObjectDataRequest) => {
     const dataRequest: ObjectDataRequest = Object.keys(paths).map(path => {
@@ -185,6 +194,11 @@ function ({
   } else {
     mainViewEl = <RegisterItemBrowser
       itemClassConfiguration={itemClassConfiguration}
+      onSubregisterChange={selectSubregisterID}
+      selectedSubregisterID={selectedSubregisterID}
+      availableClassIDs={selectedSubregisterID
+        ? subregisters?.[selectedSubregisterID]?.itemClasses
+        : undefined}
       useRegisterItemData={useRegisterItemData}
       useObjectData={useObjectData}
       useObjectPaths={useObjectPaths}
@@ -197,6 +211,13 @@ function ({
       <Toolbar
         title={title}
 
+        register={registerInfo || {}}
+        stakeholder={stakeholder}
+
+        subregisters={subregisters}
+        selectedSubregisterID={selectedSubregisterID}
+        onSelectSubregister={selectSubregisterID}
+
         registerInfoOpen={registerInfoOpen}
         onOpenRegisterInfo={(selectedCRID === undefined && !isBusy)
           ? setRegisterInfoOpen
@@ -206,9 +227,6 @@ function ({
         onSelectCR={(!registerInfoOpen && !isBusy)
           ? handleSelectCR
           : undefined}
-
-        register={registerInfo || {}}
-        stakeholder={stakeholder}
 
         useObjectData={useObjectData}
         useObjectPaths={useObjectPaths}

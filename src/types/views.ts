@@ -10,16 +10,21 @@ export type ItemClassConfigurationSet = {
   [itemClassID: string]: ItemClassConfiguration<any>
 };
 
-export interface RegisterConfiguration {
-  itemClassConfiguration: ItemClassConfigurationSet
+export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
+  itemClassConfiguration: Items
 }
 
-export type Subregisters = {
-  [subregisterID: string]: RegisterConfiguration
+export type Subregisters<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> = {
+  [subregisterID: string]: {
+    title: string
+    itemClasses: (keyof Items)[]
+  }
 };
 
-export interface RegistryViewProps extends RepositoryViewProps, RegisterConfiguration {
-  subregisters: Subregisters
+export interface RegistryViewProps
+<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>>
+extends RepositoryViewProps, RegisterConfiguration<Items> {
+  subregisters?: Subregisters<Items>
 }
 
 export type RegistryView = React.FC<RegistryViewProps>
@@ -40,7 +45,7 @@ export interface RegistryItemViewProps<P extends Payload> {
 }
 
 export interface GenericRelatedItemViewProps {
-  itemRef: { classID: string, itemID: string }
+  itemRef: { classID: string, itemID: string, subregisterID?: string }
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: RegistryItemViewProps<any>["getRelatedItemClassConfiguration"]
   className?: string
@@ -55,7 +60,7 @@ export type ItemDetailView<P> = PluginFC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook
 }>;
 
-export type ItemListView<P> = PluginFC<RegistryItemViewProps<P>>;
+export type ItemListView<P> = PluginFC<RegistryItemViewProps<P> & { itemID: string }>;
 export type LazyItemView = PluginFC<{ itemID: string }>;
 
 export interface ItemClassConfiguration<P extends Payload> {

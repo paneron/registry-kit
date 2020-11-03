@@ -440,7 +440,7 @@ function ({
     isSelected: selectedItem === 'proposals',
     hasCaret: Object.keys(proposals).length > 0,
     childNodes: [ ...Object.entries(proposals).map(([itemIDWithClass, proposal]) => {
-      const classID = itemIDWithClass.split('/')[0]
+      const [classID, itemID] = itemIDWithClass.split('/');
       const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
       const View = clsConfig?.views.listItemView;
       const data = itemData[itemIDWithClass]?.data || undefined;
@@ -451,11 +451,13 @@ function ({
         label = <span>{itemIDWithClass}</span>;
       } else if (proposal.type === 'addition') {
         label = <View
+          itemID={itemID}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
           itemData={proposal.payload} />;
       } else if (data !== undefined) {
         label = <View
+          itemID={itemID}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
           itemData={data} />;

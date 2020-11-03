@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
 import yaml from 'js-yaml';
 
@@ -10,29 +11,47 @@ import {
   Button, Colors, ControlGroup, IButtonProps, IOptionProps,
   Navbar, NavbarHeading,
   HTMLSelect,
+  Tooltip,
 } from '@blueprintjs/core';
 
 import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
-import { ChangeRequest, Register, RegisterStakeholder, RegistryViewProps } from '../types';
+import { ChangeRequest, Register, RegisterStakeholder, RegistryViewProps, Subregisters } from '../types';
 import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
+
+
+const NO_SELECTED_SUBREGISTER_OPTION = '—';
 
 
 export const Toolbar: PluginFC<
   Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths'> & {
   title: string
-  registerInfoOpen: boolean
-  onOpenRegisterInfo?: (state: boolean) => void
-  selectedCRID?: string
-  onSelectCR?: (crID: string | undefined) => void
   register: Partial<Register>
   stakeholder: RegisterStakeholder | undefined
+
+  registerInfoOpen: boolean
+  onOpenRegisterInfo?: (state: boolean) => void
+
+  subregisters?: Subregisters<any>
+  selectedSubregisterID?: string
+  onSelectSubregister?: (subregID: string | undefined) => void
+
+  selectedCRID?: string
+  onSelectCR?: (crID: string | undefined) => void
 }> = function ({
-  register, stakeholder,
-  useObjectData, useObjectPaths,
-  selectedCRID,
-  onSelectCR,
+  register,
+  stakeholder,
   registerInfoOpen,
   onOpenRegisterInfo,
+
+  subregisters,
+  selectedSubregisterID,
+  onSelectSubregister,
+
+  selectedCRID,
+  onSelectCR,
+
+  useObjectData,
+  useObjectPaths,
 }) {
 
   const registerInfoComplete = (
@@ -45,36 +64,60 @@ export const Toolbar: PluginFC<
     register.stakeholders !== undefined
   );
 
-  const registerInfoButtonProps: Partial<IButtonProps> = {
+  const _registerInfoButtonProps: Partial<IButtonProps> = {
     disabled: !onOpenRegisterInfo,
     active: registerInfoOpen,
     onClick: () => onOpenRegisterInfo ? onOpenRegisterInfo(!registerInfoOpen) : void 0,
   };
 
+  const registerInfoButtonProps: IButtonProps = stakeholder?.role === 'owner'
+    ? !registerInfoComplete
+      ? { ..._registerInfoButtonProps, icon: 'warning-sign', rightIcon: 'edit' }
+      : { ..._registerInfoButtonProps, icon: 'info-sign', rightIcon: 'edit' }
+    : { ..._registerInfoButtonProps, icon: 'info-sign' };
+
+  const registerInfoButtonTooltip: string = stakeholder?.role === 'owner'
+    ? !registerInfoComplete
+      ? "Complete register information"
+      : "Edit register information"
+    : "View register information";
+
   return (
     <Navbar css={css`background: ${Colors.LIGHT_GRAY4}`}>
       <Navbar.Group>
         <NavbarHeading>
-          {register.name || '(unnamed register)'}
+          <Tooltip content={registerInfoButtonTooltip}>
+            <Button {...registerInfoButtonProps}>
+              {register.name || '(unnamed register)'}
+            </Button>
+          </Tooltip>
         </NavbarHeading>
-
+        {subregisters
+          ? <HTMLSelect
+              value={selectedSubregisterID || NO_SELECTED_SUBREGISTER_OPTION}
+              disabled={!onSelectSubregister || selectedCRID !== undefined || registerInfoOpen}
+              onChange={onSelectSubregister
+                ? evt => {
+                    const val = evt.currentTarget.value;
+                    if (val === NO_SELECTED_SUBREGISTER_OPTION) {
+                      onSelectSubregister!(undefined);
+                    } else {
+                      onSelectSubregister!(val);
+                    }
+                  }
+                : undefined
+              }
+              options={[
+                { label: '—', value: NO_SELECTED_SUBREGISTER_OPTION },
+                ...Object.entries(subregisters).map(([subregID, { title }]) =>
+                  ({ label: title, value: subregID })
+                )
+              ]}
+            />
+          : null}
       </Navbar.Group>
 
       <Navbar.Group align="right">
-        {!registerInfoComplete
-          ? <Button icon="warning-sign" rightIcon="edit" {...registerInfoButtonProps}>
-              Complete register information
-            </Button>
-          : stakeholder?.role === 'owner'
-            ? <Button icon="info-sign" rightIcon="edit" {...registerInfoButtonProps}>
-                Edit register information
-              </Button>
-            : <Button icon="info-sign" {...registerInfoButtonProps}>
-                View register information
-              </Button>}
-
-        <Navbar.Divider />
-
         <CRSelector
           selectedCRID={selectedCRID}
           onSelectCR={onSelectCR}

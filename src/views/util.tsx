@@ -10,7 +10,7 @@ import { GenericRelatedItemViewProps, ItemClassConfiguration, RegisterItem, Rela
 import { Button, ControlGroup, FormGroup, IFormGroupProps } from '@blueprintjs/core';
 
 
-type BrowserCtx = { jumpToItem: (classID: string, itemID: string) => void }
+type BrowserCtx = { jumpToItem: (classID: string, itemID: string, subregisterID?: string) => void }
 export const BrowserCtx = createContext<BrowserCtx>({ jumpToItem: () => {} });
 
 
@@ -44,8 +44,9 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
   itemRef, className,
   useRegisterItemData, getRelatedItemClassConfiguration,
 }) {
-  const { classID, itemID } = itemRef;
-  const itemPath = `${classID}/${itemID}`;
+  const { classID, itemID, subregisterID } = itemRef;
+  const _itemPath = `${classID}/${itemID}`;
+  const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
 
   //log.debug("Rendering generic related item view", itemRef);
 
@@ -82,6 +83,7 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
           css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
         {item !== null && !itemResult.isUpdating
           ? <Item
+              itemID={itemID}
               itemData={item.data}
               getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
             />
@@ -91,7 +93,7 @@ export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = fun
         outlined
         icon={item === null ? 'error' : 'locate'}
         disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
-        onClick={() => browserCtx.jumpToItem(classID, itemID)} />
+        onClick={() => browserCtx.jumpToItem(classID, itemID, subregisterID)} />
     </ControlGroup>
   );
 };

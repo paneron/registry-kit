@@ -3,19 +3,19 @@
 
 import { debounce } from 'throttle-debounce';
 
-import log from 'electron-log';
+//import log from 'electron-log';
 
 import React, { useRef, useState, useEffect } from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
 import {
-  Button, Callout, Classes, Colors, ControlGroup, HTMLSelect,
+  Button, /*Callout,*/ Classes, Colors, ControlGroup, HTMLSelect,
   InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
 } from '@blueprintjs/core';
 
 import { PluginFC, PluginComponentProps } from '@riboseinc/paneron-extension-kit/types';
 import {
-  ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
+  ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
   RegistryItemViewProps,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
@@ -25,22 +25,32 @@ import { BrowserCtx, _getRelatedClass } from './util';
 
 export const RegisterItemBrowser: PluginFC<
   Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration'> & {
+  availableClassIDs?: string[]
+  selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
+  onSubregisterChange?: (subregistryID: string | undefined) => void
 }> = function ({
+  availableClassIDs,
+  selectedSubregisterID,
   itemClassConfiguration,
   useObjectData,
   useObjectPaths,
   useRegisterItemData,
+  onSubregisterChange,
 }) {
 
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
-  const itemClasses = Object.keys(itemClassConfiguration);
+  const itemClasses = availableClassIDs || Object.keys(itemClassConfiguration);
+  const classConfiguration: ItemClassConfigurationSet =
+    itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
+    { o[k] = itemClassConfiguration[k]; return o; }, {});
 
-  const jumpToItem = (classID: string, itemID: string) => {
+  const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
     selectClass(classID);
     selectItem(itemID);
+    onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
   }
 
   useEffect(() => {
@@ -49,41 +59,47 @@ export const RegisterItemBrowser: PluginFC<
     }
   }, [itemClasses.length]);
 
+  useEffect(() => {
+    if (selectedClass && itemClasses.indexOf(selectedClass) < 0) {
+      selectClass(itemClasses[0]);
+    }
+  }, [JSON.stringify(itemClasses)]);
+
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
   }
 
-  class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
-    constructor(props: any) {
-      super(props);
-      this.state = { error: undefined };
-    }
-    componentDidCatch(error: Error, info: any) {
-      log.error("Error rendering item details", error, info);
-      this.setState({ error: `${error.name}: ${error.message}` });
-    }
-    render() {
-      if (this.state.error !== undefined) {
-        return <NonIdealState
-          icon="heart-broken"
-          title="Error rendering view"
-          description={
-            <>
-              <p>
-                This could be caused by invalid register&nbsp;item&nbsp;data&nbsp;format.
-              </p>
-              <Callout style={{ textAlign: 'left', transform: 'scale(0.9)' }} title="Technical details">
-                <pre style={{ overflow: 'auto', paddingBottom: '1em' }}>
-                  {this.state.error}
-                </pre>
-              </Callout>
-            </>
-          }
-        />;
-      }
-      return this.props.children;
-    }
-  }
+  //class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
+  //  constructor(props: any) {
+  //    super(props);
+  //    this.state = { error: undefined };
+  //  }
+  //  componentDidCatch(error: Error, info: any) {
+  //    log.error("Error rendering item details", error, info);
+  //    this.setState({ error: `${error.name}: ${error.message}` });
+  //  }
+  //  render() {
+  //    if (this.state.error !== undefined) {
+  //      return <NonIdealState
+  //        icon="heart-broken"
+  //        title="Error rendering view"
+  //        description={
+  //          <>
+  //            <p>
+  //              This could be caused by invalid register&nbsp;item&nbsp;data&nbsp;format.
+  //            </p>
+  //            <Callout style={{ textAlign: 'left', transform: 'scale(0.9)' }} title="Technical details">
+  //              <pre style={{ overflow: 'auto', paddingBottom: '1em' }}>
+  //                {this.state.error}
+  //              </pre>
+  //            </Callout>
+  //          </>
+  //        }
+  //      />;
+  //    }
+  //    return this.props.children;
+  //  }
+  //}
 
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
@@ -101,7 +117,7 @@ export const RegisterItemBrowser: PluginFC<
 
           <ItemClassSelector
             css={css`select { font-weight: bold; }`}
-            itemClasses={itemClassConfiguration}
+            itemClasses={classConfiguration}
             selectedClassID={selectedClass}
             onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
 
@@ -109,8 +125,9 @@ export const RegisterItemBrowser: PluginFC<
             css={css`flex: 1`}
             itemClasses={itemClassConfiguration}
 
-            selectedClassID={selectedClass}
             selectedItem={selectedItem}
+            selectedClassID={selectedClass}
+            selectedSubregisterID={selectedSubregisterID}
 
             onSelectItem={selectItem}
             useObjectData={useObjectData}
@@ -120,13 +137,15 @@ export const RegisterItemBrowser: PluginFC<
 
         </div>
 
-        <ErrorBoundary>
+        {/*<ErrorBoundary>*/}
           <ItemDetails
             useRegisterItemData={useRegisterItemData}
             getRelatedClass={_getRelatedClass(itemClassConfiguration)}
             itemClass={itemClassConfiguration[selectedClass]}
-            itemID={selectedItem} />
-        </ErrorBoundary>
+            subregisterID={selectedSubregisterID}
+            itemID={selectedItem}
+          />
+        {/*</ErrorBoundary>*/}
 
       </MainView>
     </BrowserCtx.Provider>
@@ -165,20 +184,23 @@ const ItemClassSelector: PluginFC<{
 
 const ItemBrowser: PluginFC<{
   selectedItem?: string
-  selectedClassID: string
+  onSelectItem: (item: string | undefined) => void
 
   itemClasses: RegistryViewProps["itemClassConfiguration"]
+  selectedClassID: string
+
+  selectedSubregisterID?: string
 
   useRegisterItemData: RegisterItemDataHook
   useObjectPaths: RegistryViewProps["useObjectPaths"]
   useObjectData: RegistryViewProps["useObjectData"]
-  onSelectItem: (item: string | undefined) => void
 
   className?: string
 }> = function ({
   itemClasses,
   selectedItem,
   selectedClassID,
+  selectedSubregisterID,
   onSelectItem,
   useObjectPaths,
   useRegisterItemData,
@@ -187,7 +209,9 @@ const ItemBrowser: PluginFC<{
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 
-  const pathPrefix = classConfig.meta.id;
+  const pathPrefix = selectedSubregisterID
+    ? `subregisters/${selectedSubregisterID}/${classConfig.meta.id}`
+    : classConfig.meta.id;
 
   const objectPathsQuery = useObjectPaths({ pathPrefix });
 
@@ -289,6 +313,7 @@ const ItemList: PluginFC<{
         <View
           getRelatedItemClassConfiguration={getRelatedClassConfig}
           itemData={item.data}
+          itemID={item.id}
           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
         />
       </Button>
@@ -320,14 +345,17 @@ const ITEM_HEIGHT = 30;
 
 
 const ItemDetails: PluginFC<{
+  itemID?: string
   itemClass: ItemClassConfiguration<any>
+  subregisterID?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
-  itemID?: string
-}> = function ({ itemClass, itemID, getRelatedClass, useRegisterItemData }) {
+}> = function ({ itemID, itemClass, subregisterID, getRelatedClass, useRegisterItemData }) {
   let details: JSX.Element;
 
-  const itemPath = `${itemClass.meta.id}/${itemID}`;
+  //const itemPath = `${itemClass.meta.id}/${itemID}`;
+  const _itemPath = `${itemClass.meta.id}/${itemID}`;
+  const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
 
   const itemResponse = useRegisterItemData({
     [itemPath]: 'utf-8' as const,
@@ -358,7 +386,7 @@ const ItemDetails: PluginFC<{
   }
 
   function StyledTitle(props: PluginComponentProps & RegistryItemViewProps<any>) {
-    const Component = itemResponse.isUpdating
+    const Component = itemResponse.isUpdating || !itemID
       ? (props: { className?: string }) =>
           <span className={props.className}>
             <span className={Classes.SKELETON}>Loading…</span>
@@ -372,6 +400,7 @@ const ItemDetails: PluginFC<{
         line-height: 1;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       `}
+      itemID={itemID!}
       {...props}
     />;
   }
