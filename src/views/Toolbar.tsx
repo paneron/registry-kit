@@ -127,7 +127,7 @@ const CRSelector: PluginFC<
           active={selectedCRID !== undefined}
           disabled={!onSelectCR}
           onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
-        Open
+        {_selectedCR !== CHANGE_REQUEST_OPTIONS.new.value ? 'Open CR' : 'Create'}
       </Button>
       <Button
           disabled={!onSelectCR || selectedCRID === undefined}
