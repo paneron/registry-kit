@@ -6,11 +6,20 @@ import { Payload, RegisterItem, RegisterItemClass } from './item';
 export type RegisterItemDataHook<P extends Payload = Payload> =
   (paths: ObjectDataRequest) => ValueHook<Record<string, RegisterItem<P>>>;
 
+export type ItemClassConfigurationSet = {
+  [itemClassID: string]: ItemClassConfiguration<any>
+};
 
-export interface RegistryViewProps extends RepositoryViewProps {
-  itemClassConfiguration: {
-    [itemClassID: string]: ItemClassConfiguration<any>
-  }
+export interface RegisterConfiguration {
+  itemClassConfiguration: ItemClassConfigurationSet
+}
+
+export type Subregisters = {
+  [subregisterID: string]: RegisterConfiguration
+};
+
+export interface RegistryViewProps extends RepositoryViewProps, RegisterConfiguration {
+  subregisters: Subregisters
 }
 
 export type RegistryView = React.FC<RegistryViewProps>
