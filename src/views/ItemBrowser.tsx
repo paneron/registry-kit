@@ -48,22 +48,21 @@ export const RegisterItemBrowser: PluginFC<
     { o[k] = itemClassConfiguration[k]; return o; }, {});
 
   const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
+    onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
     selectClass(classID);
     selectItem(itemID);
-    onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
   }
 
   useEffect(() => {
-    if (selectedClass === undefined && itemClasses.length > 0) {
-      selectClass(itemClasses[0]);
-    }
-  }, [itemClasses.length]);
-
-  useEffect(() => {
-    if (selectedClass && itemClasses.indexOf(selectedClass) < 0) {
+    if ((selectedClass === undefined && itemClasses.length > 0) ||
+        (selectedClass && itemClasses.indexOf(selectedClass) < 0)) {
       selectClass(itemClasses[0]);
     }
   }, [JSON.stringify(itemClasses)]);
+
+  useEffect(() => {
+    selectItem(undefined);
+  }, [selectedSubregisterID]);
 
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
