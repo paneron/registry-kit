@@ -28,7 +28,7 @@ export const RegisterItemBrowser: PluginFC<
   availableClassIDs?: string[]
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
-  onSubregisterChange?: (subregistryID: string | undefined) => void
+  onSubregisterChange?: (newiD: string | undefined) => void
 }> = function ({
   availableClassIDs,
   selectedSubregisterID,
