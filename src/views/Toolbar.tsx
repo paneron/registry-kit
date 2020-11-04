@@ -93,27 +93,30 @@ export const Toolbar: PluginFC<
           </Tooltip>
         </NavbarHeading>
         {subregisters
-          ? <HTMLSelect
-              value={selectedSubregisterID || NO_SELECTED_SUBREGISTER_OPTION}
-              disabled={!onSelectSubregister || selectedCRID !== undefined || registerInfoOpen}
-              onChange={onSelectSubregister
-                ? evt => {
-                    const val = evt.currentTarget.value;
-                    if (val === NO_SELECTED_SUBREGISTER_OPTION) {
-                      onSelectSubregister!(undefined);
-                    } else {
-                      onSelectSubregister!(val);
+          ? <ControlGroup>
+              <Button disabled>Subregister</Button>
+              <HTMLSelect
+                value={selectedSubregisterID || NO_SELECTED_SUBREGISTER_OPTION}
+                disabled={!onSelectSubregister || selectedCRID !== undefined || registerInfoOpen}
+                onChange={onSelectSubregister
+                  ? evt => {
+                      const val = evt.currentTarget.value;
+                      if (val === NO_SELECTED_SUBREGISTER_OPTION) {
+                        onSelectSubregister!(undefined);
+                      } else {
+                        onSelectSubregister!(val);
+                      }
                     }
-                  }
-                : undefined
-              }
-              options={[
-                { label: '—', value: NO_SELECTED_SUBREGISTER_OPTION },
-                ...Object.entries(subregisters).map(([subregID, { title }]) =>
-                  ({ label: title, value: subregID })
-                )
-              ]}
-            />
+                  : undefined
+                }
+                options={[
+                  { label: '—', value: NO_SELECTED_SUBREGISTER_OPTION },
+                  ...Object.entries(subregisters).map(([subregID, { title }]) =>
+                    ({ label: title, value: subregID })
+                  )
+                ]}
+              />
+            </ControlGroup>
           : null}
       </Navbar.Group>
 
