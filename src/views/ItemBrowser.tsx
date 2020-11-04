@@ -130,7 +130,6 @@ export const RegisterItemBrowser: PluginFC<
             selectedSubregisterID={selectedSubregisterID}
 
             onSelectItem={selectItem}
-            useObjectData={useObjectData}
             useObjectPaths={useObjectPaths}
             useRegisterItemData={useRegisterItemData}
           />
@@ -193,7 +192,6 @@ const ItemBrowser: PluginFC<{
 
   useRegisterItemData: RegisterItemDataHook
   useObjectPaths: RegistryViewProps["useObjectPaths"]
-  useObjectData: RegistryViewProps["useObjectData"]
 
   className?: string
 }> = function ({
