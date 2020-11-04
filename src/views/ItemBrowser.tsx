@@ -228,8 +228,7 @@ const ItemBrowser: PluginFC<{
     el = <NonIdealState icon={<Spinner />} />;
 
   } else {
-    let orderedItems = Object.values(items.value);
-    orderedItems.sort((a, b) => classConfig.itemSorter(a.data, b.data));
+    const orderedItems = Object.values(items.value).sort((a, b) => classConfig.itemSorter(a.data, b.data));
 
     el = (
       <ItemList
