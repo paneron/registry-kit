@@ -24,7 +24,7 @@ import { BrowserCtx, _getRelatedClass } from './util';
 
 
 export const RegisterItemBrowser: PluginFC<
-  Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths' | 'itemClassConfiguration'> & {
+  Pick<RegistryViewProps, 'useObjectPaths' | 'itemClassConfiguration'> & {
   availableClassIDs?: string[]
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
@@ -33,7 +33,6 @@ export const RegisterItemBrowser: PluginFC<
   availableClassIDs,
   selectedSubregisterID,
   itemClassConfiguration,
-  useObjectData,
   useObjectPaths,
   useRegisterItemData,
   onSubregisterChange,

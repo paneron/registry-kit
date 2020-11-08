@@ -200,7 +200,6 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({
         ? subregisters?.[selectedSubregisterID]?.itemClasses
         : undefined}
       useRegisterItemData={useRegisterItemData}
-      useObjectData={useObjectData}
       useObjectPaths={useObjectPaths}
     />;
   }
