@@ -226,7 +226,12 @@ const ItemBrowser: PluginFC<{
     el = <NonIdealState icon={<Spinner />} />;
 
   } else {
-    const orderedItems = Object.values(items.value).sort((a, b) => classConfig.itemSorter(a.data, b.data));
+    // NOTE: On switching between classes/subregisters,
+    // it could be that class configuration has updated,
+    // but items.value still contains items of previous type. This isn’t great.
+    const orderedItems = Object.values(items.value).sort(classConfig.itemSorter
+      ? getItemSorter(classConfig.itemSorter)
+      : defaultItemSorterFunc);
 
     el = (
       <ItemList
@@ -439,3 +444,28 @@ const ItemDetails: PluginFC<{
     </div>
   );
 };
+
+
+function getItemSorter(sorterFunc?: ItemClassConfiguration<any>["itemSorter"]):
+ItemClassConfiguration<any>["itemSorter"] {
+  if (sorterFunc !== undefined) {
+    return function (a, b) {
+      if (a.data && b.data) {
+        try {
+          return sorterFunc(a.data, b.data)
+        } catch (e) {
+          // Error sorting items. Could happen if items
+          // are not of the type expected by the sorter.
+          // log.error("Error sorting items", a.data, b.data);
+          return 0;
+        }
+      } else {
+        return defaultItemSorterFunc();
+      }
+    }
+  } {
+    return defaultItemSorterFunc;
+  }
+}
+
+const defaultItemSorterFunc = () => 0;
