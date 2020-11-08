@@ -85,7 +85,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({
 
     return {
       ...data,
-      value: parsedData
+      value: parsedData,
     };
   };
 
