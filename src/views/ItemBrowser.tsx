@@ -5,7 +5,7 @@ import { debounce } from 'throttle-debounce';
 
 //import log from 'electron-log';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useContext } from 'react';
 import { css, jsx } from '@emotion/core';
 import { FixedSizeList as List } from 'react-window';
 import {
@@ -13,7 +13,7 @@ import {
   InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
 } from '@blueprintjs/core';
 
-import { PluginFC, PluginComponentProps } from '@riboseinc/paneron-extension-kit/types';
+import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
   RegistryItemViewProps,
@@ -23,8 +23,8 @@ import { MainView } from './MainView';
 import { BrowserCtx, _getRelatedClass } from './util';
 
 
-export const RegisterItemBrowser: PluginFC<
-  Pick<RegistryViewProps, 'useObjectPaths' | 'itemClassConfiguration'> & {
+export const RegisterItemBrowser: React.FC<
+  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
   availableClassIDs?: string[]
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
@@ -33,7 +33,6 @@ export const RegisterItemBrowser: PluginFC<
   availableClassIDs,
   selectedSubregisterID,
   itemClassConfiguration,
-  useObjectPaths,
   useRegisterItemData,
   onSubregisterChange,
 }) {
@@ -128,7 +127,6 @@ export const RegisterItemBrowser: PluginFC<
             selectedSubregisterID={selectedSubregisterID}
 
             onSelectItem={selectItem}
-            useObjectPaths={useObjectPaths}
             useRegisterItemData={useRegisterItemData}
           />
 
@@ -150,7 +148,7 @@ export const RegisterItemBrowser: PluginFC<
 };
 
 
-const ItemClassSelector: PluginFC<{
+const ItemClassSelector: React.FC<{
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   selectedClassID: string | undefined
   onSelectClass: (classID: string) => void
@@ -179,7 +177,7 @@ const ItemClassSelector: PluginFC<{
 };
 
 
-const ItemBrowser: PluginFC<{
+const ItemBrowser: React.FC<{
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
 
@@ -189,7 +187,6 @@ const ItemBrowser: PluginFC<{
   selectedSubregisterID?: string
 
   useRegisterItemData: RegisterItemDataHook
-  useObjectPaths: RegistryViewProps["useObjectPaths"]
 
   className?: string
 }> = function ({
@@ -198,10 +195,11 @@ const ItemBrowser: PluginFC<{
   selectedClassID,
   selectedSubregisterID,
   onSelectItem,
-  useObjectPaths,
   useRegisterItemData,
   className,
 }) {
+
+  const { useObjectPaths } = useContext(ExtensionViewContext);
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 
@@ -251,7 +249,7 @@ const ItemBrowser: PluginFC<{
 };
 
 
-const ItemList: PluginFC<{
+const ItemList: React.FC<{
   items: RegisterItem<any>[]
   classConfig: ItemClassConfiguration<any>
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
@@ -344,7 +342,7 @@ const ItemList: PluginFC<{
 const ITEM_HEIGHT = 30;
 
 
-const ItemDetails: PluginFC<{
+const ItemDetails: React.FC<{
   itemID?: string
   itemClass: ItemClassConfiguration<any>
   subregisterID?: string
@@ -385,7 +383,7 @@ const ItemDetails: PluginFC<{
     details = <NonIdealState title="Item data not available" />;
   }
 
-  function StyledTitle(props: PluginComponentProps & RegistryItemViewProps<any>) {
+  function StyledTitle(props: RegistryItemViewProps<any>) {
     const Component = itemResponse.isUpdating || !itemID
       ? (props: { className?: string }) =>
           <span className={props.className}>

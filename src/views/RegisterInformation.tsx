@@ -7,12 +7,11 @@ import { useState } from 'react';
 
 import { Button, ControlGroup, FormGroup, HTMLSelect, HTMLTable, InputGroup, TextArea } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import { Locale, Register, RegisterStakeholder, STAKEHOLDER_ROLES } from '../types';
 import { MainView } from './MainView';
 
 
-export const RegisterInformation: PluginFC<{
+export const RegisterInformation: React.FC<{
   register: Partial<Register> | null
   stakeholder?: RegisterStakeholder
   onSave?: (value: Partial<Register>, oldValue: Partial<Register> | null) => void
@@ -40,7 +39,7 @@ export const RegisterInformation: PluginFC<{
 };
 
 
-const RegisterForm: PluginFC<{
+const RegisterForm: React.FC<{
   value: Partial<Register>
   onChange?: (newValue: Partial<Register>) => void
 }> = function ({ value, onChange }) {

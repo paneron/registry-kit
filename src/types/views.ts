@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { ObjectDataRequest, PluginFC, RepositoryViewProps, ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { Payload, RegisterItem, RegisterItemClass } from './item';
 
 
@@ -23,7 +23,7 @@ export type Subregisters<Items extends ItemClassConfigurationSet = Record<string
 
 export interface RegistryViewProps
 <Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>>
-extends RepositoryViewProps, RegisterConfiguration<Items> {
+extends RegisterConfiguration<Items> {
   subregisters?: Subregisters<Items>
 }
 
@@ -53,15 +53,15 @@ export interface GenericRelatedItemViewProps {
 }
 
 
-export type ItemEditView<P> = PluginFC<RegistryItemViewProps<P> & {
+export type ItemEditView<P> = React.FC<RegistryItemViewProps<P> & {
   onChange?: (newData: P) => void
 }>;
-export type ItemDetailView<P> = PluginFC<RegistryItemViewProps<P> & {
+export type ItemDetailView<P> = React.FC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook
 }>;
 
-export type ItemListView<P> = PluginFC<RegistryItemViewProps<P> & { itemID: string }>;
-export type LazyItemView = PluginFC<{ itemID: string }>;
+export type ItemListView<P> = React.FC<RegistryItemViewProps<P> & { itemID: string }>;
+export type LazyItemView = React.FC<{ itemID: string }>;
 
 export interface ItemClassConfiguration<P extends Payload> {
   meta: RegisterItemClass

@@ -4,10 +4,9 @@
 import { Navbar } from '@blueprintjs/core';
 
 import { css, jsx } from '@emotion/core';
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 
 
-export const MainView: PluginFC<{
+export const MainView: React.FC<{
   actions?: JSX.Element
 }> = function ({
   actions,

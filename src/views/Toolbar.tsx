@@ -3,7 +3,7 @@
 
 import yaml from 'js-yaml';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { css, jsx } from '@emotion/core';
 
@@ -14,16 +14,15 @@ import {
   Tooltip,
 } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
-import { ChangeRequest, Register, RegisterStakeholder, RegistryViewProps, Subregisters } from '../types';
+import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
+import { ChangeRequest, Register, RegisterStakeholder, Subregisters } from '../types';
 import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 
 
 const NO_SELECTED_SUBREGISTER_OPTION = '—';
 
 
-export const Toolbar: PluginFC<
-  Pick<RegistryViewProps, 'useObjectData' | 'useObjectPaths'> & {
+export const Toolbar: React.FC<{
   title: string
   register: Partial<Register>
   stakeholder: RegisterStakeholder | undefined
@@ -49,9 +48,6 @@ export const Toolbar: PluginFC<
 
   selectedCRID,
   onSelectCR,
-
-  useObjectData,
-  useObjectPaths,
 }) {
 
   const registerInfoComplete = (
@@ -123,20 +119,20 @@ export const Toolbar: PluginFC<
       <Navbar.Group align="right">
         <CRSelector
           selectedCRID={selectedCRID}
-          onSelectCR={onSelectCR}
-          useObjectData={useObjectData}
-          useObjectPaths={useObjectPaths} />
+          onSelectCR={onSelectCR} />
       </Navbar.Group>
     </Navbar>
   );
 };
 
 
-const CRSelector: PluginFC<
-  Pick<RegistryViewProps, 'useObjectPaths' | 'useObjectData'> & {
+const CRSelector: React.FC<{
   selectedCRID?: string
   onSelectCR?: (crID: string | undefined) => void
-}> = function ({ selectedCRID, useObjectPaths, useObjectData, onSelectCR }) {
+}> = function ({ selectedCRID, onSelectCR }) {
+
+  const { useObjectData, useObjectPaths } = useContext(ExtensionViewContext);
+
   const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
 
   const crObjectPaths = useObjectPaths({ pathPrefix: 'change-requests' }).value;

@@ -3,10 +3,12 @@
 import yaml from 'js-yaml';
 import log from 'electron-log';
 
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
+import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
+import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest, DECISION_STATUSES,
   Register,
@@ -19,7 +21,6 @@ import { RegisterInformation } from './RegisterInformation';
 import { ChangeRequestView, CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
 import { Toolbar } from './Toolbar';
-import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
 
 
 function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
@@ -34,15 +35,15 @@ function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 };
 
 
-export const RegistryView: React.FC<RegistryViewProps> = function ({
-  title,
-  itemClassConfiguration,
-  subregisters,
-  makeRandomID,
-  useObjectPaths, useObjectData,
-  useRemoteUsername,
-  changeObjects
-}) {
+export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters }) {
+
+  const {
+    title,
+    makeRandomID,
+    useObjectData,
+    useRemoteUsername,
+    changeObjects
+  } = useContext(ExtensionViewContext);
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
   const [selectedSubregisterID, selectSubregisterID] = useState<undefined | string>(undefined);
@@ -170,11 +171,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({
         id={selectedCRID}
         stakeholder={stakeholder}
         itemClassConfiguration={itemClassConfiguration}
-
-        useObjectData={useObjectData}
-        changeObjects={changeObjects}
         useRegisterItemData={useRegisterItemData}
-        makeRandomID={makeRandomID}
 
         onDelete={(!isBusy && stakeholder !== undefined)
           ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
@@ -200,7 +197,6 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({
         ? subregisters?.[selectedSubregisterID]?.itemClasses
         : undefined}
       useRegisterItemData={useRegisterItemData}
-      useObjectPaths={useObjectPaths}
     />;
   }
 
@@ -226,9 +222,6 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({
         onSelectCR={(!registerInfoOpen && !isBusy)
           ? handleSelectCR
           : undefined}
-
-        useObjectData={useObjectData}
-        useObjectPaths={useObjectPaths}
       />
 
       {mainViewEl}

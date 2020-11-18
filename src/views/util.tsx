@@ -5,7 +5,6 @@ import { css, jsx } from '@emotion/core';
 
 //import log from 'electron-log';
 import React, { createContext, useContext } from 'react';
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
 import { GenericRelatedItemViewProps, ItemClassConfiguration, RegisterItem, RelatedItemClassConfiguration } from '../types';
 import { Button, ControlGroup, FormGroup, IFormGroupProps } from '@blueprintjs/core';
 
@@ -40,7 +39,7 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
 };
 
 
-export const GenericRelatedItemView: PluginFC<GenericRelatedItemViewProps> = function ({
+export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
   itemRef, className,
   useRegisterItemData, getRelatedItemClassConfiguration,
 }) {

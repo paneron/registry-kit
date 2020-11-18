@@ -6,7 +6,7 @@ import log from 'electron-log';
 import yaml from 'js-yaml';
 import update from 'immutability-helper';
 
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { jsx, css } from '@emotion/core';
 
@@ -17,7 +17,7 @@ import {
   ITreeNode, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
 } from '@blueprintjs/core';
 
-import { PluginFC } from '@riboseinc/paneron-extension-kit/types';
+import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeProposal, ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
   ItemClassConfiguration, ItemDetailView, ItemEditView, Payload, PROPOSAL_TYPES,
@@ -41,19 +41,19 @@ export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
 } as const;
 
 
-export const ChangeRequestView: PluginFC<
-  Pick<RegistryViewProps, 'useObjectData' | 'itemClassConfiguration' | 'makeRandomID' | 'changeObjects'> & {
+export const ChangeRequestView: React.FC<
+  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
   id: string
   stakeholder?: RegisterStakeholder
   useRegisterItemData: RegisterItemDataHook
   onSave?: (crID: string, newValue: ChangeRequest, oldValue: ChangeRequest) => Promise<void>
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
 }> = function ({
-    useObjectData, makeRandomID,
     itemClassConfiguration, id, stakeholder,
-    changeObjects,
     useRegisterItemData,
     onSave, onDelete }) {
+
+  const { useObjectData, makeRandomID, changeObjects } = useContext(ExtensionViewContext);
 
   const [selectedItem, selectItem] = useState<string>('justification');
 
@@ -138,7 +138,6 @@ export const ChangeRequestView: PluginFC<
           status: 'valid',
           dateAccepted: new Date(),
           data: proposal.payload,
-          changeRequestID: id,
         };
         await changeObjects({
           [itemFilePath]: {
@@ -156,7 +155,6 @@ export const ChangeRequestView: PluginFC<
         const clarifiedItem: RegisterItem<any> = {
           ...existingItem,
           data: proposal.payload,
-          changeRequestID: id,
         };
         await changeObjects({
           [itemPath]: {
@@ -178,7 +176,6 @@ export const ChangeRequestView: PluginFC<
         const amendedItem = {
           ...existingItem,
           status: proposal.amendmentType === 'retirement' ? 'retired' : 'superseded',
-          changeRequestID: id,
         };
         if (proposal.amendmentType === 'supersession') {
           if (cr.proposals[`${clsID}/${proposal.supersedingItemID}`]?.type !== 'addition') {
@@ -399,7 +396,7 @@ export const ChangeRequestView: PluginFC<
 };
 
 
-const CRNavigation: PluginFC<
+const CRNavigation: React.FC<
   Pick<RegistryViewProps, 'itemClassConfiguration'> & {
   proposals: ChangeRequest["proposals"]
   enableControlBodyInput: boolean
@@ -490,7 +487,7 @@ function ({
 };
 
 
-const CRJustification: PluginFC<{
+const CRJustification: React.FC<{
   value: string
   onChange?: (val: string) => void
 }> = function ({ value, onChange }) {
@@ -504,7 +501,7 @@ const CRJustification: PluginFC<{
 };
 
 
-const CRControlBodyInput: PluginFC<{
+const CRControlBodyInput: React.FC<{
   value: { notes: string | undefined, event: string | undefined }
   onChange?: (notes: string | undefined, event: string | undefined) => void
 }> = function ({ value, onChange }) {
@@ -531,7 +528,7 @@ const CRControlBodyInput: PluginFC<{
 };
 
 
-const CRManagerNotes: PluginFC<{
+const CRManagerNotes: React.FC<{
   value: string | undefined
   onChange?: (val: string | undefined) => void
 }> = function ({ value, onChange }) {
@@ -545,7 +542,7 @@ const CRManagerNotes: PluginFC<{
 };
 
 
-const ProposalDetails: PluginFC<{
+const ProposalDetails: React.FC<{
   value: ChangeProposal
   classConfig: ItemClassConfiguration<any>
 
