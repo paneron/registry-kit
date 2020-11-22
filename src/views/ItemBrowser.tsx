@@ -404,7 +404,7 @@ const ItemDetails: React.FC<{
   }
 
   return (
-    <div css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem;`}>
+    <div css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem; overflow: hidden;`}>
       {itemID
         ? <div css={css`flex-shrink: 0; margin-bottom: 1rem; display: flex; flex-flow: column nowrap;`}>
             <ControlGroup>
