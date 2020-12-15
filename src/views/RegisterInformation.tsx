@@ -13,9 +13,8 @@ import { MainView } from './MainView';
 
 export const RegisterInformation: React.FC<{
   register: Partial<Register> | null
-  stakeholder?: RegisterStakeholder
   onSave?: (value: Partial<Register>, oldValue: Partial<Register> | null) => void
-}> = function ({ register, stakeholder, onSave }) {
+}> = function ({ register, onSave }) {
 
   const [editedValue, setEditedValue] = useState<Partial<Register> | null>(null);
 

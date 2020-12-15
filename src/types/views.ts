@@ -3,12 +3,13 @@ import type { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-
 import { Payload, RegisterItem, RegisterItemClass } from './item';
 
 
-export type RegisterItemDataHook<P extends Payload = Payload> =
-  (paths: ObjectDataRequest) => ValueHook<Record<string, RegisterItem<P>>>;
+// Extension configuration
 
-export type ItemClassConfigurationSet = {
-  [itemClassID: string]: ItemClassConfiguration<any>
-};
+export interface ExtensionContext {
+  getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
+  useRegisterItemData: RegisterItemDataHook
+  onJump?: () => void
+}
 
 export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
   itemClassConfiguration: Items
@@ -20,6 +21,37 @@ export type Subregisters<Items extends ItemClassConfigurationSet = Record<string
     itemClasses: (keyof Items)[]
   }
 };
+
+export type RegisterItemDataHook<P extends Payload = Payload> =
+  (paths: ObjectDataRequest) => ValueHook<Record<string, RegisterItem<P>>>;
+
+export type ItemClassConfigurationSet = {
+  [itemClassID: string]: ItemClassConfiguration<any>
+};
+
+
+
+
+export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> {
+  meta: RegisterItemClass
+
+
+  defaults?: RegistryItemPayloadDefaults<P>
+  // Used to pre-populate item data e.g. when a new item is created.
+
+  validatePayload?: (item: P) => Promise<boolean>
+  sanitizePayload?: (item: P) => Promise<P>
+  itemSorter?: (a: P, b: P) => number
+
+  views: {
+    listItemView: ItemListView<P>
+    detailView: ItemDetailView<P>
+    editView: ItemEditView<P>
+  }
+}
+
+
+// Item views
 
 export interface RegistryViewProps
 <Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>>
@@ -40,16 +72,15 @@ export type RelatedItemClassConfiguration = {
 
 export interface RegistryItemViewProps<P extends Payload> {
   itemData: P
-  getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
   className?: string
+  getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
 }
 
 export interface GenericRelatedItemViewProps {
   itemRef: { classID: string, itemID: string, subregisterID?: string }
-  useRegisterItemData: RegisterItemDataHook
-  getRelatedItemClassConfiguration: RegistryItemViewProps<any>["getRelatedItemClassConfiguration"]
   className?: string
-  onJump?: () => void
+  useRegisterItemData: RegisterItemDataHook
+  getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
 }
 
 
@@ -62,23 +93,3 @@ export type ItemDetailView<P> = React.FC<RegistryItemViewProps<P> & {
 
 export type ItemListView<P> = React.FC<RegistryItemViewProps<P> & { itemID: string }>;
 export type LazyItemView = React.FC<{ itemID: string }>;
-
-export interface ItemClassConfiguration<P extends Payload> {
-  meta: RegisterItemClass
-  itemSorter: (a: P, b: P) => number
-  defaults: RegistryItemPayloadDefaults<P>
-  validatePayload: (item: P) => Promise<boolean>
-  sanitizePayload: (item: P) => Promise<P>
-
-  views: {
-    listItemView: ItemListView<P>
-    detailView: ItemDetailView<P>
-    editView: ItemEditView<P>
-
-    //createView?: React.FC<{
-    //  defaults: RegistryItemPayloadDefaults<P>
-    //  itemData: null
-    //  onChange: (newData: P) => void
-    //}>
-  }
-}

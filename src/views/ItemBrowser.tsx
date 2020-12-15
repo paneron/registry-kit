@@ -13,7 +13,7 @@ import {
   InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
 } from '@blueprintjs/core';
 
-import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
+import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
   RegistryItemViewProps,
@@ -162,7 +162,7 @@ const ItemClassSelector: React.FC<{
 
   const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
   map(([classID, classData]) => {
-    return { value: classID, label: classData.meta.description };
+    return { value: classID, label: classData.meta.title };
   });
 
   return (
@@ -199,7 +199,7 @@ const ItemBrowser: React.FC<{
   className,
 }) {
 
-  const { useObjectPaths } = useContext(ExtensionViewContext);
+  const { useObjectPaths } = useContext(DatasetContext);
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 

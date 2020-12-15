@@ -14,8 +14,8 @@ import {
   Tooltip,
 } from '@blueprintjs/core';
 
-import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
-import { ChangeRequest, Register, RegisterStakeholder, Subregisters } from '../types';
+import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import { ChangeRequest, Register, Subregisters } from '../types';
 import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 
 
@@ -25,7 +25,6 @@ const NO_SELECTED_SUBREGISTER_OPTION = '—';
 export const Toolbar: React.FC<{
   title: string
   register: Partial<Register>
-  stakeholder: RegisterStakeholder | undefined
 
   registerInfoOpen: boolean
   onOpenRegisterInfo?: (state: boolean) => void
@@ -38,7 +37,6 @@ export const Toolbar: React.FC<{
   onSelectCR?: (crID: string | undefined) => void
 }> = function ({
   register,
-  stakeholder,
   registerInfoOpen,
   onOpenRegisterInfo,
 
@@ -49,6 +47,8 @@ export const Toolbar: React.FC<{
   selectedCRID,
   onSelectCR,
 }) {
+
+  const { changeObjects } = useContext(DatasetContext);
 
   const registerInfoComplete = (
     register.id !== undefined &&
@@ -66,13 +66,13 @@ export const Toolbar: React.FC<{
     onClick: () => onOpenRegisterInfo ? onOpenRegisterInfo(!registerInfoOpen) : void 0,
   };
 
-  const registerInfoButtonProps: IButtonProps = stakeholder?.role === 'owner'
+  const registerInfoButtonProps: IButtonProps = changeObjects
     ? !registerInfoComplete
       ? { ..._registerInfoButtonProps, icon: 'warning-sign', rightIcon: 'edit' }
       : { ..._registerInfoButtonProps, icon: 'info-sign', rightIcon: 'edit' }
     : { ..._registerInfoButtonProps, icon: 'info-sign' };
 
-  const registerInfoButtonTooltip: string = stakeholder?.role === 'owner'
+  const registerInfoButtonTooltip: string = changeObjects
     ? !registerInfoComplete
       ? "Complete register information"
       : "Edit register information"
@@ -131,7 +131,7 @@ const CRSelector: React.FC<{
   onSelectCR?: (crID: string | undefined) => void
 }> = function ({ selectedCRID, onSelectCR }) {
 
-  const { useObjectData, useObjectPaths } = useContext(ExtensionViewContext);
+  const { changeObjects, useObjectData, useObjectPaths } = useContext(DatasetContext);
 
   const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
 
@@ -157,6 +157,9 @@ const CRSelector: React.FC<{
     })),
   ];
 
+  const creatingNew = _selectedCR === CHANGE_REQUEST_OPTIONS.new.value;
+  const canCreate = changeObjects !== undefined;
+
   return (
     <ControlGroup>
       <HTMLSelect
@@ -167,9 +170,9 @@ const CRSelector: React.FC<{
       />
       <Button
           active={selectedCRID !== undefined}
-          disabled={!onSelectCR}
+          disabled={!onSelectCR || !canCreate && creatingNew}
           onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
-        {_selectedCR !== CHANGE_REQUEST_OPTIONS.new.value ? 'Open CR' : 'Create'}
+        {!creatingNew ? 'Open CR' : 'Create'}
       </Button>
       <Button
           disabled={!onSelectCR || selectedCRID === undefined}

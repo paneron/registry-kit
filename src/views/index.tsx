@@ -8,59 +8,57 @@ import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
 import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
-import { ExtensionViewContext } from '@riboseinc/paneron-extension-kit/context';
+import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
-  ChangeRequest, DECISION_STATUSES,
+  ChangeRequest,
   Register,
   RegisterItem,
   RegisterItemDataHook,
-  RegisterStakeholder,
   RegistryViewProps,
 } from '../types';
 import { RegisterInformation } from './RegisterInformation';
-import { ChangeRequestView, CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
+import { ChangeRequestView } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
 import { Toolbar } from './Toolbar';
+import { REGISTER_METADATA_FILENAME } from '../common';
 
 
-function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
-  return {
-    id,
-    justification: '',
-    timeStarted: new Date(),
-    proposals: {},
-    sponsor,
-    status: DECISION_STATUSES[0],
-  };
-};
+//function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
+//  return {
+//    id,
+//    justification: '',
+//    timeStarted: new Date(),
+//    proposals: {},
+//    sponsor,
+//    status: DECISION_STATUSES[0],
+//  };
+//};
 
 
 export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters }) {
 
   const {
     title,
-    makeRandomID,
     useObjectData,
-    useRemoteUsername,
-    changeObjects
-  } = useContext(ExtensionViewContext);
+    changeObjects,
+  } = useContext(DatasetContext);
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
   const [selectedSubregisterID, selectSubregisterID] = useState<undefined | string>(undefined);
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
   const [isBusy, setBusy] = useState(false);
 
-  const remoteUsername: string | undefined = useRemoteUsername().value.username;
+  //const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
-  const registerObject = useObjectData({ 'register.yaml': 'utf-8' }).value['register.yaml']?.value;
+  const registerObject = useObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
   const registerInfo: Partial<Register> | null = registerObject
     ? yaml.load(registerObject as string)
     : null;
 
-  const stakeholder: RegisterStakeholder | undefined = remoteUsername
-    ? (registerInfo?.stakeholders || []).
-      find(s => s.gitServerUsername === remoteUsername)
-    : undefined;
+  // const stakeholder: RegisterStakeholder | undefined = remoteUsername
+  //   ? (registerInfo?.stakeholders || []).
+  //     find(s => s.gitServerUsername === remoteUsername)
+  //   : undefined;
 
   useEffect(() => {
     const subregisterIDs = Object.keys(subregisters || {});
@@ -91,11 +89,11 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   };
 
   async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
-    if (!isBusy) {
+    if (!isBusy && changeObjects) {
       setBusy(true);
       try {
         await changeObjects({
-          'register.yaml': {
+          [REGISTER_METADATA_FILENAME]: {
             oldValue: oldValue ? yaml.dump(oldValue, { noRefs: true }) : null,
             newValue: yaml.dump(value, { noRefs: true }),
             encoding: 'utf-8',
@@ -108,7 +106,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   }
 
   async function handleSaveCR(crID: string, value: ChangeRequest | null, oldValue: ChangeRequest) {
-    if (!isBusy && crID === selectedCRID) {
+    if (!isBusy && crID === selectedCRID && changeObjects) {
       setBusy(true);
       try {
         await changeObjects({
@@ -129,64 +127,29 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     }
   }
 
-  async function handleSelectCR(crID: string | undefined) {
-    if (crID === undefined) {
-      selectCR(undefined);
-
-    } else if (crID === CHANGE_REQUEST_OPTIONS.new.value && stakeholder?.gitServerUsername !== undefined) {
-      setBusy(true);
-      try {
-        const newID = await makeRandomID();
-        await changeObjects({
-          [`change-requests/${newID}.yaml`]: {
-            oldValue: null,
-            newValue: yaml.dump(makeBlankCR(newID, stakeholder), { noRefs: true }),
-            encoding: 'utf-8',
-          },
-        }, `CR: Start ${newID}`);
-        setTimeout(() => selectCR(newID), 1000);
-      } finally {
-        setBusy(false);
-      }
-
-    } else {
-      selectCR(crID);
-    }
-  }
-
   let mainViewEl: JSX.Element;
 
   if (registerInfoOpen) {
     mainViewEl = <RegisterInformation
       register={registerInfo}
-      stakeholder={stakeholder}
-      onSave={(!isBusy && (stakeholder?.role === 'owner' || registerInfo?.stakeholders === undefined))
+      onSave={(!isBusy && changeObjects !== undefined)
         ? handleSaveRegisterInfo
         : undefined}
     />;
 
   } else if (selectedCRID) {
-    if (stakeholder) {
-      mainViewEl = <ChangeRequestView
-        id={selectedCRID}
-        stakeholder={stakeholder}
-        itemClassConfiguration={itemClassConfiguration}
-        useRegisterItemData={useRegisterItemData}
+    mainViewEl = <ChangeRequestView
+      id={selectedCRID}
+      itemClassConfiguration={itemClassConfiguration}
+      useRegisterItemData={useRegisterItemData}
 
-        onDelete={(!isBusy && stakeholder !== undefined)
-          ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
-          : undefined}
-        onSave={(!isBusy && stakeholder !== undefined)
-          ? handleSaveCR
-          : undefined}
-      />;
-
-    } else {
-      mainViewEl = <NonIdealState
-        icon="heart-broken"
-        title="Cannot open change request"
-        description="Your stakeholder information is missing" />;
-    }
+      onDelete={(!isBusy && changeObjects !== undefined)
+        ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
+        : undefined}
+      onSave={(!isBusy && changeObjects !== undefined)
+        ? handleSaveCR
+        : undefined}
+    />;
 
   } else {
     mainViewEl = <RegisterItemBrowser
@@ -207,7 +170,6 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         title={title}
 
         register={registerInfo || {}}
-        stakeholder={stakeholder}
 
         subregisters={subregisters}
         selectedSubregisterID={selectedSubregisterID}
@@ -220,7 +182,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
         selectedCRID={selectedCRID}
         onSelectCR={(!registerInfoOpen && !isBusy)
-          ? handleSelectCR
+          ? selectCR
           : undefined}
       />
 
