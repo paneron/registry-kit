@@ -7,9 +7,9 @@
     "build": "rm -r compiled dist; mkdir compiled dist; tsc --outDir compiled; babel compiled --out-dir dist; cp package.json dist/; rsync -a --include '*/' --include '*.d.ts' --include '*.js.map' --exclude '*' compiled/ dist/"
   },
   "files": [
-    "index.js",
-    "index.js.map",
-    "index.d.ts",
+    "*.js",
+    "*.js.map",
+    "*.d.ts",
     "views/*.js",
     "views/*.js.map",
     "views/*.d.ts",
