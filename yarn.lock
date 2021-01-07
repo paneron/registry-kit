@@ -1007,10 +1007,10 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@riboseinc/paneron-extension-kit@2.0.0-dev1":
-  version "2.0.0-dev1"
-  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-2.0.0-dev1.tgz#0cd07665901f5a9ed98f6a829ca09373c275c0c6"
-  integrity sha512-b9IwWsyu0P+XtNSm9bPHAZfyz+V0Kq68Nm5ptnyh5mxEyeLS278K+Z/I1mJEGrwDWc8TlNv9IbdtYKzR//zwgQ==
+"@riboseinc/paneron-extension-kit@2.0.0-dev2":
+  version "2.0.0-dev2"
+  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-2.0.0-dev2.tgz#c47128f2512cb699466dd76da623137ca567ab7b"
+  integrity sha512-l9hLUfi2GwmD19IfJn1zXM3r+yQOTfQdXg2femvEKVDGgzLCfhttlMRVtYnw9BRUx98Lp4fGtgI84DtfFysIsw==
   dependencies:
     "@types/semver" "^7.3.4"
     semver "^7.3.2"
