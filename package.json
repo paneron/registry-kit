@@ -10,12 +10,9 @@
     "*.js",
     "*.js.map",
     "*.d.ts",
-    "views/*.js",
-    "views/*.js.map",
-    "views/*.d.ts",
-    "types/*.js",
-    "types/*.js.map",
-    "types/*.d.ts"
+    "**/*.js",
+    "**/*.js.map",
+    "**/*.d.ts"
   ],
   "peerDependencies": {
     "electron": "^10.1.3"
