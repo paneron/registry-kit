@@ -52,12 +52,12 @@ export const ChangeRequestView: React.FC<
     useRegisterItemData,
     onSave, onDelete }) {
 
-  const { useObjectData, makeRandomID, changeObjects } = useContext(DatasetContext);
+  const { useRawObjectData, makeRandomID, changeObjects } = useContext(DatasetContext);
 
   const [selectedItem, selectItem] = useState<string>('justification');
 
   const objectPath = `change-requests/${id}.yaml`;
-  const crData = useObjectData({ [objectPath]: 'utf-8' as const });
+  const crData = useRawObjectData({ [objectPath]: 'utf-8' as const });
   const dataAsString = crData.value?.[objectPath]?.value || undefined;
   const maybeCR: ChangeRequest | Record<never, never> | undefined = dataAsString !== undefined
     ? yaml.load(dataAsString as string)

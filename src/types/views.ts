@@ -22,6 +22,29 @@ export type Subregisters<Items extends ItemClassConfigurationSet = Record<string
   }
 };
 
+export interface SearchCriteria {
+  require: 'all' | 'any' | 'none'
+
+  // A list where an item could be further nested criteria
+  // or an expression that, given ``item`` as context, evaluates to true or false.
+  criteria: (SearchCriteria | string)[]
+}
+
+// interface CriterionExpression<Variables extends string[]> {
+//   variables: {
+//     [variable in Variables[number]]: { title: string }
+//   }
+//   getExpression: (variableValues: Record<Variables[number], string>) => string
+// }
+
+interface SimpleSortingExpression {
+  direction: 'asc' | 'desc' | 'rand'
+  field: string
+}
+
+export type RegisterItemIDListHook =
+  (opts: { searchCriteria?: SearchCriteria, sortBy?: SimpleSortingExpression }) => ValueHook<string[]>;
+
 export type RegisterItemDataHook<P extends Payload = Payload> =
   (paths: ObjectDataRequest) => ValueHook<Record<string, RegisterItem<P>>>;
 
@@ -30,11 +53,50 @@ export type ItemClassConfigurationSet = {
 };
 
 
+// interface AbstractField<T = string> {
+//   type: string
+//   label: string
+//   viewOptions?: Record<string, any>
+//   nullable?: true
+//   priority?: number
+// 
+//   validateValue?: (val: T) => Promise<boolean>
+//   sanitizeValue?: (val: T) => Promise<T>
+// }
+// 
+// interface Relation extends AbstractField {
+//   type: 'relation'
+//   reverseIndex?: true
+// }
+// 
+// interface Text extends AbstractField {
+//   type: 'text'
+// }
+// 
+// interface Number extends AbstractField {
+//   type: 'number'
+// }
+// 
+// interface DateField extends AbstractField<Date> {
+//   type: 'date'
+// }
+// 
+// type Field = Text | Number | Relation | DateField
 
 
 export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> {
   meta: RegisterItemClass
 
+  //fields?: {
+  //  [fieldname in keyof P]: F
+  //}
+
+  //relations?: {
+  //  [fieldname in keyof P]: {
+  //    classID: string
+  //    reverseIndex?: true
+  //  }
+  //}
 
   defaults?: RegistryItemPayloadDefaults<P>
   // Used to pre-populate item data e.g. when a new item is created.
@@ -47,6 +109,12 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
     listItemView: ItemListView<P>
     detailView: ItemDetailView<P>
     editView: ItemEditView<P>
+
+    //createView?: React.FC<{
+    //  defaults: RegistryItemPayloadDefaults<P>
+    //  itemData: null
+    //  onChange: (newData: P) => void
+    //}>
   }
 }
 

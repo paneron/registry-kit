@@ -1,13 +1,13 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { debounce } from 'throttle-debounce';
-
-//import log from 'electron-log';
-
-import React, { useRef, useState, useEffect, useContext } from 'react';
+import styled from '@emotion/styled';
 import { css, jsx } from '@emotion/core';
+import React, { useRef, useState, useEffect, useContext } from 'react';
+
+import { debounce } from 'throttle-debounce';
 import { FixedSizeList as List } from 'react-window';
+
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup, HTMLSelect,
   InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
@@ -199,7 +199,7 @@ const ItemBrowser: React.FC<{
   className,
 }) {
 
-  const { useObjectPaths } = useContext(DatasetContext);
+  const { useRawObjectPaths } = useContext(DatasetContext);
 
   const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
 
@@ -207,7 +207,7 @@ const ItemBrowser: React.FC<{
     ? `subregisters/${selectedSubregisterID}/${classConfig.meta.id}`
     : classConfig.meta.id;
 
-  const objectPathsQuery = useObjectPaths({ pathPrefix });
+  const objectPathsQuery = useRawObjectPaths({ pathPrefix });
 
   const registerItemQuery = objectPathsQuery.value.
     filter(path => path !== '.DS_Store').
@@ -270,6 +270,8 @@ const ItemList: React.FC<{
   const listEl = useRef<List>(null);
   const [listHeight, setListHeight] = useState<number>(CONTAINER_PADDINGS);
 
+  const Item = classConfig.views.listItemView;
+
   useEffect(() => {
     const updateListHeight = debounce(100, () => {
       setListHeight(listContainer.current?.parentElement?.offsetHeight || CONTAINER_PADDINGS);
@@ -288,7 +290,7 @@ const ItemList: React.FC<{
     }
   }, [listContainer.current]);
 
-  const ItemView = ({ index, style }: { index: number, style: React.CSSProperties }) => {
+  const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
     const item = items[index];
 
     function handleClick(evt: React.MouseEvent) {
@@ -299,22 +301,19 @@ const ItemList: React.FC<{
       }
     }
 
-    const View = classConfig.views.listItemView;
-
     return (
-      <Button
+      <ItemContainer
           active={item.id === selectedItem}
-          minimal fill style={style} alignText="left"
-          css={css`white-space: nowrap; font-size: 90%;
-                    & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }`}
+          minimal fill style={style}
+          alignText="left"
           onClick={handleClick}>
-        <View
+        <Item
           getRelatedItemClassConfiguration={getRelatedClassConfig}
           itemData={item.data}
           itemID={item.id}
           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
         />
-      </Button>
+      </ItemContainer>
     );
   };
 
@@ -334,12 +333,19 @@ const ItemList: React.FC<{
           width="100%"
           height={listHeight - CONTAINER_PADDINGS}
           itemSize={ITEM_HEIGHT}>
-        {ItemView}
+        {Row}
       </List>
     </div>
   );
 };
 const ITEM_HEIGHT = 30;
+
+
+const ItemContainer = styled(Button)`
+  white-space: nowrap; font-size: 90%;
+  & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }
+  border-radius: 0;
+`;
 
 
 const ItemDetails: React.FC<{

@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
-import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
+import { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest,
@@ -39,6 +39,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   const {
     title,
+    useRawObjectData,
     useObjectData,
     changeObjects,
   } = useContext(DatasetContext);
@@ -50,7 +51,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   //const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
-  const registerObject = useObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
+  const registerObject = useRawObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
   const registerInfo: Partial<Register> | null = registerObject
     ? yaml.load(registerObject as string)
     : null;
@@ -68,23 +69,24 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   }, [Object.keys(subregisters || {}).length]);
 
   const useRegisterItemData: RegisterItemDataHook = (paths: ObjectDataRequest) => {
-    const dataRequest: ObjectDataRequest = Object.keys(paths).map(path => {
-      return { [`${path}.yaml`]: 'utf-8' as const };
-    }).reduce((p, c) => ({ ...p, ...c }), {});
+    const result = useObjectData({
+      objectPaths: Object.keys(paths),
+    }) as ValueHook<{ data: Record<string, RegisterItem<any>> }>;
 
-    const data = useObjectData(dataRequest);
-
-    const parsedData = Object.entries(data.value).
-    filter(([ path, data ]) => data !== null && data.encoding === 'utf-8').
-    map(([ path, data ]) => {
-      const item: RegisterItem<any> = yaml.load(data!.value as string);
-      return { [path.replace('.yaml', '')]: item };
-    }).
-    reduce((p, c) => ({ ...p, ...c }), {});
+    //const parsedData = Object.entries(data.value).
+    //filter(([ path, data ]) => data !== null && data.encoding === 'utf-8').
+    //map(([ path, data ]) => {
+    //  const item: RegisterItem<any> = yaml.load(data!.value as string);
+    //  return { [path.replace('.yaml', '')]: item };
+    //}).
+    //reduce((p, c) => ({ ...p, ...c }), {});
 
     return {
-      ...data,
-      value: parsedData,
+      isUpdating: false,
+      errors: [],
+      value: result.value.data,
+      refresh: () => void 0,
+      _reqCounter: 0,
     };
   };
 

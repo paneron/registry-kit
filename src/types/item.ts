@@ -44,6 +44,7 @@ interface ItemReference {
 }
 
 
+//type LocalItemReference = Omit<ItemReference, 'registerID'>;
 
 
 interface AbstractItemSource {

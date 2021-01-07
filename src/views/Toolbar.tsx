@@ -131,17 +131,17 @@ const CRSelector: React.FC<{
   onSelectCR?: (crID: string | undefined) => void
 }> = function ({ selectedCRID, onSelectCR }) {
 
-  const { changeObjects, useObjectData, useObjectPaths } = useContext(DatasetContext);
+  const { changeObjects, useRawObjectData, useRawObjectPaths } = useContext(DatasetContext);
 
   const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
 
-  const crObjectPaths = useObjectPaths({ pathPrefix: 'change-requests' }).value;
+  const crObjectPaths = useRawObjectPaths({ pathPrefix: 'change-requests' }).value;
 
   const dataRequest = crObjectPaths.map(objectPath => ({
     [objectPath]: 'utf-8' as 'utf-8'
   })).reduce((prev, curr) => ({ ...prev, ...curr }), {});
 
-  const crs: ChangeRequest[] = Object.values(useObjectData(dataRequest).value).
+  const crs: ChangeRequest[] = Object.values(useRawObjectData(dataRequest).value).
   filter(val => val !== null).
   map(val => {
     const cr: ChangeRequest = yaml.load(val!.value as string | undefined || '{}');
