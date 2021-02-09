@@ -52,25 +52,25 @@ export const ChangeRequestView: React.FC<
     useRegisterItemData,
     onSave, onDelete }) {
 
-  const { useRawObjectData, makeRandomID, changeObjects } = useContext(DatasetContext);
+  const { useObjectData, makeRandomID, updateObjects } = useContext(DatasetContext);
 
   const [selectedItem, selectItem] = useState<string>('justification');
 
   const objectPath = `change-requests/${id}.yaml`;
-  const crData = useRawObjectData({ [objectPath]: 'utf-8' as const });
-  const dataAsString = crData.value?.[objectPath]?.value || undefined;
-  const maybeCR: ChangeRequest | Record<never, never> | undefined = dataAsString !== undefined
-    ? yaml.load(dataAsString as string)
-    : undefined;
+  const crData = useObjectData({ objectPaths: [objectPath] });
+  const dataAsString = crData.value.data?.[objectPath]?.value ?? undefined;
+  const maybeCR: ChangeRequest | Record<never, never> | undefined =
+    dataAsString !== undefined
+      ? yaml.load(dataAsString as string)
+      : undefined;
 
-  const itemDataRequest = Object.keys((maybeCR as ChangeRequest)?.proposals || {}).map(itemIDWithClass => {
-    return { [itemIDWithClass]: 'utf-8' as const };
-  }).reduce((p, c) => ({ ...p, ...c }), {});
+  const itemPaths = Object.keys((maybeCR as ChangeRequest)?.proposals || {});
 
   //log.debug("Item data request", itemDataRequest);
   //const itemData = useObjectData(itemDataRequest).value;
 
-  const itemData: Record<string, RegisterItem<any>> = useRegisterItemData(itemDataRequest).value;
+  const itemData: Record<string, RegisterItem<any>> =
+    useRegisterItemData({ itemPaths }).value;
 
   const [edited, updateEdited] = useState<ChangeRequest | null>(null);
 
@@ -122,7 +122,7 @@ export const ChangeRequestView: React.FC<
     }
 
     async function handleAcceptProposal(itemID: string, clsID: string, proposal: ChangeProposal) {
-      if (!changeObjects) {
+      if (!updateObjects) {
         return;
       }
 
@@ -142,13 +142,15 @@ export const ChangeRequestView: React.FC<
           dateAccepted: new Date(),
           data: proposal.payload,
         };
-        await changeObjects({
-          [itemFilePath]: {
-            newValue: yaml.dump(newItem, { noRefs: true }),
-            oldValue: null,
-            encoding: 'utf-8' as const,
+        await updateObjects({
+          commitMessage: `CR: Accepted addition of ${clsID}/${itemID} (per CR ${id})`,
+          objectChangeset: {
+            [itemFilePath]: {
+              newValue: newItem,
+              oldValue: null,
+            },
           },
-        }, `CR: Accepted addition of ${clsID}/${itemID} (per CR ${id})`);
+        }, );
 
       } else if (proposal.type === 'clarification') {
         if (!existingItem) {
@@ -159,13 +161,15 @@ export const ChangeRequestView: React.FC<
           ...existingItem,
           data: proposal.payload,
         };
-        await changeObjects({
-          [itemPath]: {
-            newValue: yaml.dump(clarifiedItem, { noRefs: true }),
-            oldValue: yaml.dump(existingItem, { noRefs: true }),
-            encoding: 'utf-8' as const,
+        await updateObjects({
+          commitMessage: `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`,
+          objectChangeset: {
+            [itemPath]: {
+              newValue: clarifiedItem,
+              oldValue: existingItem,
+            },
           },
-        }, `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`);
+        }, );
 
       } else if (proposal.type === 'amendment') {
         if (!existingItem) {
@@ -186,20 +190,22 @@ export const ChangeRequestView: React.FC<
             throw new Error("Cannot accept proposed amendment: superseding item is not specified or cannot be found");
           }
         }
-        await changeObjects({
-          [itemPath]: {
-            newValue: yaml.dump(amendedItem, { noRefs: true }),
-            oldValue: yaml.dump(existingItem, { noRefs: true }),
-            encoding: 'utf-8' as const,
+        await updateObjects({
+          commitMessage: `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`,
+          objectChangeset: {
+            [itemPath]: {
+              newValue: amendedItem,
+              oldValue: existingItem,
+            },
           },
-        }, `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`);
+        }, );
       }
     }
 
     const tentativelyAccepted = cr.status === 'tentative' && cr.disposition === 'accepted';
     const tentativelyNotAccepted = cr.status === 'tentative' && cr.disposition === 'notAccepted';
 
-    const actions = changeObjects !== undefined
+    const actions = updateObjects !== undefined
       ? <ButtonGroup>
           <Button disabled={edited === null} onClick={handleSave}>Save</Button>
 
@@ -258,14 +264,14 @@ export const ChangeRequestView: React.FC<
     if (selectedItem === 'justification') {
       detailView = <CRJustification
         value={cr.justification}
-        onChange={changeObjects
+        onChange={updateObjects
           ? (justification) => updateEdited({ ...cr, justification })
           : undefined}
       />;
     } else if (selectedItem === 'control-body') {
       detailView = <CRControlBodyInput
         value={{ notes: cr.controlBodyNotes, event: cr.controlBodyDecisionEvent }}
-        onChange={changeObjects
+        onChange={updateObjects
           ? (controlBodyNotes, controlBodyDecisionEvent) =>
             updateEdited({ ...cr, controlBodyNotes, controlBodyDecisionEvent })
           : undefined}
@@ -273,14 +279,14 @@ export const ChangeRequestView: React.FC<
     } else if (selectedItem === 'manager') {
       detailView = <CRManagerNotes
         value={cr.registerManagerNotes}
-        onChange={changeObjects
+        onChange={updateObjects
           ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
           : undefined}
       />;
     } else if (selectedItem === 'proposals') {
       detailView = <NonIdealState
         description={
-          changeObjects
+          updateObjects
           ? <>
               <Callout style={{ textAlign: 'left', marginBottom: '1rem' }} title="Managing your proposals" intent="primary">
                 <p>
@@ -300,9 +306,12 @@ export const ChangeRequestView: React.FC<
                     key={classID}
                     icon="add"
                     text={classCfg.meta.title}
-                    onClick={async () => handleAddProposal(
-                      `${classCfg.meta.id}/${await makeRandomID()}`,
-                      classCfg.defaults || {})}
+                    disabled={!makeRandomID}
+                    onClick={makeRandomID
+                      ? async () => handleAddProposal(
+                        `${classCfg.meta.id}/${await makeRandomID!()}`,
+                        classCfg.defaults || {})
+                      : undefined}
                   />
                 )}
               </Menu>
@@ -326,16 +335,16 @@ export const ChangeRequestView: React.FC<
             existingItemData={existingItemData || undefined}
             getRelatedClass={getRelatedClass}
             useRegisterItemData={useRegisterItemData}
-            onAccept={changeObjects
+            onAccept={updateObjects
               ? (itemID, clsID) => handleAcceptProposal(itemID, clsID, proposal)
               : undefined}
-            ItemView={(changeObjects && proposal.type !== 'amendment')
+            ItemView={(updateObjects && proposal.type !== 'amendment')
               ? classConfig.views.editView
               : classConfig.views.detailView}
-            onChange={changeObjects
+            onChange={updateObjects
               ? (proposal) => updateEdited(update(cr, { proposals: { [selectedItem]: { $set: proposal } } }))
               : undefined}
-            onDelete={changeObjects
+            onDelete={updateObjects
               ? () => updateEdited(update(cr, { proposals: { $unset: [selectedItem] } }))
               : undefined}
           />;
@@ -365,8 +374,13 @@ export const ChangeRequestView: React.FC<
             itemData={itemData}
             onSelect={selectItem}
             selectedItem={selectedItem}
-            enableControlBodyInput={changeObjects !== undefined || cr.controlBodyDecisionEvent !== undefined || cr.controlBodyNotes !== undefined}
-            enableManagerNotes={changeObjects !== undefined || cr.registerManagerNotes !== undefined}
+            enableControlBodyInput={
+              updateObjects !== undefined ||
+              cr.controlBodyDecisionEvent !== undefined ||
+              cr.controlBodyNotes !== undefined}
+            enableManagerNotes={
+              updateObjects !== undefined ||
+              cr.registerManagerNotes !== undefined}
           />
         </div>
 

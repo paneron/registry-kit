@@ -7,10 +7,48 @@ import { css, jsx } from '@emotion/core';
 import React, { createContext, useContext } from 'react';
 import { GenericRelatedItemViewProps, ItemClassConfiguration, RegisterItem, RelatedItemClassConfiguration } from '../types';
 import { Button, ControlGroup, FormGroup, IFormGroupProps } from '@blueprintjs/core';
+import { ItemClassConfigurationSet } from '../types';
 
 
-type BrowserCtx = { jumpToItem: (classID: string, itemID: string, subregisterID?: string) => void }
-export const BrowserCtx = createContext<BrowserCtx>({ jumpToItem: () => {} });
+export interface BrowserCtx {
+  jumpToItem: (classID: string, itemID: string, subregisterID?: string) => void
+  item: {
+    selected: string | undefined
+    select: (itemID: string | undefined) => void
+  }
+  itemClass: {
+    selected: string | undefined
+    select: (itemClassID: string | undefined) => void
+  }
+  subregister: {
+    selected: string | undefined
+    select?: (subregisterID: string) => void
+  }
+  getRelatedClass: (itemClassID: string) => RelatedItemClassConfiguration
+  availableItemClasses: string[]
+  itemClassConfiguration: ItemClassConfigurationSet
+}
+
+export const BrowserCtx = createContext<BrowserCtx>({
+  jumpToItem: () => {},
+  subregister: {
+    selected: undefined,
+  },
+  getRelatedClass: (itemClassID) => ({
+    title: itemClassID,
+    itemView: () => <span>[An {itemClassID} item]</span>
+  }),
+  item: {
+    selected: undefined,
+    select: () => {},
+  },
+  itemClass: {
+    selected: undefined,
+    select: () => {},
+  },
+  availableItemClasses: [],
+  itemClassConfiguration: {},
+});
 
 
 export const PropertyDetailView: React.FC<{
@@ -52,8 +90,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const browserCtx: BrowserCtx = useContext(BrowserCtx);
 
   const itemResult = useRegisterItemData({
-    [itemPath]: 'utf-8' as const,
+    itemPaths: [itemPath]
   });
+
   const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
 
   let classConfigured: boolean

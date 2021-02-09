@@ -1,22 +1,19 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import yaml from 'js-yaml';
-
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 
 import { css, jsx } from '@emotion/core';
 
 import {
-  Button, Colors, ControlGroup, IButtonProps, IOptionProps,
+  Button, Colors, ControlGroup, IButtonProps,
   Navbar, NavbarHeading,
   HTMLSelect,
   Tooltip,
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { ChangeRequest, Register, Subregisters } from '../types';
-import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
+import { Register, Subregisters } from '../types';
 
 
 const NO_SELECTED_SUBREGISTER_OPTION = '—';
@@ -48,7 +45,7 @@ export const Toolbar: React.FC<{
   onSelectCR,
 }) {
 
-  const { changeObjects } = useContext(DatasetContext);
+  const { updateObjects } = useContext(DatasetContext);
 
   const registerInfoComplete = (
     register.id !== undefined &&
@@ -66,13 +63,13 @@ export const Toolbar: React.FC<{
     onClick: () => onOpenRegisterInfo ? onOpenRegisterInfo(!registerInfoOpen) : void 0,
   };
 
-  const registerInfoButtonProps: IButtonProps = changeObjects
+  const registerInfoButtonProps: IButtonProps = updateObjects
     ? !registerInfoComplete
       ? { ..._registerInfoButtonProps, icon: 'warning-sign', rightIcon: 'edit' }
       : { ..._registerInfoButtonProps, icon: 'info-sign', rightIcon: 'edit' }
     : { ..._registerInfoButtonProps, icon: 'info-sign' };
 
-  const registerInfoButtonTooltip: string = changeObjects
+  const registerInfoButtonTooltip: string = updateObjects
     ? !registerInfoComplete
       ? "Complete register information"
       : "Edit register information"
@@ -117,68 +114,72 @@ export const Toolbar: React.FC<{
       </Navbar.Group>
 
       <Navbar.Group align="right">
+        TODO: CR
+        {/*
         <CRSelector
           selectedCRID={selectedCRID}
           onSelectCR={onSelectCR} />
+        */}
       </Navbar.Group>
     </Navbar>
   );
 };
 
 
-const CRSelector: React.FC<{
-  selectedCRID?: string
-  onSelectCR?: (crID: string | undefined) => void
-}> = function ({ selectedCRID, onSelectCR }) {
-
-  const { changeObjects, useRawObjectData, useRawObjectPaths } = useContext(DatasetContext);
-
-  const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
-
-  const crObjectPaths = useRawObjectPaths({ pathPrefix: 'change-requests' }).value;
-
-  const dataRequest = crObjectPaths.map(objectPath => ({
-    [objectPath]: 'utf-8' as 'utf-8'
-  })).reduce((prev, curr) => ({ ...prev, ...curr }), {});
-
-  const crs: ChangeRequest[] = Object.values(useRawObjectData(dataRequest).value).
-  filter(val => val !== null).
-  map(val => {
-    const cr: ChangeRequest = yaml.load(val!.value as string | undefined || '{}');
-    return cr;
-  }).
-  filter(cr => cr.timeDisposed === undefined);
-
-  const changeRequestOptions: IOptionProps[] = [
-    CHANGE_REQUEST_OPTIONS.new,
-    ...crs.map(cr => ({
-      value: cr.id,
-      label: `${(cr.justification || cr.id).substring(0, 40)}…`,
-    })),
-  ];
-
-  const creatingNew = _selectedCR === CHANGE_REQUEST_OPTIONS.new.value;
-  const canCreate = changeObjects !== undefined;
-
-  return (
-    <ControlGroup>
-      <HTMLSelect
-        disabled={!onSelectCR || selectedCRID !== undefined}
-        options={changeRequestOptions}
-        value={selectedCRID || _selectedCR}
-        onChange={(evt) => _selectCR(evt.currentTarget.value)}
-      />
-      <Button
-          active={selectedCRID !== undefined}
-          disabled={!onSelectCR || !canCreate && creatingNew}
-          onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
-        {!creatingNew ? 'Open CR' : 'Create'}
-      </Button>
-      <Button
-          disabled={!onSelectCR || selectedCRID === undefined}
-          onClick={() => onSelectCR ? onSelectCR(undefined) : void 0}>
-        Close
-      </Button>
-    </ControlGroup>
-  );
-};
+// const CRSelector: React.FC<{
+//   selectedCRID?: string
+//   onSelectCR?: (crID: string | undefined) => void
+// }> = function ({ selectedCRID, onSelectCR }) {
+// 
+//   const { updateObjects, useRawObjectData, useRawObjectPaths } = useContext(DatasetContext);
+// 
+//   const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
+// 
+//   const crObjectPaths = useRawObjectPaths({ pathPrefix: 'change-requests' }).value;
+// 
+//   const dataRequest = crObjectPaths.map(objectPath => ({
+//     [objectPath]: 'utf-8' as 'utf-8'
+//   })).reduce((prev, curr) => ({ ...prev, ...curr }), {});
+// 
+//   const crs: ChangeRequest[] = Object.values(useRawObjectData(dataRequest).value).
+//   filter(val => val !== null).
+//   map(val => {
+//     const cr: ChangeRequest = yaml.load(val!.value as string | undefined || '{}');
+//     return cr;
+//   }).
+//   filter(cr => cr.timeDisposed === undefined);
+// 
+//   const changeRequestOptions: IOptionProps[] = [
+//     CHANGE_REQUEST_OPTIONS.new,
+//     ...crs.map(cr => ({
+//       value: cr.id,
+//       label: `${(cr.justification || cr.id).substring(0, 40)}…`,
+//     })),
+//   ];
+// 
+//   const creatingNew = _selectedCR === CHANGE_REQUEST_OPTIONS.new.value;
+//   const canCreate = changeObjects !== undefined;
+// 
+//   return (
+//     <ControlGroup>
+//       <HTMLSelect
+//         disabled={!onSelectCR || selectedCRID !== undefined}
+//         options={changeRequestOptions}
+//         value={selectedCRID || _selectedCR}
+//         onChange={(evt) => _selectCR(evt.currentTarget.value)}
+//       />
+//       <Button
+//           active={selectedCRID !== undefined}
+//           disabled={!onSelectCR || !canCreate && creatingNew}
+//           onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
+//         {!creatingNew ? 'Open CR' : 'Create'}
+//       </Button>
+//       <Button
+//           disabled={!onSelectCR || selectedCRID === undefined}
+//           onClick={() => onSelectCR ? onSelectCR(undefined) : void 0}>
+//         Close
+//       </Button>
+//     </ControlGroup>
+//   );
+// };
+// 

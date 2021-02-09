@@ -7,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { css, jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
-import { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest,
@@ -39,9 +39,8 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   const {
     title,
-    useRawObjectData,
     useObjectData,
-    changeObjects,
+    updateObjects,
   } = useContext(DatasetContext);
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
@@ -51,7 +50,10 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   //const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
-  const registerObject = useRawObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
+  const registerObject = useObjectData({
+    objectPaths: [REGISTER_METADATA_FILENAME],
+  }).value.data?.[REGISTER_METADATA_FILENAME]?.value;
+
   const registerInfo: Partial<Register> | null = registerObject
     ? yaml.load(registerObject as string)
     : null;
@@ -68,9 +70,9 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     }
   }, [Object.keys(subregisters || {}).length]);
 
-  const useRegisterItemData: RegisterItemDataHook = (paths: ObjectDataRequest) => {
+  const useRegisterItemData: RegisterItemDataHook = (opts) => {
     const result = useObjectData({
-      objectPaths: Object.keys(paths),
+      objectPaths: opts.itemPaths,
     }) as ValueHook<{ data: Record<string, RegisterItem<any>> }>;
 
     //const parsedData = Object.entries(data.value).
@@ -91,16 +93,18 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   };
 
   async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
-    if (!isBusy && changeObjects) {
+    if (!isBusy && updateObjects) {
       setBusy(true);
       try {
-        await changeObjects({
-          [REGISTER_METADATA_FILENAME]: {
-            oldValue: oldValue ? yaml.dump(oldValue, { noRefs: true }) : null,
-            newValue: yaml.dump(value, { noRefs: true }),
-            encoding: 'utf-8',
+        await updateObjects({
+          commitMessage: "Edit register metadata",
+          objectChangeset: {
+            [REGISTER_METADATA_FILENAME]: {
+              oldValue: oldValue ? oldValue : null,
+              newValue: value,
+            },
           },
-        }, "Edit register info");
+        });
       } finally {
         setBusy(false);
       }
@@ -108,16 +112,18 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   }
 
   async function handleSaveCR(crID: string, value: ChangeRequest | null, oldValue: ChangeRequest) {
-    if (!isBusy && crID === selectedCRID && changeObjects) {
+    if (!isBusy && crID === selectedCRID && updateObjects) {
       setBusy(true);
       try {
-        await changeObjects({
-          [`change-requests/${crID}.yaml`]: {
-            oldValue: yaml.dump(oldValue, { noRefs: true }),
-            newValue: value ? yaml.dump(value, { noRefs: true }) : null,
-            encoding: 'utf-8',
+        await updateObjects({
+          commitMessage: `CR: ${value === null ? 'delete' : 'update'} ${crID}`,
+          objectChangeset: {
+            [`change-requests/${crID}.yaml`]: {
+              oldValue: oldValue,
+              newValue: value ?? null,
+            },
           },
-        }, `CR: ${value === null ? 'delete' : 'update'} ${crID}`);
+        }, );
         if (value === null) {
           selectCR(undefined);
         }
@@ -134,7 +140,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   if (registerInfoOpen) {
     mainViewEl = <RegisterInformation
       register={registerInfo}
-      onSave={(!isBusy && changeObjects !== undefined)
+      onSave={(!isBusy && updateObjects !== undefined)
         ? handleSaveRegisterInfo
         : undefined}
     />;
@@ -145,10 +151,10 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       itemClassConfiguration={itemClassConfiguration}
       useRegisterItemData={useRegisterItemData}
 
-      onDelete={(!isBusy && changeObjects !== undefined)
+      onDelete={(!isBusy && updateObjects !== undefined)
         ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
         : undefined}
-      onSave={(!isBusy && changeObjects !== undefined)
+      onSave={(!isBusy && updateObjects !== undefined)
         ? handleSaveCR
         : undefined}
     />;

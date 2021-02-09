@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { Payload, RegisterItem, RegisterItemClass } from './item';
 
 
@@ -46,7 +46,7 @@ export type RegisterItemIDListHook =
   (opts: { searchCriteria?: SearchCriteria, sortBy?: SimpleSortingExpression }) => ValueHook<string[]>;
 
 export type RegisterItemDataHook<P extends Payload = Payload> =
-  (paths: ObjectDataRequest) => ValueHook<Record<string, RegisterItem<P>>>;
+  (opts: { itemPaths: string[] }) => ValueHook<Record<string, RegisterItem<P>>>;
 
 export type ItemClassConfigurationSet = {
   [itemClassID: string]: ItemClassConfiguration<any>

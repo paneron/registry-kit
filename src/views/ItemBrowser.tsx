@@ -10,21 +10,27 @@ import { FixedSizeList as List } from 'react-window';
 
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup, HTMLSelect,
-  InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip,
+  InputGroup, IOptionProps, NonIdealState, Spinner, Tooltip, UL,
 } from '@blueprintjs/core';
 
+import ErrorState from '@riboseinc/paneron-extension-kit/widgets/ErrorState';
+import { progressToValue } from '@riboseinc/paneron-extension-kit/util';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
-  ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
+  ItemClassConfiguration,
+  ItemClassConfigurationSet,
+  RegisterItem,
+  RegisterItemDataHook,
   RegistryItemViewProps,
-  RegistryViewProps, RelatedItemClassConfiguration
+  RelatedItemClassConfiguration,
 } from '../types';
+
 import { MainView } from './MainView';
 import { BrowserCtx, _getRelatedClass } from './util';
 
 
-export const RegisterItemBrowser: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+export const RegisterItemBrowser: React.FC<{
+  itemClassConfiguration: ItemClassConfigurationSet
   availableClassIDs?: string[]
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
@@ -41,9 +47,6 @@ export const RegisterItemBrowser: React.FC<
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
   const itemClasses = availableClassIDs || Object.keys(itemClassConfiguration);
-  const classConfiguration: ItemClassConfigurationSet =
-    itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
-    { o[k] = itemClassConfiguration[k]; return o; }, {});
 
   const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
     onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
@@ -65,6 +68,25 @@ export const RegisterItemBrowser: React.FC<
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
   }
+
+  const browserContextValue: BrowserCtx = {
+    jumpToItem,
+    item: {
+      selected: selectedItem,
+      select: selectItem,
+    },
+    itemClass: {
+      selected: selectedClass,
+      select: selectClass,
+    },
+    subregister: {
+      selected: selectedSubregisterID,
+      select: onSubregisterChange,
+    },
+    availableItemClasses: itemClasses,
+    itemClassConfiguration: itemClassConfiguration,
+    getRelatedClass: _getRelatedClass(itemClassConfiguration),
+  };
 
   //class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
   //  constructor(props: any) {
@@ -99,7 +121,7 @@ export const RegisterItemBrowser: React.FC<
   //}
 
   return (
-    <BrowserCtx.Provider value={{ jumpToItem }}>
+    <BrowserCtx.Provider value={browserContextValue}>
       <MainView>
 
         <div
@@ -114,20 +136,10 @@ export const RegisterItemBrowser: React.FC<
 
           <ItemClassSelector
             css={css`select { font-weight: bold; }`}
-            itemClasses={classConfiguration}
-            selectedClassID={selectedClass}
             onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
 
           <ItemBrowser
             css={css`flex: 1`}
-            itemClasses={itemClassConfiguration}
-
-            selectedItem={selectedItem}
-            selectedClassID={selectedClass}
-            selectedSubregisterID={selectedSubregisterID}
-
-            onSelectItem={selectItem}
-            useRegisterItemData={useRegisterItemData}
           />
 
         </div>
@@ -135,10 +147,6 @@ export const RegisterItemBrowser: React.FC<
         {/*<ErrorBoundary>*/}
           <ItemDetails
             useRegisterItemData={useRegisterItemData}
-            getRelatedClass={_getRelatedClass(itemClassConfiguration)}
-            itemClass={itemClassConfiguration[selectedClass]}
-            subregisterID={selectedSubregisterID}
-            itemID={selectedItem}
           />
         {/*</ErrorBoundary>*/}
 
@@ -149,16 +157,14 @@ export const RegisterItemBrowser: React.FC<
 
 
 const ItemClassSelector: React.FC<{
-  itemClasses: RegistryViewProps["itemClassConfiguration"]
-  selectedClassID: string | undefined
   onSelectClass: (classID: string) => void
   className?: string
 }> = function ({
-  itemClasses,
-  selectedClassID,
   onSelectClass,
   className,
 }) {
+  const { itemClassConfiguration: itemClasses, itemClass } = useContext(BrowserCtx);
+  const selectedClassID = itemClass.selected;
 
   const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
   map(([classID, classData]) => {
@@ -178,63 +184,76 @@ const ItemClassSelector: React.FC<{
 
 
 const ItemBrowser: React.FC<{
-  selectedItem?: string
-  onSelectItem: (item: string | undefined) => void
-
-  itemClasses: RegistryViewProps["itemClassConfiguration"]
-  selectedClassID: string
-
-  selectedSubregisterID?: string
-
-  useRegisterItemData: RegisterItemDataHook
-
   className?: string
 }> = function ({
-  itemClasses,
-  selectedItem,
-  selectedClassID,
-  selectedSubregisterID,
-  onSelectItem,
-  useRegisterItemData,
   className,
 }) {
 
-  const { useRawObjectPaths } = useContext(DatasetContext);
+  const { useFilteredIndex, useIndexDescription } = useContext(DatasetContext);
 
-  const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
+  const { itemClassConfiguration: itemClasses, item, itemClass, subregister } = useContext(BrowserCtx);
+  const selectedItem = item.selected;
+  const onSelectItem = item.select;
+  const selectedClassID = itemClass.selected;
+  const selectedSubregisterID = subregister.selected;
 
-  const pathPrefix = selectedSubregisterID
-    ? `subregisters/${selectedSubregisterID}/${classConfig.meta.id}`
-    : classConfig.meta.id;
+  const classConfig: ItemClassConfiguration<any> | undefined = selectedClassID
+    ? itemClasses[selectedClassID]
+    : undefined;
 
-  const objectPathsQuery = useRawObjectPaths({ pathPrefix });
+  const pathPrefix = classConfig
+    ? selectedSubregisterID
+      ? `subregisters/${selectedSubregisterID}/${classConfig.meta.id}`
+      : classConfig.meta.id
+    : undefined;
 
-  const registerItemQuery = objectPathsQuery.value.
-    filter(path => path !== '.DS_Store').
-    map(path => ({ [path.replace('.yaml', '')]: 'utf-8' as const })).
-    reduce((prev, curr) => ({ ...prev, ...curr }), {})
-
-  const items = useRegisterItemData(registerItemQuery);
+  const queryExpression = pathPrefix ? `return objectPath.startsWith("${pathPrefix}")` : `return false`;
+  const filteredIndex = useFilteredIndex({ queryExpression });
+  const indexDescription = useIndexDescription({ indexID: filteredIndex.value.indexID });
+  const indexStatus = indexDescription.value.status;
+  const itemCount = indexStatus.objectCount;
 
   const getRelatedClass = _getRelatedClass(itemClasses);
 
   let el: JSX.Element;
 
-  if (objectPathsQuery.isUpdating || items.isUpdating) {
-    el = <NonIdealState icon={<Spinner />} />;
+  const userErrors = [
+    ...filteredIndex.errors,
+    ...indexDescription.errors,
+  ];
+
+  if (classConfig === undefined) {
+    el = <NonIdealState title="No class is selected" />;
+
+  } else if (userErrors.length > 0) {
+    el = <ErrorState
+      viewName="register item browser"
+      error={userErrors[0]}
+      technicalDetails={<>
+        There were errors building or retrieving dataset index:
+        <UL>
+          {userErrors.slice(1, userErrors.length).map(e => <li>{e.name}: {e.message}</li>)}
+        </UL>
+      </>}
+    />;
+
+  } else if (indexStatus.progress || filteredIndex.value.indexID === undefined) {
+    const progressValue = indexStatus.progress
+      ? progressToValue(indexStatus.progress)
+      : undefined;
+    const spinner = <Spinner
+      value={progressValue} />;
+
+    el = <NonIdealState
+      icon={spinner}
+      description={indexStatus.progress?.phase} />;
 
   } else {
-    // NOTE: On switching between classes/subregisters,
-    // it could be that class configuration has updated,
-    // but items.value still contains items of previous type. This isn’t great.
-    const orderedItems = Object.values(items.value).sort(classConfig.itemSorter
-      ? getItemSorter(classConfig.itemSorter)
-      : defaultItemSorterFunc);
-
     el = (
       <ItemList
-        items={orderedItems}
-        classConfig={itemClasses[selectedClassID]}
+        indexID={filteredIndex.value.indexID}
+        itemCount={itemCount}
+        classConfig={classConfig}
         getRelatedClassConfig={getRelatedClass}
         selectedItem={selectedItem}
         onSelectItem={onSelectItem} />
@@ -249,37 +268,95 @@ const ItemBrowser: React.FC<{
 };
 
 
+const FilteredItem: React.FC<{
+  indexID: string
+  position: number
+  selectedObjectPath?: string
+  style: React.CSSProperties | undefined
+  onSelect: (objectPath: string) => void
+  getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
+  ItemView: React.FC<RegistryItemViewProps<any> & { itemID: string }>
+}> = function ({ indexID, position, selectedObjectPath, onSelect, style, ItemView, getRelatedClassConfig }) {
+  const { useObjectPathFromFilteredIndex, useObjectData } = useContext(DatasetContext);
+
+  const objectPath = useObjectPathFromFilteredIndex({
+    indexID,
+    position,
+  });
+
+  const itemData = useObjectData({
+    objectPaths: objectPath.value.objectPath !== ''
+      ? [objectPath.value.objectPath]
+      : [],
+  });
+
+  const isLoaded: boolean = objectPath.isUpdating || itemData.isUpdating;
+  const isSelected: boolean = isLoaded && objectPath.value.objectPath === selectedObjectPath;
+
+  function handleClick(evt: React.MouseEvent) {
+    if ((evt.target as Element).nodeName === 'INPUT') {
+      evt.stopPropagation();
+    } else if (isLoaded) {
+      setImmediate(() => onSelect(objectPath.value.objectPath));
+    }
+  }
+
+  return (
+    <ItemContainer
+        active={isSelected}
+        minimal fill style={style}
+        alignText="left"
+        onClick={handleClick}>
+      <ItemView
+        itemID={objectPath.value.objectPath}
+        itemData={itemData}
+        getRelatedItemClassConfiguration={getRelatedClassConfig}
+      />
+    </ItemContainer>
+  );
+}
+
+
 const ItemList: React.FC<{
-  items: RegisterItem<any>[]
+  itemCount: number
+  indexID: string
   classConfig: ItemClassConfiguration<any>
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
 }> = function ({
-  items,
+  itemCount,
+  indexID,
   selectedItem,
   classConfig,
   onSelectItem,
   getRelatedClassConfig,
 }) {
-
   const CONTAINER_PADDINGS = 0;
-  const itemCount = items.length;
 
   const listContainer = useRef<HTMLDivElement>(null);
   const listEl = useRef<List>(null);
   const [listHeight, setListHeight] = useState<number>(CONTAINER_PADDINGS);
 
-  const Item = classConfig.views.listItemView;
+  const ItemView = classConfig.views.listItemView;
+
+  //const selectedItemPosition: number | undefined =
+  //  useItemPositionInFilteredIndex({ indexID, selectedItem }).value.position;
+
+  //useEffect(() => {
+  //  scrollToSelectedItemPosition();
+  //}, [selectedItemPosition]);
+
+  // function scrollToSelectedItemPosition() {
+  //   if (listEl && listEl.current && selectedItemPosition) {
+  //     listEl.current.scrollToItem(selectedItemPosition, 'smart');
+  //   }
+  // }
 
   useEffect(() => {
     const updateListHeight = debounce(100, () => {
       setListHeight(listContainer.current?.parentElement?.offsetHeight || CONTAINER_PADDINGS);
-      setImmediate(() => {
-        if (selectedItem !== undefined) {
-          scrollTo(selectedItem)
-        }
-      });
+      //setImmediate(scrollToSelectedItemPosition);
     });
 
     window.addEventListener('resize', updateListHeight);
@@ -291,39 +368,19 @@ const ItemList: React.FC<{
   }, [listContainer.current]);
 
   const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
-    const item = items[index];
-
-    function handleClick(evt: React.MouseEvent) {
-      if ((evt.target as Element).nodeName === 'INPUT') {
-        evt.stopPropagation();
-      } else {
-        setImmediate(() => onSelectItem(item.id));
-      }
-    }
-
     return (
-      <ItemContainer
-          active={item.id === selectedItem}
-          minimal fill style={style}
-          alignText="left"
-          onClick={handleClick}>
-        <Item
-          getRelatedItemClassConfiguration={getRelatedClassConfig}
-          itemData={item.data}
-          itemID={item.id}
-          css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
-        />
-      </ItemContainer>
+      <FilteredItem
+        getRelatedClassConfig={getRelatedClassConfig}
+        onSelect={(itemID) => onSelectItem(itemID)}
+        selectedObjectPath={selectedItem}
+        ItemView={ItemView}
+        style={style}
+        indexID={indexID}
+        position={index}
+        css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
+      />
     );
   };
-
-  function scrollTo(itemID: string) {
-    if (listEl && listEl.current) {
-      listEl.current.scrollToItem(
-        items.findIndex(i => i.id === itemID),
-        'smart');
-    }
-  }
 
   return (
     <div ref={listContainer}>
@@ -349,27 +406,41 @@ const ItemContainer = styled(Button)`
 
 
 const ItemDetails: React.FC<{
-  itemID?: string
-  itemClass: ItemClassConfiguration<any>
-  subregisterID?: string
   useRegisterItemData: RegisterItemDataHook
-  getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
-}> = function ({ itemID, itemClass, subregisterID, getRelatedClass, useRegisterItemData }) {
+}> = function ({ useRegisterItemData }) {
   let details: JSX.Element;
 
+  const { itemClassConfiguration, itemClass: _itemClass, subregister, item: _item, getRelatedClass } = useContext(BrowserCtx);
+
+  const itemID = _item.selected;
+  const subregisterID = subregister.selected;
+
+  const itemClass: ItemClassConfiguration<any> | undefined = _itemClass.selected
+    ? itemClassConfiguration[_itemClass.selected]
+    : undefined;
+
   //const itemPath = `${itemClass.meta.id}/${itemID}`;
-  const _itemPath = `${itemClass.meta.id}/${itemID}`;
-  const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
+  const _itemPath = itemClass
+    ? `${itemClass.meta.id}/${itemID}`
+    : undefined;
+
+  const itemPath = _itemPath && subregisterID
+    ? `subregisters/${subregisterID}/${_itemPath}`
+    : _itemPath;
 
   const itemResponse = useRegisterItemData({
-    [itemPath]: 'utf-8' as const,
+    itemPaths: itemPath ? [itemPath] : [],
   });
-  const item = (itemResponse.value?.[itemPath] || null) as (null | RegisterItem<any>);
 
-  const ItemTitle = itemClass.views.listItemView;
+  const item = itemPath
+    ? (itemResponse.value?.[itemPath] || null) as (null | RegisterItem<any>)
+    : null;
 
   if (itemID === undefined) {
     return <NonIdealState title="No item is selected" />;
+
+  } else if (itemClass === undefined) {
+    return <NonIdealState icon="heart-broken" title="No item class is selected" />;
 
   } else if (itemResponse.isUpdating) {
     details = <div className={Classes.SKELETON}>Loading…</div>;
@@ -388,6 +459,8 @@ const ItemDetails: React.FC<{
   } else {
     details = <NonIdealState title="Item data not available" />;
   }
+
+  const ItemTitle = itemClass.views.listItemView;
 
   function StyledTitle(props: RegistryItemViewProps<any>) {
     const Component = itemResponse.isUpdating || !itemID
@@ -450,26 +523,26 @@ const ItemDetails: React.FC<{
 };
 
 
-function getItemSorter(sorterFunc?: ItemClassConfiguration<any>["itemSorter"]):
-ItemClassConfiguration<any>["itemSorter"] {
-  if (sorterFunc !== undefined) {
-    return function (a, b) {
-      if (a.data && b.data) {
-        try {
-          return sorterFunc(a.data, b.data)
-        } catch (e) {
-          // Error sorting items. Could happen if items
-          // are not of the type expected by the sorter.
-          // log.error("Error sorting items", a.data, b.data);
-          return 0;
-        }
-      } else {
-        return defaultItemSorterFunc();
-      }
-    }
-  } {
-    return defaultItemSorterFunc;
-  }
-}
-
-const defaultItemSorterFunc = () => 0;
+// function getItemSorter(sorterFunc?: ItemClassConfiguration<any>["itemSorter"]):
+// ItemClassConfiguration<any>["itemSorter"] {
+//   if (sorterFunc !== undefined) {
+//     return function (a, b) {
+//       if (a.data && b.data) {
+//         try {
+//           return sorterFunc(a.data, b.data)
+//         } catch (e) {
+//           // Error sorting items. Could happen if items
+//           // are not of the type expected by the sorter.
+//           // log.error("Error sorting items", a.data, b.data);
+//           return 0;
+//         }
+//       } else {
+//         return defaultItemSorterFunc();
+//       }
+//     }
+//   } {
+//     return defaultItemSorterFunc;
+//   }
+// }
+// 
+// const defaultItemSorterFunc = () => 0;
