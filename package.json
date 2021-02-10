@@ -1,6 +1,6 @@
 {
   "name": "@riboseinc/paneron-registry-kit",
-  "version": "1.0.0-alpha20",
+  "version": "1.0.0-alpha21",
   "main": "index.js",
   "author": "Ribose Inc. <open.source@ribose.com>",
   "scripts": {
