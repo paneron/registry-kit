@@ -421,7 +421,7 @@ const ItemDetails: React.FC<{
               <InputGroup
                 disabled
                 leftIcon="calendar"
-                value={`acceped ${item?.dateAccepted?.toLocaleDateString() || '—'}`}
+                value={`acceped ${item?.dateAccepted?.toLocaleDateString?.() || '—'}`}
               />
             </ControlGroup>
             <StyledTitle
