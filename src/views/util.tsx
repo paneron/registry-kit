@@ -83,6 +83,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
         {item !== null && !itemResult.isUpdating
           ? <Item
               itemID={itemID}
+              useRegisterItemData={useRegisterItemData}
               itemData={item.data}
               getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
             />

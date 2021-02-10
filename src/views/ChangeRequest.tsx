@@ -364,6 +364,7 @@ export const ChangeRequestView: React.FC<
             proposals={cr.proposals}
             itemData={itemData}
             onSelect={selectItem}
+            useRegisterItemData={useRegisterItemData}
             selectedItem={selectedItem}
             enableControlBodyInput={changeObjects !== undefined || cr.controlBodyDecisionEvent !== undefined || cr.controlBodyNotes !== undefined}
             enableManagerNotes={changeObjects !== undefined || cr.registerManagerNotes !== undefined}
@@ -386,6 +387,7 @@ export const ChangeRequestView: React.FC<
 
 const CRNavigation: React.FC<
   Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+  useRegisterItemData: RegisterItemDataHook
   proposals: ChangeRequest["proposals"]
   enableControlBodyInput: boolean
   enableManagerNotes: boolean
@@ -395,6 +397,7 @@ const CRNavigation: React.FC<
 }> =
 function ({
     itemData, proposals, itemClassConfiguration,
+    useRegisterItemData,
     onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
 
@@ -437,12 +440,14 @@ function ({
       } else if (proposal.type === 'addition') {
         label = <View
           itemID={itemID}
+          useRegisterItemData={useRegisterItemData}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
           itemData={proposal.payload} />;
       } else if (data !== undefined) {
         label = <View
           itemID={itemID}
+          useRegisterItemData={useRegisterItemData}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
           itemData={data} />;
@@ -583,6 +588,7 @@ const ProposalDetails: React.FC<{
     const View = ItemView as ItemEditView<any>;
     itemView = <View
       itemData={itemData}
+      useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       onChange={onChange
         ? (payload) => onChange ? onChange({ ...value, payload }) : void 0

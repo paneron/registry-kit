@@ -234,6 +234,7 @@ const ItemBrowser: React.FC<{
     el = (
       <ItemList
         items={orderedItems}
+        useRegisterItemData={useRegisterItemData}
         classConfig={itemClasses[selectedClassID]}
         getRelatedClassConfig={getRelatedClass}
         selectedItem={selectedItem}
@@ -252,6 +253,7 @@ const ItemBrowser: React.FC<{
 const ItemList: React.FC<{
   items: RegisterItem<any>[]
   classConfig: ItemClassConfiguration<any>
+  useRegisterItemData: RegisterItemDataHook
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
@@ -260,6 +262,7 @@ const ItemList: React.FC<{
   selectedItem,
   classConfig,
   onSelectItem,
+  useRegisterItemData,
   getRelatedClassConfig,
 }) {
 
@@ -310,6 +313,7 @@ const ItemList: React.FC<{
           onClick={handleClick}>
         <View
           getRelatedItemClassConfiguration={getRelatedClassConfig}
+          useRegisterItemData={useRegisterItemData}
           itemData={item.data}
           itemID={item.id}
           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
@@ -426,6 +430,7 @@ const ItemDetails: React.FC<{
             </ControlGroup>
             <StyledTitle
               itemData={item?.data || {}}
+              useRegisterItemData={useRegisterItemData}
               getRelatedItemClassConfiguration={getRelatedClass} />
           </div>
         : null}
