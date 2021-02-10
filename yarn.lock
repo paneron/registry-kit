@@ -982,7 +982,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
 
-"@riboseinc/paneron-extension-kit@^1.0.1":
+"@riboseinc/paneron-extension-kit@=1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-1.0.1.tgz#b7a63f328b0f716e717d1c530b00390ec4bea486"
   integrity sha512-wE/CfAIsS6kXvRGWP3ov2DHl6gKuiFRbphWDT8w0aX/CJDk53niCMgghjhYjIUnyoCNKAhekzwru2v3eahZUHw==
