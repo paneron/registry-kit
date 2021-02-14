@@ -373,7 +373,7 @@ const ItemDetails: React.FC<{
     details = <div className={Classes.SKELETON}>Loading…</div>;
 
   } else if (item) {
-    const DetailView = itemClass.views.detailView;
+    const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
 
     details = (
       <DetailView

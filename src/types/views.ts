@@ -45,8 +45,8 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
 
   views: {
     listItemView: ItemListView<P>
-    detailView: ItemDetailView<P>
     editView: ItemEditView<P>
+    detailView?: ItemDetailView<P>
   }
 }
 
