@@ -43,7 +43,7 @@ interface ItemReference {
   itemID: string
 }
 
-
+export type InternalItemReference = Omit<ItemReference, 'registerID'>
 
 
 interface AbstractItemSource {

@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
-import { Payload, RegisterItem, RegisterItemClass } from './item';
+import { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 
 
 // Extension configuration
@@ -78,7 +78,7 @@ export interface RegistryItemViewProps<P extends Payload> {
 }
 
 export interface GenericRelatedItemViewProps {
-  itemRef: { classID: string, itemID: string, subregisterID?: string }
+  itemRef: InternalItemReference
   className?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
