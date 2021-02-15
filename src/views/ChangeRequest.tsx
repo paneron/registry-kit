@@ -63,7 +63,9 @@ export const ChangeRequestView: React.FC<
     ? yaml.load(dataAsString as string)
     : undefined;
 
-  const itemDataRequest = Object.keys((maybeCR as ChangeRequest)?.proposals || {}).map(itemIDWithClass => {
+  const itemDataRequest = Object.
+  keys((maybeCR as ChangeRequest)?.proposals || {}).
+  map(itemIDWithClass => {
     return { [itemIDWithClass]: 'utf-8' as const };
   }).reduce((p, c) => ({ ...p, ...c }), {});
 
