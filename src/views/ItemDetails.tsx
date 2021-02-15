@@ -1,9 +1,11 @@
 import React from 'react';
 import { css } from '@emotion/core';
+
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup,
   InputGroup, NonIdealState, Tooltip
 } from '@blueprintjs/core';
+
 import {
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
   RegistryItemViewProps,
@@ -54,20 +56,24 @@ export const ItemDetails: React.FC<{
 
   function StyledTitle(props: RegistryItemViewProps<any>) {
     const Component = itemResponse.isUpdating || !itemID
-      ? (props: { className?: string; }) => <span className={props.className}>
-        <span className={Classes.SKELETON}>Loading…</span>
+      ? (props: { className?: string; }) => (
+          <span className={props.className}>
+            <span className={Classes.SKELETON}>Loading…</span>
             &emsp;
           </span>
+        )
       : ItemTitle;
 
-    return <Component
-      css={css`
-        margin-top: 1em; font-weight: bold; font-size: 110%;
-        line-height: 1;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      `}
-      itemID={itemID!}
-      {...props} />;
+    return (
+      <Component
+        css={css`
+          margin-top: 1em; font-weight: bold; font-size: 110%;
+          line-height: 1;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        `}
+        itemID={itemID!}
+        {...props} />
+    );
   }
 
   return (
