@@ -17,7 +17,10 @@ export const DISPOSITION_OPTIONS = [
 export interface ChangeRequest {
   // Supplied by sponsor
   justification: string // Justification for proposal
-  proposals: { [itemIDWithClass: string]: ChangeProposal }
+
+  proposals: {
+    [itemID: string]: ChangeProposal
+  }
 
   // Enforced by the system
   id: string
@@ -42,6 +45,8 @@ export const PROPOSAL_TYPES = [
 interface BaseProposal {
   //itemID: RegisterItemID
   type: typeof PROPOSAL_TYPES[number]
+  classID: string
+  subregisterID?: string
 }
 
 interface Addition extends BaseProposal {

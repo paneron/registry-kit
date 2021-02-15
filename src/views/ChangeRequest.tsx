@@ -42,13 +42,14 @@ export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
 
 
 export const ChangeRequestView: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters'> & {
   id: string
   useRegisterItemData: RegisterItemDataHook
   onSave?: (crID: string, newValue: ChangeRequest, oldValue: ChangeRequest) => Promise<void>
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
 }> = function ({
     itemClassConfiguration, id,
+    subregisters,
     useRegisterItemData,
     onSave, onDelete }) {
 
@@ -59,15 +60,26 @@ export const ChangeRequestView: React.FC<
   const objectPath = `change-requests/${id}.yaml`;
   const crData = useObjectData({ [objectPath]: 'utf-8' as const });
   const dataAsString = crData.value?.[objectPath]?.value || undefined;
-  const maybeCR: ChangeRequest | Record<never, never> | undefined = dataAsString !== undefined
+  const maybeCR: ChangeRequest | undefined = dataAsString !== undefined
     ? yaml.load(dataAsString as string)
     : undefined;
 
-  const itemDataRequest = Object.
-  keys((maybeCR as ChangeRequest)?.proposals || {}).
-  map(itemIDWithClass => {
-    return { [itemIDWithClass]: 'utf-8' as const };
-  }).reduce((p, c) => ({ ...p, ...c }), {});
+  function getItemPath(itemID: string, proposal: ChangeProposal): string {
+    const { classID, subregisterID } = proposal;
+    let itemPath: string;
+    if (subregisterID) {
+      itemPath = `subregisters/${subregisterID}/${classID}/${itemID}`;
+    } else {
+      itemPath = `${classID}/${itemID}`;
+    }
+    return itemPath;
+  }
+
+  const itemDataRequest = maybeCR
+    ? Object.entries(maybeCR.proposals).
+        map(([itemID, proposal]) => ({ [getItemPath(itemID, proposal)]: 'utf-8' as const })).
+        reduce((p, c) => ({ ...p, ...c }), {})
+    : {};
 
   //log.debug("Item data request", itemDataRequest);
   //const itemData = useObjectData(itemDataRequest).value;
@@ -117,28 +129,43 @@ export const ChangeRequestView: React.FC<
       onSave(originalCR.id, { ...cr, status: newStatus, disposition: newDisposition, ...extraProps }, originalCR);
     }
 
-    async function handleAddProposal(id: string, defaults: Record<string, any>) {
+    async function handleAddProposal(classID: string, subregisterID?: string) {
+      const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
+
+      if (!classConfig) {
+        log.error("Unable to add proposal: item class configuration cannot be found", classID);
+        throw new Error("Unable to add proposal");
+      }
+
+      const payload = classConfig.defaults ?? {};
+      const id = await makeRandomID();
+
       updateEdited(update(cr, { proposals: {
-        [id]: { $set: { type: 'addition', payload: defaults } },
+        [id]: { $set: {
+          type: 'addition',
+          payload,
+          classID,
+          subregisterID,
+        } },
       } }))
     }
 
-    async function handleAcceptProposal(itemID: string, clsID: string, proposal: ChangeProposal) {
+    async function handleAcceptProposal(itemID: string, proposal: ChangeProposal) {
       if (!changeObjects) {
         return;
       }
 
+      const clsID = proposal.classID;
       const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === clsID);
-
       if (!classConfig) {
         log.error("Cannot locate class config", clsID, proposal);
         return;
       }
 
-      const itemPath = `${clsID}/${itemID}`;
-      const itemFilePath = `${itemPath}.yaml`;
-
+      const itemPath = getItemPath(itemID, proposal);
       const existingItem = itemData[itemPath];
+
+      const itemFilePath = `${itemPath}.yaml`;
 
       if (proposal.type === 'addition') {
         if (existingItem) {
@@ -192,9 +219,20 @@ export const ChangeRequestView: React.FC<
             : 'retired',
         };
         if (proposal.amendmentType === 'supersession') {
-          if (cr.proposals[`${clsID}/${proposal.supersedingItemID}`]?.type !== 'addition') {
-            log.error("Cannot accept proposed amendment: superseding item is not specified or cannot be found", clsID, itemID);
-            throw new Error("Cannot accept proposed amendment: superseding item is not specified or cannot be found");
+          if (classConfig.itemCanBeSuperseded === true) {
+            if (proposal.supersedingItemID) {
+              const supersedingItemPath = getItemPath(proposal.supersedingItemID, proposal);
+              if (cr.proposals[proposal.supersedingItemID]?.type !== 'addition' && !itemData[supersedingItemPath]) {
+                log.error("Cannot accept proposed amendment: superseding item does not exist and was not added in this change request", clsID, itemID);
+                throw new Error("Cannot accept proposed amendment: superseding item does not exist and was not added in this change request");
+              }
+            } else {
+              log.error("Cannot accept proposed amendment: superseding item is not specified", clsID, itemID);
+              throw new Error("Cannot accept proposed amendment: superseding item is not specified");
+            }
+          } else {
+            log.error("Cannot accept proposed amendment: item class does not allow supersession", clsID, itemID);
+            throw new Error("Cannot accept proposed amendment: item class does not allow supersession");
           }
         }
         await changeObjects({
@@ -236,7 +274,8 @@ export const ChangeRequestView: React.FC<
               {tentativelyAccepted
                 ? <Button
                       disabled={edited !== null}
-                      active={cr.status === 'final'} icon="take-action"
+                      active={cr.status === 'final'}
+                      icon="take-action"
                       onClick={() => handleUpdateState('final', 'accepted')}>
                     Final
                   </Button>
@@ -252,7 +291,8 @@ export const ChangeRequestView: React.FC<
               {tentativelyNotAccepted
                 ? <Button
                       disabled={edited !== null}
-                      active={cr.status === 'final'} icon="take-action"
+                      active={cr.status === 'final'}
+                      icon="take-action"
                       onClick={() => handleUpdateState('final', 'notAccepted')}>
                     Final
                   </Button>
@@ -298,24 +338,44 @@ export const ChangeRequestView: React.FC<
                   Select a proposed change on the left to&nbsp;view or&nbsp;edit&nbsp;it.
                 </p>
                 <p>
-                  To propose a change, close this CR, navigate to an item you want to change in item list, and&nbsp;click “Propose&nbsp;a&nbsp;change”.
+                  To propose a change to an existing item, exit this CR, navigate to an item you want to change in item list, and&nbsp;click “Propose&nbsp;a&nbsp;change”.
                 </p>
                 <p>
                   You won’t be able to edit your change request once you have submitted it.
                 </p>
               </Callout>
               <Menu className={Classes.ELEVATION_1} style={{ marginBottom: '1rem' }}>
-                <Menu.Divider title="New item" />
-                {Object.entries(itemClassConfiguration).map(([classID, classCfg]) =>
-                  <Menu.Item
-                    key={classID}
-                    icon="add"
-                    text={classCfg.meta.title}
-                    onClick={async () => handleAddProposal(
-                      `${classCfg.meta.id}/${await makeRandomID()}`,
-                      classCfg.defaults || {})}
-                  />
-                )}
+                <Menu.Item
+                  title="Propose a new item"
+                  icon="add"
+                  children={subregisters !== undefined
+                    ? Object.entries(subregisters).map(([subregisterID, subregisterCfg]) =>
+                        <Menu.Item
+                          key={subregisterID}
+                          label="subregister"
+                          text={subregisterCfg.title}
+                          children={Object.entries(itemClassConfiguration).
+                              filter(([classID]) => subregisterCfg.itemClasses.indexOf(classID) >= 0).
+                              map(([classID, classCfg]) =>
+                            <Menu.Item
+                              key={classID}
+                              label="item class"
+                              text={classCfg.meta.title}
+                              onClick={async () => handleAddProposal(classID, subregisterID)}
+                            />
+                          )}
+                        />
+                      )
+                    : Object.entries(itemClassConfiguration).map(([classID, classCfg]) =>
+                        <Menu.Item
+                          key={classID}
+                          label="item class"
+                          text={classCfg.meta.title}
+                          onClick={async () => handleAddProposal(classID)}
+                        />
+                      )
+                  }
+                />
               </Menu>
             </>
           : <Callout style={{ textAlign: 'left' }} title="Reviewing proposed changes" intent="primary">
@@ -325,10 +385,11 @@ export const ChangeRequestView: React.FC<
       />;
     } else if (cr.proposals[selectedItem] && (itemData[selectedItem] || cr.proposals[selectedItem].type === 'addition')) {
       const proposal = cr.proposals[selectedItem];
-      const classID = selectedItem.split('/')[0];
-      const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
+      const itemID = selectedItem;
+      const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === proposal.classID);
       const existingItemData = itemData[selectedItem];
       const getRelatedClass = _getRelatedClass(itemClassConfiguration);
+
       if (classConfig && (existingItemData || proposal.type === 'addition')) {
         try {
           detailView = <ProposalDetails
@@ -338,7 +399,7 @@ export const ChangeRequestView: React.FC<
             getRelatedClass={getRelatedClass}
             useRegisterItemData={useRegisterItemData}
             onAccept={changeObjects
-              ? (itemID, clsID) => handleAcceptProposal(itemID, clsID, proposal)
+              ? () => handleAcceptProposal(itemID, proposal)
               : undefined}
             ItemView={(changeObjects && proposal.type !== 'amendment')
               ? classConfig.views.editView
@@ -397,7 +458,7 @@ export const ChangeRequestView: React.FC<
 
 
 const CRNavigation: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters'> & {
   useRegisterItemData: RegisterItemDataHook
   proposals: ChangeRequest["proposals"]
   enableControlBodyInput: boolean
@@ -407,7 +468,7 @@ const CRNavigation: React.FC<
   onSelect: (item: string) => void
 }> =
 function ({
-    itemData, proposals, itemClassConfiguration,
+    itemData, proposals, itemClassConfiguration, subregisters,
     useRegisterItemData,
     onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
@@ -441,6 +502,9 @@ function ({
     childNodes: [ ...Object.entries(proposals).map(([itemIDWithClass, proposal]) => {
       const [classID, itemID] = itemIDWithClass.split('/');
       const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
+      const subregConfig = subregisters && proposal.subregisterID
+        ? subregisters[proposal.subregisterID]
+        : undefined;
       const View = clsConfig?.views.listItemView;
       const data = itemData[itemIDWithClass]?.data || undefined;
 
@@ -451,6 +515,7 @@ function ({
       } else if (proposal.type === 'addition') {
         label = <View
           itemID={itemID}
+          subregisterID={proposal.subregisterID}
           useRegisterItemData={useRegisterItemData}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
@@ -458,6 +523,7 @@ function ({
       } else if (data !== undefined) {
         label = <View
           itemID={itemID}
+          subregisterID={proposal.subregisterID}
           useRegisterItemData={useRegisterItemData}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
@@ -470,13 +536,22 @@ function ({
         isSelected: selectedItem === itemIDWithClass,
         id: itemIDWithClass,
         icon: PROPOSAL_ICON[proposal.type] as IconName,
-        secondaryLabel: <Tag
-            minimal css={css`white-space: nowrap;`}
-            title={clsConfig?.meta.title}>
-          {Object.entries(itemClassConfiguration).
-            find(([_, cfg]) => cfg.meta.id === classID)?.[0] ||
-            clsConfig?.meta.title}
-        </Tag>,
+        secondaryLabel: <>
+          {proposal.subregisterID
+            ? <Tag
+                  minimal css={css`white-space: nowrap;`}
+                  title={subregConfig?.title}>
+                {subregConfig?.title}
+              </Tag>
+            : null}
+          <Tag
+              minimal css={css`white-space: nowrap;`}
+              title={clsConfig?.meta.title}>
+            {Object.entries(itemClassConfiguration).
+              find(([_, cfg]) => cfg.meta.id === classID)?.[0] ||
+              clsConfig?.meta.title}
+          </Tag>
+        </>,
         label,
       };
     })],
@@ -539,7 +614,7 @@ const CRManagerNotes: React.FC<{
   return (
     <FormGroup label="Manager notes:">
       <TextArea fill
-        disabled={!onChange} value={value || ''}
+        disabled={!onChange} value={value ?? ''}
         onChange={(evt) => onChange ? onChange(evt.currentTarget.value || undefined) : void 0} />
     </FormGroup>
   );
@@ -548,6 +623,7 @@ const CRManagerNotes: React.FC<{
 
 const ProposalDetails: React.FC<{
   value: ChangeProposal
+  subregisterID?: string
   classConfig: ItemClassConfiguration<any>
 
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
@@ -556,7 +632,7 @@ const ProposalDetails: React.FC<{
   existingItemData?: Payload
   ItemView?: ItemEditView<any> | ItemDetailView<any>
 
-  onAccept?: (itemID: string, clsID: string) => void
+  onAccept?: () => void
   onChange?: (val: ChangeProposal) => void
   onDelete?: () => void
 }> = function ({
@@ -598,7 +674,9 @@ const ProposalDetails: React.FC<{
     proposalProperties = null;
   }
 
-  const itemData: Payload | undefined = value.type === 'addition' ? value.payload : existingItemData;
+  const itemData: Payload | undefined = value.type === 'addition'
+    ? value.payload
+    : existingItemData;
 
   if (itemData === undefined) {
     itemView = <NonIdealState icon="heart-broken" title="Unable to display this item" />;
@@ -606,6 +684,7 @@ const ProposalDetails: React.FC<{
     const View = ItemView as ItemEditView<any>;
     itemView = <View
       itemData={itemData}
+      subregisterID={value.subregisterID}
       useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       onChange={onChange
@@ -614,6 +693,7 @@ const ProposalDetails: React.FC<{
   } else {
     const View = ItemView as ItemDetailView<any>;
     itemView = <View
+      subregisterID={value.subregisterID}
       useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
       itemData={itemData} />;
