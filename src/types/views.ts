@@ -35,6 +35,9 @@ export type ItemClassConfigurationSet = {
 export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> {
   meta: RegisterItemClass
 
+  itemCanBeSuperseded?: boolean
+  // If false, items of this class cannot be superseded, only retired.
+  // Default is true.
 
   defaults?: RegistryItemPayloadDefaults<P>
   // Used to pre-populate item data e.g. when a new item is created.
