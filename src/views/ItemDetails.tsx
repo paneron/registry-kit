@@ -43,6 +43,7 @@ export const ItemDetails: React.FC<{
     details = (
       <DetailView
         getRelatedItemClassConfiguration={getRelatedClass}
+        subregisterID={subregisterID}
         useRegisterItemData={useRegisterItemData}
         itemData={item.data} />
     );
