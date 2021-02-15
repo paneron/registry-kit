@@ -12,7 +12,7 @@ const ITEM_STATUSES = [
   'invalid',
 ] as const;
 
-type ItemStatus = typeof ITEM_STATUSES[number];
+export type ItemStatus = typeof ITEM_STATUSES[number];
 
 
 export interface RegisterItemID {
