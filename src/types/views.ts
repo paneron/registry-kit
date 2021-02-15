@@ -76,6 +76,7 @@ export type RelatedItemClassConfiguration = {
 export interface RegistryItemViewProps<P extends Payload> {
   itemData: P
   className?: string
+  subregisterID?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
 }
