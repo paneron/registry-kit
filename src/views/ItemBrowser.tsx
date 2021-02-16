@@ -58,10 +58,6 @@ export const RegisterItemBrowser: React.FC<
     }
   }, [JSON.stringify(itemClasses)]);
 
-  useEffect(() => {
-    selectItem(undefined);
-  }, [selectedSubregisterID]);
-
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
   }
