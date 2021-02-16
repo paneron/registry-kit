@@ -103,7 +103,7 @@ export const ItemDetails: React.FC<{
             <InputGroup
               disabled
               leftIcon="calendar"
-              value={`acceped ${item?.dateAccepted?.toLocaleDateString?.() || '—'}`} />
+              value={`accepted ${item?.dateAccepted?.toLocaleDateString?.() || '—'}`} />
           </ControlGroup>
           <StyledTitle
             itemData={item?.data || {}}
