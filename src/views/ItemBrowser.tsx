@@ -297,6 +297,14 @@ const ItemList: React.FC<{
   const ItemView = ({ index, style }: { index: number, style: React.CSSProperties }) => {
     const item = items[index];
 
+    if (!item) {
+      return <Button
+        minimal fill style={style} alignText="left"
+        css={css`white-space: nowrap; font-size: 90%;
+                  & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }`}
+        onClick={handleClick}>Loading…</Button>;
+    }
+
     function handleClick(evt: React.MouseEvent) {
       if ((evt.target as Element).nodeName === 'INPUT') {
         evt.stopPropagation();
