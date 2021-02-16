@@ -96,5 +96,8 @@ export type ItemDetailView<P> = React.FC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook
 }>;
 
-export type ItemListView<P> = React.FC<RegistryItemViewProps<P> & { itemID: string }>;
+export interface ItemListViewProps<P> extends RegistryItemViewProps<P> {
+  itemID: string
+}
+export type ItemListView<P> = React.FC<ItemListViewProps<P>>;
 export type LazyItemView = React.FC<{ itemID: string }>;
