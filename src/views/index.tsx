@@ -180,6 +180,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   } else if (selectedCRID) {
     mainViewEl = <ChangeRequestView
       id={selectedCRID}
+      subregisters={subregisters}
       itemClassConfiguration={itemClassConfiguration}
       useRegisterItemData={useRegisterItemData}
 
