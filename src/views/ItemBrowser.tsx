@@ -162,7 +162,7 @@ const ItemClassSelector: React.FC<{
 
   const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
   map(([classID, classData]) => {
-    return { value: classID, label: classData.meta.title };
+    return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
   });
 
   return (
