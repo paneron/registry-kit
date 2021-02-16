@@ -235,6 +235,7 @@ const ItemBrowser: React.FC<{
       <ItemList
         items={orderedItems}
         useRegisterItemData={useRegisterItemData}
+        subregisterID={selectedSubregisterID}
         classConfig={itemClasses[selectedClassID]}
         getRelatedClassConfig={getRelatedClass}
         selectedItem={selectedItem}
@@ -252,6 +253,7 @@ const ItemBrowser: React.FC<{
 
 const ItemList: React.FC<{
   items: RegisterItem<any>[]
+  subregisterID?: string
   classConfig: ItemClassConfiguration<any>
   useRegisterItemData: RegisterItemDataHook
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
@@ -261,6 +263,7 @@ const ItemList: React.FC<{
   items,
   selectedItem,
   classConfig,
+  subregisterID,
   onSelectItem,
   useRegisterItemData,
   getRelatedClassConfig,
@@ -314,6 +317,7 @@ const ItemList: React.FC<{
         <View
           getRelatedItemClassConfiguration={getRelatedClassConfig}
           useRegisterItemData={useRegisterItemData}
+          subregisterID={subregisterID}
           itemData={item.data}
           itemID={item.id}
           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
