@@ -15,7 +15,7 @@ import {
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { ChangeRequest, Register, Subregisters } from '../types';
+import { ChangeRequest, Register, RegisterStakeholder, Subregisters } from '../types';
 import { CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 
 
@@ -25,6 +25,7 @@ const NO_SELECTED_SUBREGISTER_OPTION = '—';
 export const Toolbar: React.FC<{
   title: string
   register: Partial<Register>
+  stakeholder: RegisterStakeholder | undefined
 
   registerInfoOpen: boolean
   onOpenRegisterInfo?: (state: boolean) => void
@@ -37,6 +38,7 @@ export const Toolbar: React.FC<{
   onSelectCR?: (crID: string | undefined) => void
 }> = function ({
   register,
+  stakeholder,
   registerInfoOpen,
   onOpenRegisterInfo,
 
@@ -47,8 +49,6 @@ export const Toolbar: React.FC<{
   selectedCRID,
   onSelectCR,
 }) {
-
-  const { changeObjects } = useContext(DatasetContext);
 
   const registerInfoComplete = (
     register.id !== undefined &&
@@ -66,13 +66,13 @@ export const Toolbar: React.FC<{
     onClick: () => onOpenRegisterInfo ? onOpenRegisterInfo(!registerInfoOpen) : void 0,
   };
 
-  const registerInfoButtonProps: IButtonProps = changeObjects
+  const registerInfoButtonProps: IButtonProps = stakeholder?.role === 'owner'
     ? !registerInfoComplete
       ? { ..._registerInfoButtonProps, icon: 'warning-sign', rightIcon: 'edit' }
       : { ..._registerInfoButtonProps, icon: 'info-sign', rightIcon: 'edit' }
     : { ..._registerInfoButtonProps, icon: 'info-sign' };
 
-  const registerInfoButtonTooltip: string = changeObjects
+  const registerInfoButtonTooltip: string = stakeholder?.role === 'owner'
     ? !registerInfoComplete
       ? "Complete register information"
       : "Edit register information"
@@ -172,12 +172,12 @@ const CRSelector: React.FC<{
           active={selectedCRID !== undefined}
           disabled={!onSelectCR || !canCreate && creatingNew}
           onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
-        {!creatingNew ? 'Open CR' : 'Create'}
+        Go
       </Button>
       <Button
           disabled={!onSelectCR || selectedCRID === undefined}
           onClick={() => onSelectCR ? onSelectCR(undefined) : void 0}>
-        Close
+        Exit
       </Button>
     </ControlGroup>
   );

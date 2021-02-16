@@ -11,28 +11,30 @@ import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest,
+  DECISION_STATUSES,
   Register,
   RegisterItem,
   RegisterItemDataHook,
+  RegisterStakeholder,
   RegistryViewProps,
 } from '../types';
 import { RegisterInformation } from './RegisterInformation';
-import { ChangeRequestView } from './ChangeRequest';
+import { ChangeRequestView, CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
 import { Toolbar } from './Toolbar';
 import { REGISTER_METADATA_FILENAME } from '../common';
 
 
-//function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
-//  return {
-//    id,
-//    justification: '',
-//    timeStarted: new Date(),
-//    proposals: {},
-//    sponsor,
-//    status: DECISION_STATUSES[0],
-//  };
-//};
+function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
+  return {
+    id,
+    justification: '',
+    timeStarted: new Date(),
+    proposals: {},
+    sponsor,
+    status: DECISION_STATUSES[0],
+  };
+};
 
 
 export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters }) {
@@ -41,6 +43,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     title,
     useObjectData,
     changeObjects,
+    makeRandomID,
   } = useContext(DatasetContext);
 
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
@@ -48,17 +51,17 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
   const [isBusy, setBusy] = useState(false);
 
-  //const remoteUsername: string | undefined = useRemoteUsername().value.username;
+  const remoteUsername: string | undefined = 'demouser'; //useRemoteUsername().value.username;
 
   const registerObject = useObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
   const registerInfo: Partial<Register> | null = registerObject
     ? yaml.load(registerObject as string)
     : null;
 
-  // const stakeholder: RegisterStakeholder | undefined = remoteUsername
-  //   ? (registerInfo?.stakeholders || []).
-  //     find(s => s.gitServerUsername === remoteUsername)
-  //   : undefined;
+  const stakeholder: RegisterStakeholder | undefined = remoteUsername
+    ? (registerInfo?.stakeholders ?? []).
+      find(s => s.gitServerUsername === remoteUsername)
+    : undefined;
 
   useEffect(() => {
     const subregisterIDs = Object.keys(subregisters || {});
@@ -98,7 +101,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
             newValue: yaml.dump(value, { noRefs: true }),
             encoding: 'utf-8',
           },
-        }, "Edit register info");
+        }, "Edit register info", true);
       } finally {
         setBusy(false);
       }
@@ -126,6 +129,43 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       }
     }
   }
+
+  async function handleSelectCR(crID: string | undefined) {
+    console.debug("handleSelectCR", crID, CHANGE_REQUEST_OPTIONS.new.value && stakeholder?.gitServerUsername !== undefined && changeObjects);
+    if (crID === undefined) {
+      selectCR(undefined);
+
+    } else if (crID === CHANGE_REQUEST_OPTIONS.new.value) {
+
+      if (stakeholder?.gitServerUsername !== undefined && changeObjects) {
+        console.debug("handleSelectCR: GO");
+        setBusy(true);
+        try {
+          const newID = await makeRandomID();
+          console.debug("handleSelectCR", newID);
+          await changeObjects({
+            [`change-requests/${newID}.yaml`]: {
+              oldValue: null,
+              newValue: yaml.dump(makeBlankCR(newID, stakeholder), { noRefs: true }),
+              encoding: 'utf-8',
+            },
+          }, `CR: Start ${newID}`);
+          console.debug("handleSelectCR: changed objects");
+          setTimeout(() => selectCR(newID), 1000);
+        } finally {
+          setBusy(false);
+        }
+
+      } else {
+        selectCR(undefined);
+      }
+
+    } else {
+      selectCR(crID);
+    }
+  }
+
+
 
   let mainViewEl: JSX.Element;
 
@@ -170,6 +210,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         title={title}
 
         register={registerInfo || {}}
+        stakeholder={stakeholder}
 
         subregisters={subregisters}
         selectedSubregisterID={selectedSubregisterID}
@@ -182,7 +223,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
         selectedCRID={selectedCRID}
         onSelectCR={(!registerInfoOpen && !isBusy)
-          ? selectCR
+          ? handleSelectCR
           : undefined}
       />
 
