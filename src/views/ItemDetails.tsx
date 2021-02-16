@@ -1,5 +1,8 @@
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+
 import React from 'react';
-import { css } from '@emotion/core';
+import { jsx, css } from '@emotion/core';
 
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup,
@@ -23,7 +26,7 @@ export const ItemDetails: React.FC<{
   let details: JSX.Element;
 
   //const itemPath = `${itemClass.meta.id}/${itemID}`;
-  const _itemPath = `${itemClass.meta.id}/${itemID}`;
+  const _itemPath = `${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}`;
   const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
 
   const itemResponse = useRegisterItemData({
@@ -31,10 +34,16 @@ export const ItemDetails: React.FC<{
   });
   const item = (itemResponse.value?.[itemPath] || null) as (null | RegisterItem<any>);
 
-  const ItemTitle = itemClass.views.listItemView;
+  const ItemTitle = itemClass?.views?.listItemView;
 
   if (itemID === undefined) {
     return <NonIdealState title="No item is selected" />;
+
+  } else if (!itemClass) {
+    return <NonIdealState
+      icon="heart-broken"
+      title="Item class not found"
+      description="This may be an issue with registry extension configuration" />
 
   } else if (itemResponse.isUpdating) {
     details = <div className={Classes.SKELETON}>Loading…</div>;
