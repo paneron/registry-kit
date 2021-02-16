@@ -346,8 +346,8 @@ export const ChangeRequestView: React.FC<
               </Callout>
               <Menu className={Classes.ELEVATION_1} style={{ marginBottom: '1rem' }}>
                 <Menu.Item
-                  title="Propose a new item"
                   icon="add"
+                  text="Propose a new item"
                   children={subregisters !== undefined
                     ? Object.entries(subregisters).map(([subregisterID, subregisterCfg]) =>
                         <Menu.Item
