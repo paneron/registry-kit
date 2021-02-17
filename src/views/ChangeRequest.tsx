@@ -648,7 +648,7 @@ const ProposalDetails: React.FC<{
   useRegisterItemData: RegisterItemDataHook
 
   existingItemData?: Payload
-  ItemView?: ItemEditView<any> | ItemDetailView<any>
+  ItemView: ItemEditView<any> | ItemDetailView<any>
 
   onAccept?: () => void
   onChange?: (val: ChangeProposal) => void
@@ -696,7 +696,7 @@ const ProposalDetails: React.FC<{
     ? value.payload
     : existingItemData;
 
-  if (itemData === undefined) {
+  if (itemData === undefined || ItemView === undefined) {
     itemView = <NonIdealState icon="heart-broken" title="Unable to display this item" />;
   } else if (onChange && value.type !== 'amendment') {
     const View = ItemView as ItemEditView<any>;
