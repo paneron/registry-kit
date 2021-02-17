@@ -422,7 +422,7 @@ export const ChangeRequestView: React.FC<
           detailView = <ProposalDetails
             value={proposal}
             classConfig={classConfig}
-            existingItemData={existingItemData || undefined}
+            existingItemData={existingItemData ?? undefined}
             getRelatedClass={getRelatedClass}
             useRegisterItemData={useRegisterItemData}
             onAccept={canReview
