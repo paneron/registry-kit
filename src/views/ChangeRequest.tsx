@@ -460,6 +460,7 @@ export const ChangeRequestView: React.FC<
         <div css={css`flex-shrink: 0; width: 30vw; display: flex; flex-flow: column nowrap; background: ${Colors.WHITE}`}>
           <CRNavigation
             itemClassConfiguration={itemClassConfiguration}
+            subregisters={subregisters}
             proposals={cr.proposals}
             itemData={itemData}
             onSelect={selectItem}
