@@ -28,6 +28,7 @@ import {
 import { RegisterStakeholder } from '../types';
 import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
+import { ItemDetailsWrapperDiv } from './ItemDetails';
 
 
 const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
@@ -462,7 +463,7 @@ export const ChangeRequestView: React.FC<
           />
         </div>
 
-        <div css={css`flex: 1; padding: 1rem;`} className={Classes.ELEVATION_1}>
+        <div css={css`flex: 1; overflow: hidden; display: flex; flex-flow: column nowrap;`} className={Classes.ELEVATION_1}>
           {detailView}
         </div>
       </MainView>
@@ -740,7 +741,7 @@ const ProposalDetails: React.FC<{
   }
 
   return (
-    <div css={css`flex: 1; display: flex; flex-flow: column nowrap;`}>
+    <div css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem; overflow: hidden;`}>
       <div css={css`flex-shrink: 0; display: flex; flex-flow: row nowrap; align-items: center; margin-bottom: 1rem;`}>
         <HTMLSelect
           options={PROPOSAL_TYPES.map(pt => ({ value: pt, label: pt }))}
@@ -757,9 +758,9 @@ const ProposalDetails: React.FC<{
         {proposalProperties}
       </div>
 
-      <div css={css`flex: 1; overflow-y: auto;`}>
+      <ItemDetailsWrapperDiv className={Classes.ELEVATION_3}>
         {itemView}
-      </div>
+      </ItemDetailsWrapperDiv>
     </div>
   );
 };
