@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { jsx, css } from '@emotion/core';
+import styled from '@emotion/styled';
 
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup,
@@ -112,18 +113,22 @@ export const ItemDetails: React.FC<{
         </div>
         : null}
 
-      <div
-        css={css`
-            flex: 1; overflow-y: auto; padding: 1rem;
-            border-radius: .5rem; background: ${Colors.WHITE};
-            position: relative;
-          `}
-        className={Classes.ELEVATION_3}>
+      <ItemDetailsWrapperDiv className={Classes.ELEVATION_3}>
         {details}
-      </div>
+      </ItemDetailsWrapperDiv>
     </div>
   );
 };
+
+
+export const ItemDetailsWrapperDiv = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: .5rem;
+  background: ${Colors.WHITE};
+  position: relative;
+`;
 
 
 export default ItemDetails;
