@@ -25,6 +25,7 @@ import {
   RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
+import { RegisterStakeholder } from '../types';
 import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
 
@@ -44,12 +45,14 @@ export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
 export const ChangeRequestView: React.FC<
   Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters'> & {
   id: string
+  stakeholder?: RegisterStakeholder
   useRegisterItemData: RegisterItemDataHook
   onSave?: (crID: string, newValue: ChangeRequest, oldValue: ChangeRequest) => Promise<void>
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
 }> = function ({
     itemClassConfiguration, id,
     subregisters,
+    stakeholder,
     useRegisterItemData,
     onSave, onDelete }) {
 
@@ -151,7 +154,7 @@ export const ChangeRequestView: React.FC<
     }
 
     async function handleAcceptProposal(itemID: string, proposal: ChangeProposal) {
-      if (!changeObjects) {
+      if (!changeObjects || !canReview) {
         return;
       }
 
@@ -245,59 +248,75 @@ export const ChangeRequestView: React.FC<
       }
     }
 
+    const isMyCR = cr.sponsor.gitServerUsername === stakeholder?.gitServerUsername;
+
+    const canDelete = onDelete && cr.timeProposed === undefined && isMyCR;
+    const canPropose = onSave && (cr.timeProposed === undefined || cr.disposition === 'withdrawn') && isMyCR;
+    const canEdit = onSave && cr.timeProposed === undefined && isMyCR;
+    const canWithdraw = onSave && cr.timeProposed !== undefined && cr.timeDisposed === undefined && isMyCR && cr.disposition !== 'withdrawn';
+    const canReview = onSave && cr.timeProposed !== undefined && (stakeholder?.role === 'manager' || stakeholder?.role === 'owner');
+    const canDispose = onSave && cr.timeProposed !== undefined && cr.timeDisposed === undefined && (stakeholder?.role === 'manager' || stakeholder?.role === 'owner');
+
+
     const tentativelyAccepted = cr.status === 'tentative' && cr.disposition === 'accepted';
     const tentativelyNotAccepted = cr.status === 'tentative' && cr.disposition === 'notAccepted';
 
-    const actions = changeObjects !== undefined
+    const actions = (canPropose || canWithdraw || canDispose || canDelete)
       ? <ButtonGroup>
-          <Button disabled={edited === null} onClick={handleSave}>Save</Button>
+          {(canEdit || canReview) ? <Button disabled={edited === null} onClick={handleSave}>Save</Button> : null}
 
-          <Button intent="danger" disabled={edited !== null} onClick={onDelete
-            ? () => onDelete(originalCR.id, originalCR)
-            : void 0}>Delete</Button>
+          {canDelete
+            ? <Button intent="danger" disabled={edited !== null} onClick={onDelete
+                ? () => onDelete(originalCR.id, originalCR)
+                : void 0}>Delete</Button>
+            : null}
 
-            <Button disabled={edited !== null} intent="success"
-              onClick={handlePropose}>Propose</Button>
+          {canPropose
+            ? <Button disabled={edited !== null} intent="success"
+                onClick={handlePropose}>Propose</Button>
+            : null}
 
-            <Button disabled={edited !== null} intent="warning"
-              onClick={() => handleUpdateState('pending', 'withdrawn')}>Withdraw</Button>
+          {canWithdraw
+            ? <Button disabled={edited !== null} intent="warning"
+                onClick={() => handleUpdateState('pending', 'withdrawn')}>Withdraw</Button>
+            : null}
 
-            <React.Fragment>
-              {!tentativelyNotAccepted
-                ? <Button
-                      disabled={edited !== null}
-                      active={cr.disposition === 'accepted'}
-                      onClick={() => handleUpdateState('tentative', 'accepted')}>
-                    Accept
-                  </Button>
-                : null}
-              {tentativelyAccepted
-                ? <Button
-                      disabled={edited !== null}
-                      active={cr.status === 'final'}
-                      icon="take-action"
-                      onClick={() => handleUpdateState('final', 'accepted')}>
-                    Final
-                  </Button>
-                : null}
-              {!tentativelyAccepted
-                ? <Button
-                      disabled={edited !== null}
-                      active={cr.disposition === 'notAccepted'}
-                      onClick={() => handleUpdateState('tentative', 'notAccepted')}>
-                    Do not accept
-                  </Button>
-                : null}
-              {tentativelyNotAccepted
-                ? <Button
-                      disabled={edited !== null}
-                      active={cr.status === 'final'}
-                      icon="take-action"
-                      onClick={() => handleUpdateState('final', 'notAccepted')}>
-                    Final
-                  </Button>
-                : null}
-            </React.Fragment>
+          {canDispose
+            ? <React.Fragment>
+                {!tentativelyNotAccepted
+                  ? <Button
+                        disabled={edited !== null}
+                        active={cr.disposition === 'accepted'}
+                        onClick={() => handleUpdateState('tentative', 'accepted')}>
+                      Accept
+                    </Button>
+                  : null}
+                {tentativelyAccepted
+                  ? <Button
+                        disabled={edited !== null}
+                        active={cr.status === 'final'} icon="take-action"
+                        onClick={() => handleUpdateState('final', 'accepted')}>
+                      Final
+                    </Button>
+                  : null}
+                {!tentativelyAccepted
+                  ? <Button
+                        disabled={edited !== null}
+                        active={cr.disposition === 'notAccepted'}
+                        onClick={() => handleUpdateState('tentative', 'notAccepted')}>
+                      Do not accept
+                    </Button>
+                  : null}
+                {tentativelyNotAccepted
+                  ? <Button
+                        disabled={edited !== null}
+                        active={cr.status === 'final'} icon="take-action"
+                        onClick={() => handleUpdateState('final', 'notAccepted')}>
+                      Final
+                    </Button>
+                  : null}
+              </React.Fragment>
+            : null}
         </ButtonGroup>
       : <React.Fragment>
           Status: <em>{cr.status || '—'}</em>
@@ -398,16 +417,16 @@ export const ChangeRequestView: React.FC<
             existingItemData={existingItemData || undefined}
             getRelatedClass={getRelatedClass}
             useRegisterItemData={useRegisterItemData}
-            onAccept={changeObjects
+            onAccept={canReview
               ? () => handleAcceptProposal(itemID, proposal)
               : undefined}
-            ItemView={(changeObjects && proposal.type !== 'amendment')
+            ItemView={((canEdit && proposal.type !== 'amendment')
               ? classConfig.views.editView
-              : classConfig.views.detailView}
-            onChange={changeObjects
+              : classConfig.views.detailView) ?? classConfig.views.editView}
+            onChange={canEdit
               ? (proposal) => updateEdited(update(cr, { proposals: { [selectedItem]: { $set: proposal } } }))
               : undefined}
-            onDelete={changeObjects
+            onDelete={canEdit
               ? () => updateEdited(update(cr, { proposals: { $unset: [selectedItem] } }))
               : undefined}
           />;
