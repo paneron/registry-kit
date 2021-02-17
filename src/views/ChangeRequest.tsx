@@ -9,6 +9,7 @@ import update from 'immutability-helper';
 import React, { useContext, useState } from 'react';
 
 import { jsx, css } from '@emotion/core';
+import styled from '@emotion/styled';
 
 import {
   Button, ButtonGroup, Callout, Classes,
@@ -327,27 +328,33 @@ export const ChangeRequestView: React.FC<
 
     let detailView: JSX.Element;
     if (selectedItem === 'justification') {
-      detailView = <CRJustification
-        value={cr.justification}
-        onChange={changeObjects
-          ? (justification) => updateEdited({ ...cr, justification })
-          : undefined}
-      />;
+      detailView = <CRMetaInput>
+        <CRJustification
+          value={cr.justification}
+          onChange={changeObjects
+            ? (justification) => updateEdited({ ...cr, justification })
+            : undefined}
+        />
+      </CRMetaInput>;
     } else if (selectedItem === 'control-body') {
-      detailView = <CRControlBodyInput
-        value={{ notes: cr.controlBodyNotes, event: cr.controlBodyDecisionEvent }}
-        onChange={changeObjects
-          ? (controlBodyNotes, controlBodyDecisionEvent) =>
-            updateEdited({ ...cr, controlBodyNotes, controlBodyDecisionEvent })
-          : undefined}
-      />;
+      detailView = <CRMetaInput>
+        <CRControlBodyInput
+          value={{ notes: cr.controlBodyNotes, event: cr.controlBodyDecisionEvent }}
+          onChange={changeObjects
+            ? (controlBodyNotes, controlBodyDecisionEvent) =>
+              updateEdited({ ...cr, controlBodyNotes, controlBodyDecisionEvent })
+            : undefined}
+        />
+      </CRMetaInput>;
     } else if (selectedItem === 'manager') {
-      detailView = <CRManagerNotes
-        value={cr.registerManagerNotes}
-        onChange={changeObjects
-          ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
-          : undefined}
-      />;
+      detailView = <CRMetaInput>
+        <CRManagerNotes
+          value={cr.registerManagerNotes}
+          onChange={changeObjects
+            ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
+            : undefined}
+        />
+      </CRMetaInput>;
     } else if (selectedItem === 'proposals') {
       detailView = <NonIdealState
         description={
@@ -764,3 +771,8 @@ const ProposalDetails: React.FC<{
     </div>
   );
 };
+
+
+const CRMetaInput = styled.div`
+  padding: 1rem;
+`;
