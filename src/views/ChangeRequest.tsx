@@ -642,7 +642,6 @@ const CRManagerNotes: React.FC<{
 
 const ProposalDetails: React.FC<{
   value: ChangeProposal
-  subregisterID?: string
   classConfig: ItemClassConfiguration<any>
 
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
