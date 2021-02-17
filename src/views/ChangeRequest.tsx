@@ -527,19 +527,19 @@ function ({
     isExpanded: true,
     isSelected: selectedItem === 'proposals',
     hasCaret: Object.keys(proposals).length > 0,
-    childNodes: [ ...Object.entries(proposals).map(([itemIDWithClass, proposal]) => {
-      const [classID, itemID] = itemIDWithClass.split('/');
+    childNodes: [ ...Object.entries(proposals).map(([itemID, proposal]) => {
+      const { classID } = proposal;
       const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
       const subregConfig = subregisters && proposal.subregisterID
         ? subregisters[proposal.subregisterID]
         : undefined;
       const View = clsConfig?.views.listItemView;
-      const data = itemData[itemIDWithClass]?.data || undefined;
+      const data = itemData[itemID]?.data ?? undefined;
 
       let label: JSX.Element;
 
       if (!View) {
-        label = <span>{itemIDWithClass}</span>;
+        label = <span>{itemID}</span>;
       } else if (proposal.type === 'addition') {
         label = <View
           itemID={itemID}
@@ -561,25 +561,16 @@ function ({
       }
 
       return {
-        isSelected: selectedItem === itemIDWithClass,
-        id: itemIDWithClass,
+        isSelected: selectedItem === itemID,
+        id: itemID,
         icon: PROPOSAL_ICON[proposal.type] as IconName,
-        secondaryLabel: <>
-          {proposal.subregisterID
-            ? <Tag
-                  minimal css={css`white-space: nowrap;`}
-                  title={subregConfig?.title}>
-                {subregConfig?.title}
-              </Tag>
+        secondaryLabel: <Tag
+            minimal css={css`white-space: nowrap;`}>
+          {subregConfig
+            ? `${subregConfig.title} / `
             : null}
-          <Tag
-              minimal css={css`white-space: nowrap;`}
-              title={clsConfig?.meta.title}>
-            {Object.entries(itemClassConfiguration).
-              find(([_, cfg]) => cfg.meta.id === classID)?.[0] ||
-              clsConfig?.meta.title}
-          </Tag>
-        </>,
+          {clsConfig?.meta.title ?? '<unknown class>'}
+        </Tag>,
         label,
       };
     })],
