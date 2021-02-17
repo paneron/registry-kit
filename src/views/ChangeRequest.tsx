@@ -6,10 +6,9 @@ import log from 'electron-log';
 import yaml from 'js-yaml';
 import update from 'immutability-helper';
 
-import React, { useContext, useState } from 'react';
-
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
+import React, { useContext, useState } from 'react';
 
 import {
   Button, ButtonGroup, Callout, Classes,
@@ -19,6 +18,7 @@ import {
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+
 import {
   ChangeProposal, ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
   ItemClassConfiguration, ItemDetailView, ItemEditView, Payload, PROPOSAL_TYPES,
