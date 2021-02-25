@@ -261,7 +261,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         onEnterCR={(!registerInfoOpen && !isBusy)
           ? handleEnterCR
           : undefined}
-        onExitCR={() => { setEnteredCR(false); selectCR(undefined); }}
+        onExitCR={() => { setEnteredCR(false); selectCR(CHANGE_REQUEST_OPTIONS.new.value as string); }}
         onSelectCR={(!registerInfoOpen && !isBusy)
           ? handleSelectCR
           : undefined}
