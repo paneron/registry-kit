@@ -86,11 +86,14 @@ export interface GenericRelatedItemViewProps {
   className?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
+  onCreateNew?: () => Promise<InternalItemReference>
+  onClear?: () => void
 }
 
 
 export type ItemEditView<P> = React.FC<RegistryItemViewProps<P> & {
   onChange?: (newData: P) => void
+  onCreateRelatedItem?: (classID: string, subregisterID?: string) => Promise<InternalItemReference>
 }>;
 export type ItemDetailView<P> = React.FC<RegistryItemViewProps<P> & {
   useRegisterItemData: RegisterItemDataHook

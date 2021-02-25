@@ -6,7 +6,7 @@ import { css, jsx } from '@emotion/core';
 //import log from 'electron-log';
 import React, { createContext, useContext } from 'react';
 import { GenericRelatedItemViewProps, ItemClassConfiguration, RegisterItem, RelatedItemClassConfiguration } from '../types';
-import { Button, ControlGroup, FormGroup, IFormGroupProps } from '@blueprintjs/core';
+import { Button, ButtonGroup, ControlGroup, FormGroup, IFormGroupProps } from '@blueprintjs/core';
 
 
 type BrowserCtx = { jumpToItem: (classID: string, itemID: string, subregisterID?: string) => void }
@@ -42,6 +42,7 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
   itemRef, className,
   useRegisterItemData, getRelatedItemClassConfiguration,
+  onCreateNew, onClear,
 }) {
   const { classID, itemID, subregisterID } = itemRef;
   const _itemPath = `${classID}/${itemID}`;
@@ -59,17 +60,23 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   let classConfigured: boolean
   let cfg: RelatedItemClassConfiguration
   try {
-    cfg = getRelatedItemClassConfiguration(itemRef.classID);
+    cfg = getRelatedItemClassConfiguration(classID);
     classConfigured = true;
   } catch (e) {
     cfg = {
-      title: itemRef.classID,
+      title: classID,
       itemView: () => <span>{itemID}</span>
     }
     classConfigured = false;
   }
 
   const Item = cfg.itemView;
+
+  async function handleCreateNew() {
+    if (!onCreateNew) { return; }
+    const itemRef = await onCreateNew();
+    console.debug("Created new", itemRef);
+  }
 
   //log.debug("Rendering generic related item view: got item", item);
 
@@ -80,20 +87,34 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
           fill outlined disabled
           loading={itemResult.isUpdating} title={cfg.title}
           css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
-        {item !== null && !itemResult.isUpdating
-          ? <Item
-              itemID={itemID}
-              useRegisterItemData={useRegisterItemData}
-              itemData={item.data}
-              getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
-            />
-          : <span>Item not found: {itemRef.itemID}</span>}
+        {itemID === ''
+          ? <span>Item not specified</span>
+          : item !== null && !itemResult.isUpdating
+            ? <Item
+                itemID={itemID}
+                useRegisterItemData={useRegisterItemData}
+                itemData={item.data}
+                getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+              />
+            : <span>Item not found: {itemRef.itemID}</span>}
       </Button>
-      <Button
-        outlined
-        icon={item === null ? 'error' : 'locate'}
-        disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
-        onClick={() => browserCtx.jumpToItem(classID, itemID, subregisterID)} />
+
+      <ButtonGroup>
+        {itemID === ''
+          ? onCreateNew
+            ? <Button intent="primary" onClick={handleCreateNew} icon="add">Create</Button>
+            : null
+          : <>
+              <Button
+                outlined
+                icon={item === null && itemID !== '' ? 'error' : 'locate'}
+                disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
+                onClick={() => browserCtx.jumpToItem(classID, itemID, subregisterID)} />
+              {onClear
+                ? <Button onClick={onClear} icon="cross">Clear</Button>
+                : null}
+            </>}
+      </ButtonGroup>
     </ControlGroup>
   );
 };

@@ -47,6 +47,7 @@ interface BaseProposal {
   type: typeof PROPOSAL_TYPES[number]
   classID: string
   subregisterID?: string
+  accepted?: true
 }
 
 interface Addition extends BaseProposal {
@@ -54,7 +55,7 @@ interface Addition extends BaseProposal {
   payload: Payload
 }
 
-interface Clarification extends BaseProposal {
+export interface Clarification extends BaseProposal {
   type: 'clarification'
   payload: Payload
 }

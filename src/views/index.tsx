@@ -10,6 +10,7 @@ import { NonIdealState, } from '@blueprintjs/core';
 import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
+  ChangeProposal,
   ChangeRequest,
   DECISION_STATUSES,
   Register,
@@ -49,9 +50,16 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
   const [selectedSubregisterID, selectSubregisterID] = useState<undefined | string>(undefined);
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
+  const [enteredCR, setEnteredCR] = useState(false);
   const [isBusy, setBusy] = useState(false);
 
   const remoteUsername: string | undefined = 'demouser'; //useRemoteUsername().value.username;
+
+  const objectPath = `change-requests/${selectedCRID ?? 'NONEXISTENT_CR'}.yaml`;
+  const crDataRaw = useObjectData({ [objectPath]: 'utf-8' as const }).value[objectPath];
+  const crData: ChangeRequest | undefined = crDataRaw?.encoding === 'utf-8'
+    ? yaml.load(crDataRaw.value)
+    : undefined;
 
   const registerObject = useObjectData({ [REGISTER_METADATA_FILENAME]: 'utf-8' }).value[REGISTER_METADATA_FILENAME]?.value;
   const registerInfo: Partial<Register> | null = registerObject
@@ -130,12 +138,37 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     }
   }
 
-  async function handleSelectCR(crID: string | undefined) {
-    console.debug("handleSelectCR", crID, CHANGE_REQUEST_OPTIONS.new.value && stakeholder?.gitServerUsername !== undefined && changeObjects);
-    if (crID === undefined) {
-      selectCR(undefined);
+  async function handleAddProposal(itemID: string, proposal: ChangeProposal) {
+    if (!isBusy && crData !== undefined && selectedCRID && changeObjects) {
+      setBusy(true);
+      try {
+        log.debug("Adding proposal", itemID, proposal);
+        log.debug("CR data", crData);
+        const newCRData = {
+          ...crData,
+          proposals: { ...crData.proposals, [itemID]: proposal } 
+        };
+        log.debug("New CR data", newCRData);
+        await changeObjects({
+          [`change-requests/${selectedCRID}.yaml`]: {
+            oldValue: yaml.dump(crData, { noRefs: true }),
+            newValue: yaml.dump(newCRData, { noRefs: true }),
+            encoding: 'utf-8',
+          },
+        }, `CR: Add proposal to ${selectedCRID}`);
+      } finally {
+        setBusy(false);
+      }
+    }
+  }
 
-    } else if (crID === CHANGE_REQUEST_OPTIONS.new.value) {
+  async function handleSelectCR(crID: string | undefined) {
+    selectCR(crID);
+  }
+
+  async function handleEnterCR() {
+    console.debug("entering cr", selectedCRID);
+    if (selectedCRID === undefined || selectedCRID === CHANGE_REQUEST_OPTIONS.new.value) {
 
       if (stakeholder?.gitServerUsername !== undefined && changeObjects) {
         console.debug("handleSelectCR: GO");
@@ -151,20 +184,19 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
             },
           }, `CR: Start ${newID}`);
           console.debug("handleSelectCR: changed objects");
-          setTimeout(() => selectCR(newID), 1000);
+          setTimeout(() => { selectCR(newID); setEnteredCR(true); }, 1000);
         } finally {
           setBusy(false);
         }
 
       } else {
-        selectCR(undefined);
+        setEnteredCR(false);
       }
 
     } else {
-      selectCR(crID);
+      setEnteredCR(true);
     }
   }
-
 
 
   let mainViewEl: JSX.Element;
@@ -177,7 +209,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         : undefined}
     />;
 
-  } else if (selectedCRID) {
+  } else if (selectedCRID && enteredCR) {
     mainViewEl = <ChangeRequestView
       id={selectedCRID}
       stakeholder={stakeholder}
@@ -198,6 +230,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       itemClassConfiguration={itemClassConfiguration}
       onSubregisterChange={selectSubregisterID}
       selectedSubregisterID={selectedSubregisterID}
+      onAddProposal={selectedCRID && selectedCRID !== CHANGE_REQUEST_OPTIONS.new.value && !isBusy ? handleAddProposal : undefined}
       availableClassIDs={selectedSubregisterID
         ? subregisters?.[selectedSubregisterID]?.itemClasses
         : undefined}
@@ -219,11 +252,16 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         onSelectSubregister={selectSubregisterID}
 
         registerInfoOpen={registerInfoOpen}
-        onOpenRegisterInfo={(selectedCRID === undefined && !isBusy)
+        onOpenRegisterInfo={(enteredCR === false && !isBusy)
           ? setRegisterInfoOpen
           : undefined}
 
         selectedCRID={selectedCRID}
+        enteredCR={enteredCR}
+        onEnterCR={(!registerInfoOpen && !isBusy)
+          ? handleEnterCR
+          : undefined}
+        onExitCR={() => { setEnteredCR(false); selectCR(undefined); }}
         onSelectCR={(!registerInfoOpen && !isBusy)
           ? handleSelectCR
           : undefined}

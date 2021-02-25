@@ -15,6 +15,7 @@ import {
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
+  ChangeProposal,
   ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
@@ -29,12 +30,14 @@ export const RegisterItemBrowser: React.FC<
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
   onSubregisterChange?: (newiD: string | undefined) => void
+  onAddProposal?: (itemID: string, proposal: ChangeProposal) => void
 }> = function ({
   availableClassIDs,
   selectedSubregisterID,
   itemClassConfiguration,
   useRegisterItemData,
   onSubregisterChange,
+  onAddProposal,
 }) {
 
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
@@ -135,6 +138,7 @@ export const RegisterItemBrowser: React.FC<
             itemClass={itemClassConfiguration[selectedClass]}
             subregisterID={selectedSubregisterID}
             itemID={selectedItem}
+            onAddProposal={onAddProposal}
           />
         {/*</ErrorBoundary>*/}
 

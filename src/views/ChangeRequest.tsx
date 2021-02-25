@@ -14,13 +14,14 @@ import {
   Button, ButtonGroup, Callout, Classes,
   Colors,
   FormGroup, H4, HTMLSelect, IconName, InputGroup, IOptionProps,
-  ITreeNode, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
+  ITreeNode, Menu, NonIdealState, Spinner, TextArea, Tree
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 
 import {
   ChangeProposal, ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
+  InternalItemReference,
   ItemClassConfiguration, ItemDetailView, ItemEditView, Payload, PROPOSAL_TYPES,
   RegisterItem,
   RegisterItemDataHook,
@@ -42,6 +43,18 @@ const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
 export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
   new: { value: 'new', label: "New change request…" },
 } as const;
+
+
+function getItemPath(itemID: string, proposal: ChangeProposal): string {
+  const { classID, subregisterID } = proposal;
+  let itemPath: string;
+  if (subregisterID) {
+    itemPath = `subregisters/${subregisterID}/${classID}/${itemID}`;
+  } else {
+    itemPath = `${classID}/${itemID}`;
+  }
+  return itemPath;
+}
 
 
 export const ChangeRequestView: React.FC<
@@ -69,17 +82,6 @@ export const ChangeRequestView: React.FC<
     ? yaml.load(dataAsString as string)
     : undefined;
 
-  function getItemPath(itemID: string, proposal: ChangeProposal): string {
-    const { classID, subregisterID } = proposal;
-    let itemPath: string;
-    if (subregisterID) {
-      itemPath = `subregisters/${subregisterID}/${classID}/${itemID}`;
-    } else {
-      itemPath = `${classID}/${itemID}`;
-    }
-    return itemPath;
-  }
-
   const itemDataRequest = maybeCR
     ? Object.entries(maybeCR.proposals).
         map(([itemID, proposal]) => ({ [getItemPath(itemID, proposal)]: 'utf-8' as const })).
@@ -91,6 +93,23 @@ export const ChangeRequestView: React.FC<
 
   const itemData: Record<string, RegisterItem<any>> = useRegisterItemData(itemDataRequest).value;
 
+  const useRegisterItemDataMaybeFromCR: RegisterItemDataHook = function (paths) {
+    const result = useRegisterItemData(paths);
+    for (const path of Object.keys(paths)) {
+      log.debug("Checking path from register item data", path, result.value[path]);
+      const parts = path.split('/');
+      const itemID = parts[parts.length - 1];
+      log.debug("Getting register data from CR", path, itemID, maybeCR?.proposals[itemID]);
+      if (maybeCR) {
+        const proposal = maybeCR.proposals[itemID];
+        if (proposal && (proposal.type === 'clarification' || proposal.type === 'addition')) {
+          result.value[path] = { id: itemID, data: proposal.payload, status: 'proposed', dateAccepted: new Date() };
+        }
+      }
+    }
+    return result;
+  }
+
   const [edited, updateEdited] = useState<ChangeRequest | null>(null);
 
   let el: JSX.Element;
@@ -100,7 +119,7 @@ export const ChangeRequestView: React.FC<
 
   } else if ((maybeCR as ChangeRequest).id) {
     const originalCR = maybeCR as ChangeRequest;
-    const cr = edited || originalCR;
+    const cr = edited ?? originalCR;
 
     async function handleSave() {
       if (!onSave) { return; }
@@ -134,7 +153,7 @@ export const ChangeRequestView: React.FC<
       onSave(originalCR.id, { ...cr, status: newStatus, disposition: newDisposition, ...extraProps }, originalCR);
     }
 
-    async function handleAddProposal(classID: string, subregisterID?: string) {
+    async function handleAddProposal(classID: string, subregisterID?: string): Promise<InternalItemReference> {
       const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
 
       if (!classConfig) {
@@ -142,21 +161,38 @@ export const ChangeRequestView: React.FC<
         throw new Error("Unable to add proposal");
       }
 
+      if (!cr) {
+        log.error("Unable to add proposal: CR is missing");
+        throw new Error("Unable to add proposal: CR is missing");
+      }
+
       const payload = classConfig.defaults ?? {};
       const id = await makeRandomID();
 
-      updateEdited(update(cr, { proposals: {
-        [id]: { $set: {
-          type: 'addition',
-          payload,
-          classID,
-          subregisterID,
-        } },
-      } }))
+      const proposal: ChangeProposal = {
+        type: 'addition',
+        payload,
+        classID,
+        subregisterID,
+      };
+
+      console.debug("Adding proposal", id, proposal, JSON.stringify(cr.proposals));
+
+      if ((cr.proposals ?? {})[id]) {
+        log.error("Unable to add proposal: already exists!", id);
+        throw new Error("Proposal with this ID already exist");
+      }
+
+      setTimeout(() => {
+        updateEdited(_cr => ({ ...(_cr ?? cr), proposals: { ...(_cr ?? cr).proposals, [id]: proposal } }));
+        selectItem(id);
+      }, 200);
+
+      return { itemID: id, classID, subregisterID };
     }
 
     async function handleAcceptProposal(itemID: string, proposal: ChangeProposal) {
-      if (!changeObjects || !canReview) {
+      if (!changeObjects || !canReview || !onSave) {
         return;
       }
 
@@ -201,12 +237,12 @@ export const ChangeRequestView: React.FC<
           data: proposal.payload,
         };
         await changeObjects({
-          [itemPath]: {
+          [itemFilePath]: {
             newValue: yaml.dump(clarifiedItem, { noRefs: true }),
             oldValue: yaml.dump(existingItem, { noRefs: true }),
             encoding: 'utf-8' as const,
           },
-        }, `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`);
+        }, `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`, true);
 
       } else if (proposal.type === 'amendment') {
         if (!existingItem) {
@@ -241,13 +277,16 @@ export const ChangeRequestView: React.FC<
           }
         }
         await changeObjects({
-          [itemPath]: {
+          [itemFilePath]: {
             newValue: yaml.dump(amendedItem, { noRefs: true }),
             oldValue: yaml.dump(existingItem, { noRefs: true }),
             encoding: 'utf-8' as const,
           },
-        }, `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`);
+        }, `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`, true);
       }
+
+      const updatedProposal: ChangeProposal = { ...proposal, accepted: true };
+      await onSave(originalCR.id, { ...originalCR, proposals: { ...originalCR.proposals, [itemID]: updatedProposal } }, originalCR);
     }
 
     const isMyCR = cr.sponsor.gitServerUsername === stakeholder?.gitServerUsername;
@@ -258,7 +297,6 @@ export const ChangeRequestView: React.FC<
     const canWithdraw = onSave && cr.timeProposed !== undefined && cr.timeDisposed === undefined && isMyCR && cr.disposition !== 'withdrawn';
     const canReview = onSave && cr.timeProposed !== undefined && (stakeholder?.role === 'manager' || stakeholder?.role === 'owner');
     const canDispose = onSave && cr.timeProposed !== undefined && cr.timeDisposed === undefined && (stakeholder?.role === 'manager' || stakeholder?.role === 'owner');
-
 
     const tentativelyAccepted = cr.status === 'tentative' && cr.disposition === 'accepted';
     const tentativelyNotAccepted = cr.status === 'tentative' && cr.disposition === 'notAccepted';
@@ -321,9 +359,9 @@ export const ChangeRequestView: React.FC<
             : null}
         </ButtonGroup>
       : <React.Fragment>
-          Status: <em>{cr.status || '—'}</em>
+          Status:&nbsp;<em>{cr.status ?? 'N/A'}</em>
           &emsp;•&emsp;
-          Disposition: <em>{cr.disposition || '—'}</em>
+          Disposition:&nbsp;<em>{cr.disposition ?? 'N/A'}</em>
         </React.Fragment>;
 
     let detailView: JSX.Element;
@@ -410,11 +448,12 @@ export const ChangeRequestView: React.FC<
             </Callout>
         }
       />;
-    } else if (cr.proposals[selectedItem] && (itemData[selectedItem] || cr.proposals[selectedItem].type === 'addition')) {
+    } else if (cr.proposals[selectedItem]) {
       const proposal = cr.proposals[selectedItem];
       const itemID = selectedItem;
       const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === proposal.classID);
-      const existingItemData = itemData[selectedItem];
+      const itemPath = getItemPath(selectedItem, proposal);
+      const existingItemData = itemData[itemPath]?.data;
       const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
       if (classConfig && (existingItemData || proposal.type === 'addition')) {
@@ -424,18 +463,24 @@ export const ChangeRequestView: React.FC<
             classConfig={classConfig}
             existingItemData={existingItemData ?? undefined}
             getRelatedClass={getRelatedClass}
-            useRegisterItemData={useRegisterItemData}
-            onAccept={canReview
+            useRegisterItemData={useRegisterItemDataMaybeFromCR}
+            subregisters={subregisters}
+            onAddRelated={canEdit
+              ? handleAddProposal
+              : undefined}
+            onAccept={canReview && canDispose
               ? () => handleAcceptProposal(itemID, proposal)
               : undefined}
-            ItemView={((canEdit && proposal.type !== 'amendment')
-              ? classConfig.views.editView
-              : classConfig.views.detailView) ?? classConfig.views.editView}
+            ItemView={classConfig.views.editView}
             onChange={canEdit
-              ? (proposal) => updateEdited(update(cr, { proposals: { [selectedItem]: { $set: proposal } } }))
+              ? (proposal) => {
+                  //log.debug("Editing", selectedItem, proposal, existingItemData);
+                  updateEdited(update(cr, { proposals: { [selectedItem]: { $set: proposal } } }));
+                  //updateEdited(_cr => ({ ...(_cr ?? cr), proposals: { ...(_cr ?? cr).proposals, [id]: proposal } }));
+                }
               : undefined}
             onDelete={canEdit
-              ? () => updateEdited(update(cr, { proposals: { $unset: [selectedItem] } }))
+              ? () => { updateEdited(update(cr, { proposals: { $unset: [selectedItem] } })); selectItem('justification') }
               : undefined}
           />;
         } catch (e) {
@@ -530,11 +575,12 @@ function ({
     childNodes: [ ...Object.entries(proposals).map(([itemID, proposal]) => {
       const { classID } = proposal;
       const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
-      const subregConfig = subregisters && proposal.subregisterID
-        ? subregisters[proposal.subregisterID]
-        : undefined;
+      //const subregConfig = subregisters && proposal.subregisterID
+      //  ? subregisters[proposal.subregisterID]
+      //  : undefined;
       const View = clsConfig?.views.listItemView;
-      const data = itemData[itemID]?.data ?? undefined;
+      const itemPath = getItemPath(itemID, proposal);
+      const data = itemData[itemPath]?.data ?? undefined;
 
       let label: JSX.Element;
 
@@ -564,13 +610,13 @@ function ({
         isSelected: selectedItem === itemID,
         id: itemID,
         icon: PROPOSAL_ICON[proposal.type] as IconName,
-        secondaryLabel: <Tag
-            minimal css={css`white-space: nowrap;`}>
-          {subregConfig
-            ? `${subregConfig.title} / `
-            : null}
-          {clsConfig?.meta.title ?? '<unknown class>'}
-        </Tag>,
+        //secondaryLabel: <Tag
+        //    minimal css={css`white-space: nowrap;`}>
+        //  {subregConfig
+        //    ? `${subregConfig.title} / `
+        //    : null}
+        //  {clsConfig?.meta.title ?? '<unknown class>'}
+        //</Tag>,
         label,
       };
     })],
@@ -640,7 +686,8 @@ const CRManagerNotes: React.FC<{
 };
 
 
-const ProposalDetails: React.FC<{
+const ProposalDetails: React.FC<
+  Pick<RegistryViewProps, 'subregisters'> & {
   value: ChangeProposal
   classConfig: ItemClassConfiguration<any>
 
@@ -650,20 +697,24 @@ const ProposalDetails: React.FC<{
   existingItemData?: Payload
   ItemView: ItemEditView<any> | ItemDetailView<any>
 
-  onAccept?: () => void
+  onAccept?: () => Promise<void>
   onChange?: (val: ChangeProposal) => void
   onDelete?: () => void
+  onAddRelated?: (classID: string, subregisterID?: string) => Promise<InternalItemReference>
 }> = function ({
-    value, onChange, ItemView,
+    value,
+    onChange, onDelete, onAccept, onAddRelated,
+    ItemView,
     existingItemData, classConfig, getRelatedClass,
-    useRegisterItemData }) {
+    useRegisterItemData, subregisters }) {
   let itemView: JSX.Element;
   let proposalProperties: JSX.Element | null;
+
+  const [isBusy, setBusy] = useState(false);
 
   if (value.type === 'amendment') {
     proposalProperties = (
       <FormGroup
-          inline
           label="Supersede with:"
           helperText={classConfig.itemCanBeSuperseded !== true
             ? "Items of this class cannot be superseded, only retired."
@@ -692,22 +743,26 @@ const ProposalDetails: React.FC<{
     proposalProperties = null;
   }
 
-  const itemData: Payload | undefined = value.type === 'addition'
+  const itemData: Payload | undefined = (value.type === 'addition' || value.type === 'clarification')
     ? value.payload
     : existingItemData;
 
   if (itemData === undefined || ItemView === undefined) {
     itemView = <NonIdealState icon="heart-broken" title="Unable to display this item" />;
+
   } else if (onChange && value.type !== 'amendment') {
     const View = ItemView as ItemEditView<any>;
+
     itemView = <View
       itemData={itemData}
       subregisterID={value.subregisterID}
       useRegisterItemData={useRegisterItemData}
       getRelatedItemClassConfiguration={getRelatedClass}
+      onCreateRelatedItem={onAddRelated}
       onChange={onChange
         ? (payload) => onChange ? onChange({ ...value, payload }) : void 0
         : undefined} />;
+
   } else {
     const View = ItemView as ItemDetailView<any>;
     itemView = <View
@@ -739,6 +794,17 @@ const ProposalDetails: React.FC<{
     }
   }
 
+  function handleAction(func: () => Promise<void>) {
+    return async () => {
+      try {
+        setBusy(true);
+        await func();
+      } finally {
+        setBusy(false);
+      }
+    }
+  }
+
   return (
     <div css={css`flex: 1; display: flex; flex-flow: column nowrap; padding: 1rem; overflow: hidden;`}>
       <div css={css`flex-shrink: 0; display: flex; flex-flow: row nowrap; align-items: center; margin-bottom: 1rem;`}>
@@ -754,12 +820,42 @@ const ProposalDetails: React.FC<{
         of a
         &ensp;
         <H4 css={css`margin: 0;`}>{classConfig.meta.title}</H4>
-        {proposalProperties}
+        {value.subregisterID !== undefined && subregisters !== undefined
+          ? <>
+              &ensp;in {subregisters[value.subregisterID]?.title ?? value.subregisterID}
+            </>
+          : null}
       </div>
+
+      {proposalProperties}
 
       <ItemDetailsWrapperDiv className={Classes.ELEVATION_3}>
         {itemView}
       </ItemDetailsWrapperDiv>
+
+      {value.accepted
+        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
+            <FormGroup css={css`margin-bottom: 0`}>
+              <Button disabled intent="success">Accepted</Button>
+            </FormGroup>
+          </div>
+        : null}
+
+      {onDelete
+        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
+            <FormGroup css={css`margin-bottom: 0`}>
+              <Button loading={isBusy} onClick={onDelete} intent="danger">Delete this proposal from current change request</Button>
+            </FormGroup>
+          </div>
+        : null}
+
+      {onAccept && !value.accepted
+        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
+            <FormGroup css={css`margin-bottom: 0`}>
+              <Button loading={isBusy} onClick={handleAction(onAccept)} intent="success">Accept this proposal into the register</Button>
+            </FormGroup>
+          </div>
+        : null}
     </div>
   );
 };

@@ -3,7 +3,7 @@
 
 import yaml from 'js-yaml';
 
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 
 import { css, jsx } from '@emotion/core';
 
@@ -36,6 +36,9 @@ export const Toolbar: React.FC<{
 
   selectedCRID?: string
   onSelectCR?: (crID: string | undefined) => void
+  enteredCR: boolean
+  onEnterCR?: () => void
+  onExitCR?: () => void
 }> = function ({
   register,
   stakeholder,
@@ -48,6 +51,9 @@ export const Toolbar: React.FC<{
 
   selectedCRID,
   onSelectCR,
+  enteredCR,
+  onEnterCR,
+  onExitCR,
 }) {
 
   const registerInfoComplete = (
@@ -93,7 +99,7 @@ export const Toolbar: React.FC<{
               <Button disabled>Subregister</Button>
               <HTMLSelect
                 value={selectedSubregisterID || NO_SELECTED_SUBREGISTER_OPTION}
-                disabled={!onSelectSubregister || selectedCRID !== undefined || registerInfoOpen}
+                disabled={!onSelectSubregister || enteredCR !== false || registerInfoOpen}
                 onChange={onSelectSubregister
                   ? evt => {
                       const val = evt.currentTarget.value;
@@ -119,7 +125,11 @@ export const Toolbar: React.FC<{
       <Navbar.Group align="right">
         <CRSelector
           selectedCRID={selectedCRID}
-          onSelectCR={onSelectCR} />
+          onSelectCR={onSelectCR}
+          entered={enteredCR}
+          onEnterCR={onEnterCR}
+          onExitCR={onExitCR}
+        />
       </Navbar.Group>
     </Navbar>
   );
@@ -127,13 +137,14 @@ export const Toolbar: React.FC<{
 
 
 const CRSelector: React.FC<{
+  entered: boolean
   selectedCRID?: string
+  onEnterCR?: () => void
+  onExitCR?: () => void
   onSelectCR?: (crID: string | undefined) => void
-}> = function ({ selectedCRID, onSelectCR }) {
+}> = function ({ selectedCRID, entered, onEnterCR, onExitCR, onSelectCR }) {
 
   const { changeObjects, useObjectData, useObjectPaths } = useContext(DatasetContext);
-
-  const [_selectedCR, _selectCR] = useState<string>(CHANGE_REQUEST_OPTIONS.new.value as string);
 
   const crObjectPaths = useObjectPaths({ pathPrefix: 'change-requests' }).value;
 
@@ -157,26 +168,26 @@ const CRSelector: React.FC<{
     })),
   ];
 
-  const creatingNew = _selectedCR === CHANGE_REQUEST_OPTIONS.new.value;
+  const creatingNew = selectedCRID === CHANGE_REQUEST_OPTIONS.new.value;
   const canCreate = changeObjects !== undefined;
 
   return (
     <ControlGroup>
       <HTMLSelect
-        disabled={!onSelectCR || selectedCRID !== undefined}
+        disabled={!onSelectCR || entered}
         options={changeRequestOptions}
-        value={selectedCRID || _selectedCR}
-        onChange={(evt) => _selectCR(evt.currentTarget.value)}
+        value={selectedCRID}
+        onChange={(evt) => onSelectCR ? onSelectCR(evt.currentTarget.value) : void 0}
       />
       <Button
-          active={selectedCRID !== undefined}
-          disabled={!onSelectCR || !canCreate && creatingNew}
-          onClick={() => onSelectCR ? onSelectCR(_selectedCR) : void 0}>
+          active={entered}
+          disabled={entered || !onEnterCR || !canCreate && creatingNew}
+          onClick={() => onEnterCR ? onEnterCR() : void 0}>
         Go
       </Button>
       <Button
-          disabled={!onSelectCR || selectedCRID === undefined}
-          onClick={() => onSelectCR ? onSelectCR(undefined) : void 0}>
+          disabled={!onExitCR || !entered}
+          onClick={() => onExitCR ? onExitCR() : void 0}>
         Exit
       </Button>
     </ControlGroup>
