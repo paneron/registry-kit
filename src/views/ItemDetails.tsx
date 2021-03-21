@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
 
@@ -12,7 +12,7 @@ import {
 } from '@blueprintjs/core';
 
 import {
-  ChangeProposal,
+  ItemAction,
   ItemClassConfiguration, RegisterItem, RegisterItemDataHook,
   RegistryItemViewProps,
   RelatedItemClassConfiguration
@@ -25,15 +25,13 @@ export const ItemDetails: React.FC<{
   subregisterID?: string;
   useRegisterItemData: RegisterItemDataHook;
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration;
-  onAddProposal?: (itemID: string, proposal: ChangeProposal) => void
-}> = function ({ itemID, itemClass, subregisterID, getRelatedClass, useRegisterItemData, onAddProposal }) {
+  itemActions?: ItemAction[];
+}> = function ({ itemID, itemClass, subregisterID, getRelatedClass, useRegisterItemData, itemActions }) {
   let details: JSX.Element;
 
   //const itemPath = `${itemClass.meta.id}/${itemID}`;
   const _itemPath = `${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}`;
   const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
-
-  const [supersedingItemID, setSupersedingItemID] = useState<string | undefined>(undefined);
 
   const itemResponse = useRegisterItemData({
     [itemPath]: 'utf-8' as const,
@@ -122,53 +120,15 @@ export const ItemDetails: React.FC<{
         {details}
       </ItemDetailsWrapperDiv>
 
-      {item && onAddProposal
+      {item && ((itemActions ?? []).length > 0)
         ? <div css={css`flex-shrink: 0; margin-top: 1rem; display: flex; flex-flow: row nowrap; align-items: center;`}>
-            <FormGroup label="Clarify" css={css`margin-right: 1rem; margin-bottom: 0;`}>
-              <Button
-                  onClick={() => onAddProposal(itemID, {
-                    type: 'clarification',
-                    payload: item.data,
-                    classID: itemClass.meta.id,
-                    subregisterID,
-                  })}>
-                Clarify in selected change request
-              </Button>
+            <FormGroup css={css`margin-bottom: 0;`}>
+              {itemActions!.map((action, idx) =>
+                <Button
+                    css={css`${idx !== itemActions!.length - 1 ? 'margin-right: .5rem;' : ''}`}
+                    {...action.getButtonProps(item, itemClass)} />
+              )}
             </FormGroup>
-
-            {item?.status === 'valid'
-              ? <FormGroup label="Amend" css={css`margin-bottom: 0;`}>
-                  {itemClass?.itemCanBeSuperseded
-                    ? <ControlGroup css={css`margin-right: 1rem;`}>
-                        <Button
-                            disabled={!supersedingItemID}
-                            onClick={() => supersedingItemID ? onAddProposal(itemID, {
-                              type: 'amendment',
-                              classID: itemClass.meta.id,
-                              subregisterID,
-                              amendmentType: 'supersession',
-                              supersedingItemID,
-                            }) : void 0}>
-                          Supersede with
-                        </Button>
-                        <InputGroup
-                          placeholder="Enter item UUID…"
-                          value={supersedingItemID ?? ''}
-                          onChange={(evt: React.FormEvent<HTMLInputElement>) =>
-                            setSupersedingItemID(evt.currentTarget.value)} />
-                      </ControlGroup>
-                    : null}
-                  <Button
-                      onClick={() => onAddProposal(itemID, {
-                        type: 'amendment',
-                        amendmentType: 'retirement',
-                        classID: itemClass.meta.id,
-                        subregisterID,
-                      })}>
-                    Retire
-                  </Button>
-                </FormGroup>
-              : null}
           </div>
         : null}
     </div>

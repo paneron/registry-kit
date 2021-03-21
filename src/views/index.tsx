@@ -13,6 +13,7 @@ import {
   ChangeProposal,
   ChangeRequest,
   DECISION_STATUSES,
+  ItemAction,
   Register,
   RegisterItem,
   RegisterItemDataHook,
@@ -198,6 +199,42 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     }
   }
 
+  const enableCRActions = selectedCRID && selectedCRID !== CHANGE_REQUEST_OPTIONS.new.value && !isBusy;
+  const itemCRActions: ItemAction[] = [{
+    getButtonProps: (item, itemClass, subregisterID) => ({
+      text: "Clarify in selected change request",
+      onClick: () => handleAddProposal(item.id, {
+        type: 'clarification',
+        payload: item.data,
+        classID: itemClass.meta.id,
+        subregisterID,
+      }),
+      disabled: !enableCRActions,
+    }),
+  }, {
+    getButtonProps: (item, itemClass, subregisterID) => ({
+      text: "Supersede",
+      onClick: () => handleAddProposal(item.id, {
+        type: 'amendment',
+        classID: itemClass.meta.id,
+        subregisterID,
+        amendmentType: 'supersession',
+        supersedingItemID: '',
+      }),
+      disabled: !enableCRActions || itemClass.itemCanBeSuperseded === false,
+    }),
+  }, {
+    getButtonProps: (item, itemClass, subregisterID) => ({
+      text: "Retire",
+      onClick: () => handleAddProposal(item.id, {
+        type: 'amendment',
+        amendmentType: 'retirement',
+        classID: itemClass.meta.id,
+        subregisterID,
+      }),
+      disabled: !enableCRActions,
+    }),
+  }];
 
   let mainViewEl: JSX.Element;
 
@@ -230,7 +267,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       itemClassConfiguration={itemClassConfiguration}
       onSubregisterChange={selectSubregisterID}
       selectedSubregisterID={selectedSubregisterID}
-      onAddProposal={selectedCRID && selectedCRID !== CHANGE_REQUEST_OPTIONS.new.value && !isBusy ? handleAddProposal : undefined}
+      itemActions={itemCRActions}
       availableClassIDs={selectedSubregisterID
         ? subregisters?.[selectedSubregisterID]?.itemClasses
         : undefined}

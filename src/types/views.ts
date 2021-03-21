@@ -1,6 +1,7 @@
 import type React from 'react';
+import type { IButtonProps } from '@blueprintjs/core';
 import type { ObjectDataRequest, ValueHook } from '@riboseinc/paneron-extension-kit/types';
-import { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
+import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 
 
 // Extension configuration
@@ -62,6 +63,10 @@ extends RegisterConfiguration<Items> {
   subregisters?: Subregisters<Items>
 }
 
+export interface ItemAction {
+  getButtonProps: (item: RegisterItem<any>, itemClass: ItemClassConfiguration<any>, subregisterID?: string) => IButtonProps
+}
+
 export type RegistryView = React.FC<RegistryViewProps>
 
 type RegistryItemPayloadDefaults<P extends Payload> =
@@ -88,6 +93,7 @@ export interface GenericRelatedItemViewProps {
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
   onCreateNew?: () => Promise<InternalItemReference>
   onClear?: () => void
+  onChange?: (newRef: InternalItemReference) => void
 }
 
 

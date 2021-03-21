@@ -15,7 +15,7 @@ import {
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
-  ChangeProposal,
+  ItemAction,
   ItemClassConfiguration, ItemClassConfigurationSet, RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
@@ -30,28 +30,30 @@ export const RegisterItemBrowser: React.FC<
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
   onSubregisterChange?: (newiD: string | undefined) => void
-  onAddProposal?: (itemID: string, proposal: ChangeProposal) => void
+  itemActions?: ItemAction[]
 }> = function ({
   availableClassIDs,
   selectedSubregisterID,
   itemClassConfiguration,
   useRegisterItemData,
   onSubregisterChange,
-  onAddProposal,
+  itemActions,
 }) {
 
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
-  const itemClasses = availableClassIDs || Object.keys(itemClassConfiguration);
+  const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
   const classConfiguration: ItemClassConfigurationSet =
     itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
     { o[k] = itemClassConfiguration[k]; return o; }, {});
 
   const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
-    onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
-    selectClass(classID);
-    selectItem(itemID);
+    if (itemClasses.indexOf(classID) >= 0) {
+      onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
+      selectClass(classID);
+      selectItem(itemID);
+    }
   }
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export const RegisterItemBrowser: React.FC<
             itemClass={itemClassConfiguration[selectedClass]}
             subregisterID={selectedSubregisterID}
             itemID={selectedItem}
-            onAddProposal={onAddProposal}
+            itemActions={itemActions}
           />
         {/*</ErrorBoundary>*/}
 
