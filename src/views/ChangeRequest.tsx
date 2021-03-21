@@ -15,7 +15,7 @@ import {
   Button, ButtonGroup, Callout, Classes,
   Colors,
   FormGroup, H4, HTMLSelect, IconName, InputGroup, IOptionProps,
-  ITreeNode, Menu, NonIdealState, Spinner, TextArea, Tree
+  ITreeNode, Menu, NonIdealState, Spinner, TextArea, Toaster, Tree
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -129,6 +129,7 @@ export const ChangeRequestView: React.FC<
       if (!onSave) { return; }
       if (edited === null) { return; }
       await onSave(originalCR.id, edited, originalCR);
+      toaster.show({ intent: 'success', message: "Saved proposal" });
       updateEdited(null);
     }
 
@@ -214,8 +215,10 @@ export const ChangeRequestView: React.FC<
 
       if (proposal.type === 'addition') {
         if (existingItem) {
-          log.error("Cannot accept proposed addition: item already exists", clsID, itemID);
-          throw new Error("Cannot accept proposed addition: item already exists");
+          const message = "Cannot accept proposed addition: item already exists";
+          log.error(message, clsID, itemID);
+          toaster.show({ intent: 'danger', message });
+          throw new Error(message);
         }
         const newItem: RegisterItem<any> = {
           id: itemID,
@@ -223,6 +226,7 @@ export const ChangeRequestView: React.FC<
           dateAccepted: new Date(),
           data: proposal.payload,
         };
+
         await changeObjects({
           [itemFilePath]: {
             newValue: yaml.dump(newItem, { noRefs: true }),
@@ -231,15 +235,20 @@ export const ChangeRequestView: React.FC<
           },
         }, `CR: Accepted addition of ${clsID}/${itemID} (per CR ${id})`);
 
+        toaster.show({ intent: 'success', message: "Accepted addition" });
+
       } else if (proposal.type === 'clarification') {
         if (!existingItem) {
-          log.error("Cannot accept proposed clarification: item does not exist", clsID, itemID);
-          throw new Error("Cannot accept proposed clarification: item does not exist");
+          const message = "Cannot accept proposed clarification: item does not exist";
+          log.error(message, clsID, itemID);
+          toaster.show({ intent: 'danger', message });
+          throw new Error(message);
         }
         const clarifiedItem: RegisterItem<any> = {
           ...existingItem,
           data: proposal.payload,
         };
+
         await changeObjects({
           [itemFilePath]: {
             newValue: yaml.dump(clarifiedItem, { noRefs: true }),
@@ -248,14 +257,20 @@ export const ChangeRequestView: React.FC<
           },
         }, `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`, true);
 
+        toaster.show({ intent: 'success', message: "Accepted clarification" });
+
       } else if (proposal.type === 'amendment') {
         if (!existingItem) {
-          log.error("Cannot accept proposed amendment: item does not exist", clsID, itemID);
-          throw new Error("Cannot accept proposed amendment: item does not exist");
+          const message = "Cannot accept proposed amendment: item does not exist";
+          log.error(message, clsID, itemID);
+          toaster.show({ intent: 'danger', message });
+          throw new Error(message);
         }
         if (existingItem.status !== 'valid') {
-          log.error("Cannot accept proposed amendment: item is not valid", clsID, itemID);
-          throw new Error("Cannot accept proposed amendment: item is not valid");
+          const message = "Cannot accept proposed amendment: item is not valid";
+          log.error(message, clsID, itemID);
+          toaster.show({ intent: 'danger', message });
+          throw new Error(message);
         }
         const amendedItem = {
           ...existingItem,
@@ -268,18 +283,25 @@ export const ChangeRequestView: React.FC<
             if (proposal.supersedingItemID) {
               const supersedingItemPath = getItemPath(proposal.supersedingItemID, proposal);
               if (cr.proposals[proposal.supersedingItemID]?.type !== 'addition' && !itemData[supersedingItemPath]) {
-                log.error("Cannot accept proposed amendment: superseding item does not exist and was not added in this change request", clsID, itemID);
-                throw new Error("Cannot accept proposed amendment: superseding item does not exist and was not added in this change request");
+                const message = "Cannot accept proposed amendment: superseding item does not exist and was not added in this change request";
+                log.error(message, clsID, itemID);
+                toaster.show({ intent: 'danger', message });
+                throw new Error(message);
               }
             } else {
-              log.error("Cannot accept proposed amendment: superseding item is not specified", clsID, itemID);
-              throw new Error("Cannot accept proposed amendment: superseding item is not specified");
+              const message = "Cannot accept proposed amendment: superseding item is not specified";
+              log.error(message, clsID, itemID);
+              toaster.show({ intent: 'danger', message });
+              throw new Error(message);
             }
           } else {
-            log.error("Cannot accept proposed amendment: item class does not allow supersession", clsID, itemID);
-            throw new Error("Cannot accept proposed amendment: item class does not allow supersession");
+            const message = "Cannot accept proposed amendment: item class does not allow supersession";
+            log.error(message, clsID, itemID);
+            toaster.show({ intent: 'danger', message });
+            throw new Error(message);
           }
         }
+
         await changeObjects({
           [itemFilePath]: {
             newValue: yaml.dump(amendedItem, { noRefs: true }),
@@ -287,6 +309,8 @@ export const ChangeRequestView: React.FC<
             encoding: 'utf-8' as const,
           },
         }, `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`, true);
+
+        toaster.show({ intent: 'success', message: "Accepted amendment" });
       }
 
       const updatedProposal: ChangeProposal = { ...proposal, accepted: true };

@@ -5,7 +5,7 @@ import log from 'electron-log';
 
 import React, { useContext, useEffect, useState } from 'react';
 import { css, jsx } from '@emotion/core';
-import { NonIdealState, } from '@blueprintjs/core';
+import { NonIdealState, Toaster, } from '@blueprintjs/core';
 
 import { ObjectDataRequest } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -25,6 +25,9 @@ import { ChangeRequestView, CHANGE_REQUEST_OPTIONS } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
 import { Toolbar } from './Toolbar';
 import { REGISTER_METADATA_FILENAME } from '../common';
+
+
+const toaster = Toaster.create({ position: 'bottom' });
 
 
 function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
@@ -111,6 +114,9 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
             encoding: 'utf-8',
           },
         }, "Edit register info", true);
+        toaster.show({ intent: 'success', message: "Updated register info" });
+      } catch (e) {
+        toaster.show({ intent: 'danger', message: "Failed to update register info" });
       } finally {
         setBusy(false);
       }
@@ -120,6 +126,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   async function handleSaveCR(crID: string, value: ChangeRequest | null, oldValue: ChangeRequest) {
     if (!isBusy && crID === selectedCRID && changeObjects) {
       setBusy(true);
+      const msg = `CR: ${value === null ? 'delete' : 'update'} ${crID}`;
       try {
         await changeObjects({
           [`change-requests/${crID}.yaml`]: {
@@ -127,12 +134,14 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
             newValue: value ? yaml.dump(value, { noRefs: true }) : null,
             encoding: 'utf-8',
           },
-        }, `CR: ${value === null ? 'delete' : 'update'} ${crID}`);
+        }, msg);
         if (value === null) {
           selectCR(undefined);
         }
+        toaster.show({ intent: 'success', message: msg });
       } catch (e) {
         log.error("Failed to update or delete CR!", e);
+        toaster.show({ intent: 'danger', message: "Failed to update or delete change request" });
       } finally {
         setBusy(false);
       }
@@ -157,6 +166,9 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
             encoding: 'utf-8',
           },
         }, `CR: Add proposal to ${selectedCRID}`);
+        toaster.show({ intent: 'success', message: "Added proposal to selected changed request—view it by navigating to the CR using the top toolbar" });
+      } catch (e) {
+        toaster.show({ intent: 'danger', message: "Failed to add new proposal to selected change request" });
       } finally {
         setBusy(false);
       }
