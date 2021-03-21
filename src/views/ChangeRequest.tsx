@@ -306,22 +306,24 @@ export const ChangeRequestView: React.FC<
     const tentativelyNotAccepted = cr.status === 'tentative' && cr.disposition === 'notAccepted';
 
     const actions = (canPropose || canWithdraw || canDispose || canDelete)
-      ? <ButtonGroup>
-          {(canEdit || canReview) ? <Button disabled={edited === null} onClick={handleSave}>Save</Button> : null}
+      ? <ButtonGroup fill>
+          {(canEdit || canReview)
+            ? <Button outlined disabled={edited === null} onClick={handleSave}>Save</Button>
+            : null}
 
           {canDelete
-            ? <Button intent="danger" disabled={edited !== null} onClick={onDelete
+            ? <Button outlined intent="danger" disabled={edited !== null} onClick={onDelete
                 ? () => onDelete(originalCR.id, originalCR)
                 : void 0}>Delete</Button>
             : null}
 
           {canPropose
-            ? <Button disabled={edited !== null} intent="success"
+            ? <Button outlined disabled={edited !== null} intent="success"
                 onClick={handlePropose}>Propose</Button>
             : null}
 
           {canWithdraw
-            ? <Button disabled={edited !== null} intent="warning"
+            ? <Button outlined disabled={edited !== null} intent="warning"
                 onClick={() => handleUpdateState('pending', 'withdrawn')}>Withdraw</Button>
             : null}
 
@@ -329,6 +331,7 @@ export const ChangeRequestView: React.FC<
             ? <React.Fragment>
                 {!tentativelyNotAccepted
                   ? <Button
+                        outlined
                         disabled={edited !== null}
                         active={cr.disposition === 'accepted'}
                         onClick={() => handleUpdateState('tentative', 'accepted')}>
@@ -337,6 +340,7 @@ export const ChangeRequestView: React.FC<
                   : null}
                 {tentativelyAccepted
                   ? <Button
+                        outlined
                         disabled={edited !== null}
                         active={cr.status === 'final'} icon="take-action"
                         onClick={() => handleUpdateState('final', 'accepted')}>
@@ -345,6 +349,7 @@ export const ChangeRequestView: React.FC<
                   : null}
                 {!tentativelyAccepted
                   ? <Button
+                        outlined
                         disabled={edited !== null}
                         active={cr.disposition === 'notAccepted'}
                         onClick={() => handleUpdateState('tentative', 'notAccepted')}>
@@ -353,6 +358,7 @@ export const ChangeRequestView: React.FC<
                   : null}
                 {tentativelyNotAccepted
                   ? <Button
+                        outlined
                         disabled={edited !== null}
                         active={cr.status === 'final'} icon="take-action"
                         onClick={() => handleUpdateState('final', 'notAccepted')}>
