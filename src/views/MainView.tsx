@@ -21,7 +21,7 @@ export const MainView: React.FC<{
       </main>
       {actions
         ? <Navbar>
-            <Navbar.Group>
+            <Navbar.Group style={{ float: 'unset' }}>
               {actions}
             </Navbar.Group>
           </Navbar>
