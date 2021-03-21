@@ -42,7 +42,7 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
   itemRef, className,
   useRegisterItemData, getRelatedItemClassConfiguration,
-  onCreateNew, onClear,
+  onCreateNew, onClear, onChange,
 }) {
   const { classID, itemID, subregisterID } = itemRef;
   const _itemPath = `${classID}/${itemID}`;
@@ -102,7 +102,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
       <ButtonGroup>
         {itemID === ''
           ? onCreateNew
-            ? <Button intent="primary" onClick={handleCreateNew} icon="add">Create</Button>
+            ? <Button intent="primary" onClick={handleCreateNew} icon="add">Auto-create</Button>
             : null
           : <>
               <Button
