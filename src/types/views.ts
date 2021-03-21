@@ -87,10 +87,13 @@ export interface RegistryItemViewProps<P extends Payload> {
 }
 
 export interface GenericRelatedItemViewProps {
-  itemRef: InternalItemReference
+  itemRef?: InternalItemReference
   className?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
+  availableClassIDs?: string[]
+  availableSubregisterIDs?: string[]
+  itemSorter?: ItemClassConfiguration<any>["itemSorter"]
   onCreateNew?: () => Promise<InternalItemReference>
   onClear?: () => void
   onChange?: (newRef: InternalItemReference) => void

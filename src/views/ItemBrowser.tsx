@@ -20,7 +20,8 @@ import {
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
 import { MainView } from './MainView';
-import { BrowserCtx, _getRelatedClass } from './util';
+import { _getRelatedClass } from './util';
+import { BrowserCtx } from './BrowserCtx';
 import ItemDetails from './ItemDetails';
 
 
@@ -29,8 +30,9 @@ export const RegisterItemBrowser: React.FC<
   availableClassIDs?: string[]
   selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
-  onSubregisterChange?: (newiD: string | undefined) => void
+  onSubregisterChange?: (newID: string | undefined) => void
   itemActions?: ItemAction[]
+  className?: string
 }> = function ({
   availableClassIDs,
   selectedSubregisterID,
@@ -38,6 +40,7 @@ export const RegisterItemBrowser: React.FC<
   useRegisterItemData,
   onSubregisterChange,
   itemActions,
+  className,
 }) {
 
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
@@ -55,6 +58,8 @@ export const RegisterItemBrowser: React.FC<
       selectItem(itemID);
     }
   }
+
+  const getRelatedClass = _getRelatedClass(classConfiguration);
 
   useEffect(() => {
     if ((selectedClass === undefined && itemClasses.length > 0) ||
@@ -101,7 +106,7 @@ export const RegisterItemBrowser: React.FC<
 
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
-      <MainView>
+      <MainView wrapperClassName={className}>
 
         <div
             className={Classes.ELEVATION_1}
@@ -121,11 +126,12 @@ export const RegisterItemBrowser: React.FC<
 
           <ItemBrowser
             css={css`flex: 1`}
-            itemClasses={itemClassConfiguration}
 
+            classID={selectedClass}
             selectedItem={selectedItem}
-            selectedClassID={selectedClass}
             selectedSubregisterID={selectedSubregisterID}
+            getRelatedClassConfig={getRelatedClass}
+            itemSorter={classConfiguration[selectedClass]?.itemSorter}
 
             onSelectItem={selectItem}
             useRegisterItemData={useRegisterItemData}
@@ -179,35 +185,35 @@ const ItemClassSelector: React.FC<{
 };
 
 
-const ItemBrowser: React.FC<{
+export const ItemBrowser: React.FC<{
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
-
-  itemClasses: RegistryViewProps["itemClassConfiguration"]
-  selectedClassID: string
-
+  classID: string
   selectedSubregisterID?: string
+  itemSorter?: ItemClassConfiguration<any>["itemSorter"]
 
   useRegisterItemData: RegisterItemDataHook
+  getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
 
+  style?: React.CSSProperties
   className?: string
 }> = function ({
-  itemClasses,
   selectedItem,
-  selectedClassID,
-  selectedSubregisterID,
   onSelectItem,
+  classID,
+  selectedSubregisterID,
+  itemSorter,
   useRegisterItemData,
+  getRelatedClassConfig,
+  style,
   className,
 }) {
 
   const { useObjectPaths } = useContext(DatasetContext);
 
-  const classConfig = itemClasses[selectedClassID] || { meta: { id: '__NONEXISTENT_CLASS' } };
-
   const pathPrefix = selectedSubregisterID
-    ? `subregisters/${selectedSubregisterID}/${classConfig.meta.id}`
-    : classConfig.meta.id;
+    ? `subregisters/${selectedSubregisterID}/${classID}`
+    : classID;
 
   const objectPathsQuery = useObjectPaths({ pathPrefix });
 
@@ -218,8 +224,6 @@ const ItemBrowser: React.FC<{
 
   const items = useRegisterItemData(registerItemQuery);
 
-  const getRelatedClass = _getRelatedClass(itemClasses);
-
   let el: JSX.Element;
 
   if (objectPathsQuery.isUpdating || items.isUpdating) {
@@ -229,8 +233,8 @@ const ItemBrowser: React.FC<{
     // NOTE: On switching between classes/subregisters,
     // it could be that class configuration has updated,
     // but items.value still contains items of previous type. This isn’t great.
-    const orderedItems = Object.values(items.value).sort(classConfig.itemSorter
-      ? getItemSorter(classConfig.itemSorter)
+    const orderedItems = Object.values(items.value).sort(itemSorter
+      ? getItemSorter(itemSorter)
       : defaultItemSorterFunc);
 
     el = (
@@ -238,15 +242,15 @@ const ItemBrowser: React.FC<{
         items={orderedItems}
         useRegisterItemData={useRegisterItemData}
         subregisterID={selectedSubregisterID}
-        classConfig={itemClasses[selectedClassID]}
-        getRelatedClassConfig={getRelatedClass}
+        classID={classID}
+        getRelatedClassConfig={getRelatedClassConfig}
         selectedItem={selectedItem}
         onSelectItem={onSelectItem} />
     );
   }
 
   return (
-    <div className={className}>
+    <div className={className} style={style}>
       {el}
     </div>
   );
@@ -255,16 +259,16 @@ const ItemBrowser: React.FC<{
 
 const ItemList: React.FC<{
   items: RegisterItem<any>[]
+  classID: string
   subregisterID?: string
-  classConfig: ItemClassConfiguration<any>
   useRegisterItemData: RegisterItemDataHook
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
   selectedItem?: string
   onSelectItem: (item: string | undefined) => void
 }> = function ({
   items,
+  classID,
   selectedItem,
-  classConfig,
   subregisterID,
   onSelectItem,
   useRegisterItemData,
@@ -280,7 +284,7 @@ const ItemList: React.FC<{
 
   useEffect(() => {
     const updateListHeight = debounce(100, () => {
-      setListHeight(listContainer.current?.parentElement?.offsetHeight || CONTAINER_PADDINGS);
+      setListHeight(listContainer.current?.parentElement?.offsetHeight ?? CONTAINER_PADDINGS);
       setImmediate(() => {
         if (selectedItem !== undefined) {
           scrollTo(selectedItem)
@@ -315,7 +319,7 @@ const ItemList: React.FC<{
       }
     }
 
-    const View = classConfig.views.listItemView;
+    const View = getRelatedClassConfig(classID).itemView;
 
     return (
       <Button
