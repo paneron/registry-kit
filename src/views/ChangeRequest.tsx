@@ -649,8 +649,10 @@ const CRJustification: React.FC<{
   return (
     <FormGroup label="Justification:">
       <TextArea fill
-        disabled={!onChange} value={value}
-        onChange={(evt) => onChange ? onChange(evt.currentTarget.value) : void 0} />
+        disabled={!onChange}
+        value={value}
+        onChange={(evt) => onChange ? onChange(evt.currentTarget.value) : void 0}
+      />
     </FormGroup>
   );
 };
@@ -668,14 +670,18 @@ const CRControlBodyInput: React.FC<{
   }
   return (
     <>
-      <FormGroup label="Control body notes">
-        <TextArea fill
-          disabled={!onChange} value={value.notes || ''}
+      <FormGroup label="Control body notes:">
+        <TextArea
+          fill
+          disabled={!onChange}
+          value={value.notes ?? ''}
           onChange={handleNotesChange} />
       </FormGroup>
-      <FormGroup label="Control body decision event">
-        <TextArea fill
-          disabled={!onChange} value={value.event || ''}
+      <FormGroup label="Control body decision event:">
+        <TextArea
+          fill
+          disabled={!onChange}
+          value={value.event ?? ''}
           onChange={handleEventChange} />
       </FormGroup>
     </>

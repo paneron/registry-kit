@@ -98,19 +98,19 @@ export const ItemDetails: React.FC<{
               <InputGroup disabled value={item?.id || itemID || ''} fill />
             </Tooltip>
             <Button
-              disabled
-              intent={item?.status === 'valid' ? 'success' : undefined}
-              title="Item status"
-              icon={item?.status === 'valid' ? 'tick-circle' : 'blank'}>
-              {item?.status || 'unknown status'}
+                disabled
+                intent={item?.status === 'valid' ? 'success' : undefined}
+                title="Item status"
+                icon={item?.status === 'valid' ? 'tick-circle' : 'blank'}>
+              {item?.status ?? 'unknown status'}
             </Button>
             <InputGroup
               disabled
               leftIcon="calendar"
-              value={`accepted ${item?.dateAccepted?.toLocaleDateString?.() || '—'}`} />
+              value={`accepted ${item?.dateAccepted?.toLocaleDateString?.() ?? '—'}`} />
           </ControlGroup>
           <StyledTitle
-            itemData={item?.data || {}}
+            itemData={item?.data ?? {}}
             useRegisterItemData={useRegisterItemData}
             getRelatedItemClassConfiguration={getRelatedClass} />
         </div>
