@@ -60,7 +60,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
 
   //log.debug("Rendering generic related item view: got item", item);
   return (
-    <ControlGroup className={className} vertical={onChange !== undefined}>
+    <ControlGroup fill className={className} vertical>
       <ButtonGroup>
         {classID
           ? <Button
