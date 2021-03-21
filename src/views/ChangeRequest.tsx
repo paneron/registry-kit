@@ -6,6 +6,7 @@ import log from 'electron-log';
 import yaml from 'js-yaml';
 import update from 'immutability-helper';
 
+import { clipboard } from 'electron';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
 import React, { useContext, useState } from 'react';
@@ -31,6 +32,9 @@ import { RegisterStakeholder } from '../types';
 import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
 import { ItemDetailsWrapperDiv } from './ItemDetails';
+
+
+const toaster = Toaster.create({ position: 'bottom' });
 
 
 const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
@@ -465,6 +469,7 @@ export const ChangeRequestView: React.FC<
             getRelatedClass={getRelatedClass}
             useRegisterItemData={useRegisterItemDataMaybeFromCR}
             subregisters={subregisters}
+            itemID={itemID}
             onAddRelated={canEdit
               ? handleAddProposal
               : undefined}
@@ -690,6 +695,7 @@ const ProposalDetails: React.FC<
   Pick<RegistryViewProps, 'subregisters'> & {
   value: ChangeProposal
   classConfig: ItemClassConfiguration<any>
+  itemID: string
 
   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
   useRegisterItemData: RegisterItemDataHook
@@ -703,6 +709,7 @@ const ProposalDetails: React.FC<
   onAddRelated?: (classID: string, subregisterID?: string) => Promise<InternalItemReference>
 }> = function ({
     value,
+    itemID,
     onChange, onDelete, onAccept, onAddRelated,
     ItemView,
     existingItemData, classConfig, getRelatedClass,
@@ -833,29 +840,33 @@ const ProposalDetails: React.FC<
         {itemView}
       </ItemDetailsWrapperDiv>
 
-      {value.accepted
-        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
-            <FormGroup css={css`margin-bottom: 0`}>
-              <Button disabled intent="success">Accepted</Button>
-            </FormGroup>
-          </div>
-        : null}
-
-      {onDelete
-        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
-            <FormGroup css={css`margin-bottom: 0`}>
-              <Button loading={isBusy} onClick={onDelete} intent="danger">Delete this proposal from current change request</Button>
-            </FormGroup>
-          </div>
-        : null}
-
-      {onAccept && !value.accepted
-        ? <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
-            <FormGroup css={css`margin-bottom: 0`}>
-              <Button loading={isBusy} onClick={handleAction(onAccept)} intent="success">Accept this proposal into the register</Button>
-            </FormGroup>
-          </div>
-        : null}
+      <div css={css`flex-shrink: 0; margin-top: 1rem;`}>
+        <FormGroup css={css`margin-bottom: 0`}>
+          <Button
+              css={css`margin-right: .5rem;`}
+              onClick={() => {
+                clipboard.writeText(itemID);
+                toaster.show({ timeout: 2000, message: "Item UUID copied!", intent: 'success' });
+              }}>
+            Copy item UUID
+          </Button>
+          {value.accepted
+            ? <Button disabled intent="success">
+                Accepted
+              </Button>
+            : null}
+          {onDelete
+            ? <Button loading={isBusy} onClick={onDelete} intent="danger">
+                Delete this proposal from current change request
+              </Button>
+            : null}
+          {onAccept && !value.accepted
+            ? <Button loading={isBusy} onClick={handleAction(onAccept)} intent="success">
+                Accept this proposal into the register
+              </Button>
+            : null}
+        </FormGroup>
+      </div>
     </div>
   );
 };
