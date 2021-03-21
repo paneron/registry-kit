@@ -255,12 +255,12 @@ export const ChangeRequestView: React.FC<
         }
         const amendedItem = {
           ...existingItem,
-          status: proposal.amendmentType === 'supersession' && classConfig?.itemCanBeSuperseded
+          status: proposal.amendmentType === 'supersession' && classConfig?.itemCanBeSuperseded !== false
             ? 'superseded'
             : 'retired',
         };
         if (proposal.amendmentType === 'supersession') {
-          if (classConfig.itemCanBeSuperseded === true) {
+          if (classConfig.itemCanBeSuperseded !== false) {
             if (proposal.supersedingItemID) {
               const supersedingItemPath = getItemPath(proposal.supersedingItemID, proposal);
               if (cr.proposals[proposal.supersedingItemID]?.type !== 'addition' && !itemData[supersedingItemPath]) {
@@ -716,20 +716,20 @@ const ProposalDetails: React.FC<
     proposalProperties = (
       <FormGroup
           label="Supersede with:"
-          helperText={classConfig.itemCanBeSuperseded !== true
+          helperText={classConfig.itemCanBeSuperseded === false
             ? "Items of this class cannot be superseded, only retired."
             : "Please enter the full UUID of the superseding item, or leave empty to retire this item without a successor."}>
         <InputGroup
-          value={value.amendmentType === 'supersession' && classConfig.itemCanBeSuperseded === true
+          value={value.amendmentType === 'supersession' && classConfig.itemCanBeSuperseded !== false
             ? value.supersedingItemID
             : ''}
-          disabled={!onChange || classConfig.itemCanBeSuperseded !== true}
+          disabled={!onChange || classConfig.itemCanBeSuperseded === false}
           placeholder="Successor item ID"
           onChange={onChange
             ? (evt: React.FormEvent<HTMLInputElement>) => {
                 if (!onChange) { return; }
                 const itemID = evt.currentTarget.value;
-                if (itemID.trim() === '' || classConfig.itemCanBeSuperseded !== true) {
+                if (itemID.trim() === '' || classConfig.itemCanBeSuperseded === false) {
                   const newVal = update(value, { $unset: ['supersedingItemID'] });
                   onChange({ ...newVal, amendmentType: 'retirement' });
                 } else {
