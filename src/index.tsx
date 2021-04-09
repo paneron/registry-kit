@@ -1,7 +1,6 @@
 import React from 'react';
 import { makeExtension } from '@riboseinc/paneron-extension-kit';
 import { Extension } from '@riboseinc/paneron-extension-kit/types';
-import { YAMLFileSpec } from '@riboseinc/paneron-extension-kit/object-specs/basic';
 import { ExtensionMakerProps } from '@riboseinc/paneron-extension-kit/types/extension-maker';
 import { RegistryViewProps } from './types';
 import { RegistryView } from './views';
@@ -33,9 +32,6 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
     name,
     requiredHostAppVersion: '1.0.0-alpha19',
     datasetMigrations: {},
-    objects: [
-      YAMLFileSpec,
-    ],
     datasetInitializer: () => import('./migrations/initial'),
   });
 };
