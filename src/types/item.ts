@@ -1,3 +1,4 @@
+
 import { RegisterStakeholder } from './stakeholder';
 import { Citation, LocalizedAlternative } from './util';
 
@@ -12,7 +13,7 @@ const ITEM_STATUSES = [
   'invalid',
 ] as const;
 
-type ItemStatus = typeof ITEM_STATUSES[number];
+export type ItemStatus = typeof ITEM_STATUSES[number];
 
 
 export interface RegisterItemID {
@@ -43,8 +44,7 @@ interface ItemReference {
   itemID: string
 }
 
-
-//type LocalItemReference = Omit<ItemReference, 'registerID'>;
+export type InternalItemReference = Omit<ItemReference, 'registerID'>
 
 
 interface AbstractItemSource {

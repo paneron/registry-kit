@@ -23,6 +23,10 @@ import { Toolbar } from './Toolbar';
 import { REGISTER_METADATA_FILENAME } from '../common';
 
 
+import GenericRelatedItemView from './GenericRelatedItemView';
+export { GenericRelatedItemView };
+
+
 //function makeBlankCR(id: string, sponsor: RegisterStakeholder): ChangeRequest {
 //  return {
 //    id,
@@ -73,7 +77,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   const useRegisterItemData: RegisterItemDataHook = (opts) => {
     const result = useObjectData({
       objectPaths: opts.itemPaths,
-    }) as ValueHook<{ data: Record<string, RegisterItem<any>> }>;
+    }) as ValueHook<{ data: Record<string, RegisterItem<any> | null> }>;
 
     //const parsedData = Object.entries(data.value).
     //filter(([ path, data ]) => data !== null && data.encoding === 'utf-8').

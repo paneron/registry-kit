@@ -69,7 +69,7 @@ export const ChangeRequestView: React.FC<
   //log.debug("Item data request", itemDataRequest);
   //const itemData = useObjectData(itemDataRequest).value;
 
-  const itemData: Record<string, RegisterItem<any>> =
+  const itemData: Record<string, RegisterItem<any> | null> =
     useRegisterItemData({ itemPaths }).value;
 
   const [edited, updateEdited] = useState<ChangeRequest | null>(null);
@@ -370,6 +370,7 @@ export const ChangeRequestView: React.FC<
         <div css={css`flex-shrink: 0; width: 30vw; display: flex; flex-flow: column nowrap; background: ${Colors.WHITE}`}>
           <CRNavigation
             itemClassConfiguration={itemClassConfiguration}
+            useRegisterItemData={useRegisterItemData}
             proposals={cr.proposals}
             itemData={itemData}
             onSelect={selectItem}
@@ -400,15 +401,17 @@ export const ChangeRequestView: React.FC<
 
 const CRNavigation: React.FC<
   Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+  useRegisterItemData: RegisterItemDataHook
   proposals: ChangeRequest["proposals"]
   enableControlBodyInput: boolean
   enableManagerNotes: boolean
-  itemData: Record<string, RegisterItem<any>>,
+  itemData: Record<string, RegisterItem<any> | null>
   selectedItem: string
   onSelect: (item: string) => void
 }> =
 function ({
     itemData, proposals, itemClassConfiguration,
+    useRegisterItemData,
     onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
 
@@ -453,11 +456,13 @@ function ({
           itemID={itemID}
           css={css`white-space: nowrap;`}
           getRelatedItemClassConfiguration={getRelatedClass}
+          useRegisterItemData={useRegisterItemData}
           itemData={proposal.payload} />;
       } else if (data !== undefined) {
         label = <View
           itemID={itemID}
           css={css`white-space: nowrap;`}
+          useRegisterItemData={useRegisterItemData}
           getRelatedItemClassConfiguration={getRelatedClass}
           itemData={data} />;
       } else {
@@ -598,6 +603,7 @@ const ProposalDetails: React.FC<{
     itemView = <View
       itemData={itemData}
       getRelatedItemClassConfiguration={getRelatedClass}
+      useRegisterItemData={useRegisterItemData}
       onChange={onChange
         ? (payload) => onChange ? onChange({ ...value, payload }) : void 0
         : undefined} />;
