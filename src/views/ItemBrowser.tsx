@@ -105,6 +105,7 @@ export const RegisterItemBrowser: React.FC<
   onSubregisterChange?: (newID: string | undefined) => void
   itemActions?: ItemAction[]
   className?: string
+  style?: React.CSSProperties
 }> = function ({
   availableClassIDs,
   selectedSubregisterID,
@@ -113,6 +114,7 @@ export const RegisterItemBrowser: React.FC<
   onSubregisterChange,
   itemActions,
   className,
+  style,
 }) {
 
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
@@ -178,7 +180,7 @@ export const RegisterItemBrowser: React.FC<
 
   return (
     <BrowserCtx.Provider value={{ jumpToItem }}>
-      <MainView wrapperClassName={className}>
+      <MainView style={style} wrapperClassName={className}>
 
         <div
             className={Classes.ELEVATION_1}
