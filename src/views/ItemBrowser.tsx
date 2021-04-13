@@ -59,7 +59,7 @@ export const RegisterItemBrowser: React.FC<
     }
   }
 
-  const getRelatedClass = _getRelatedClass(classConfiguration);
+  const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
   useEffect(() => {
     if ((selectedClass === undefined && itemClasses.length > 0) ||
