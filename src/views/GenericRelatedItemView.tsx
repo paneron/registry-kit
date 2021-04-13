@@ -3,11 +3,12 @@
 
 import { jsx, css } from '@emotion/core';
 import React, { useContext, useState } from 'react';
-import { GenericRelatedItemViewProps, RegisterItem, RelatedItemClassConfiguration } from '../types';
+import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
 import { Button, ButtonGroup, ControlGroup, Dialog, HTMLSelect } from '@blueprintjs/core';
 import { BrowserCtx as BrowserCtxSpec } from './BrowserCtx';
 import { BrowserCtx } from './BrowserCtx';
 import { ItemBrowser } from './ItemBrowser';
+import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
@@ -19,8 +20,10 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   itemSorter,
 }) {
   const { classID, itemID, subregisterID } = itemRef ?? { classID: '', itemID: '', subregisterID: '' };
-  const _itemPath = `${classID}/${itemID}`;
-  const itemPath = subregisterID ? `subregisters/${subregisterID}/${_itemPath}` : _itemPath;
+  const _itemPath = `${classID}/${itemID}.yaml`;
+  const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : `/${_itemPath}`;
+
+  console.debug("GenericRelatedItemView", itemPath);
 
   const [selectDialogState, setSelectDialogState] = useState(false);
 
@@ -52,9 +55,13 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   }
 
   const classIDs = availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : []);
-  const subregisterIDs = availableSubregisterIDs ?? ((itemRef?.subregisterID ?? '') !== '' ? [itemRef!.subregisterID] : []);
+  const subregisterIDs = availableSubregisterIDs ?? ((itemRef?.subregisterID ?? '') !== '' ? [itemRef!.subregisterID!] : []);
 
   const defaultClassID = classIDs[0];
+  const effectiveClassID = classID || defaultClassID;
+
+  const defaultSubregisterID: string | undefined = subregisterIDs[0];
+  const effectiveSubregisterID: string | undefined = defaultSubregisterID;
 
   //log.debug("Rendering generic related item view: got item", item);
   return (
@@ -106,49 +113,105 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
       </ButtonGroup>
 
       {onChange && (classID || defaultClassID)
-        ? <Dialog
-              isOpen={selectDialogState}
-              onClose={() => setSelectDialogState(false)}
-              style={{ padding: '0' }}>
-            <ControlGroup>
-              {subregisterIDs.length > 0
-                ? <HTMLSelect
-                    minimal
-                    fill
-                    disabled={subregisterIDs.length < 2}
-                    value={subregisterID}
-                    onChange={(evt) => onChange!({ itemID, classID, subregisterID: evt.currentTarget.value })}
-                    options={(availableSubregisterIDs ?? [itemRef!.subregisterID!]).map(subregID => ({
-                      value: subregID,
-                      label: subregID,
-                    }))} />
-                : null}
-              <HTMLSelect
-                minimal
-                fill
-                disabled={classIDs.length < 2}
-                value={classID || defaultClassID}
-                onChange={(evt) => onChange!({ itemID, subregisterID, classID: evt.currentTarget.value })}
-                options={classIDs.map(clsID => ({
-                  label: getRelatedItemClassConfiguration(clsID).title,
-                  value: clsID,
-                }))}
-              />
-            </ControlGroup>
-            <ItemBrowser
-              style={{ height: '80vh' }}
-              classID={classID || defaultClassID}
-              selectedSubregisterID={subregisterID}
-              selectedItem={itemID}
-              onSelectItem={(itemID) => onChange!({ itemID: itemID ?? '', classID: classID || defaultClassID, subregisterID })}
-              itemSorter={itemSorter}
-              getRelatedClassConfig={getRelatedItemClassConfiguration}
-              useRegisterItemData={useRegisterItemData} />
-          </Dialog>
+        ? <RelatedItemSelectionDialog
+            isOpen={selectDialogState}
+            onClose={() => setSelectDialogState(false)}
+            onChange={onChange}
+            selectedItem={itemID}
+            selectedClassID={effectiveClassID}
+            selectedSubregisterID={effectiveSubregisterID}
+            availableClassIDs={classIDs}
+            availableSubregisterIDs={subregisterIDs}
+            useRegisterItemData={useRegisterItemData}
+            getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+          />
         : null}
     </ControlGroup>
   );
 };
+
+
+const RelatedItemSelectionDialog: React.FC<{
+  isOpen: boolean
+  onClose: () => void
+  onChange: (itemRef: InternalItemReference) => void
+  selectedItem: string
+  selectedClassID: string
+  selectedSubregisterID?: string
+  availableClassIDs: string[]
+  availableSubregisterIDs: string[]
+  useRegisterItemData: GenericRelatedItemViewProps["useRegisterItemData"]
+  getRelatedItemClassConfiguration: GenericRelatedItemViewProps["getRelatedItemClassConfiguration"]
+}> = function ({
+  isOpen, onClose, onChange,
+  selectedItem, selectedClassID, selectedSubregisterID,
+  availableClassIDs, availableSubregisterIDs,
+  useRegisterItemData, getRelatedItemClassConfiguration,
+}) {
+  const ctx = useContext(DatasetContext);
+  //const { useObjectPaths } = useContext(DatasetContext);
+  const { useFilteredIndex } = ctx;
+
+  const itemClassPath: string = selectedSubregisterID
+    ? `/subregisters/${selectedSubregisterID}/${selectedClassID}/`
+    : `/${selectedClassID}/`;
+
+  const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
+
+  const indexReq = useFilteredIndex({ queryExpression });
+  const indexID: string = indexReq.value.indexID ?? '';
+  //const objectPathsQuery = useObjectPaths({ pathPrefix });
+
+  return (
+    <Dialog
+        isOpen={isOpen}
+        onClose={onClose}
+        style={{ padding: '0' }}>
+      <ControlGroup>
+        {availableSubregisterIDs.length > 0 || selectedSubregisterID !== undefined
+          ? <HTMLSelect
+              minimal
+              fill
+              disabled={availableSubregisterIDs.length < 2}
+              value={selectedSubregisterID}
+              onChange={(evt) => onChange!({ itemID: selectedItem, classID: selectedClassID, subregisterID: evt.currentTarget.value })}
+              options={(availableSubregisterIDs ?? [selectedSubregisterID!]).map(subregID => ({
+                value: subregID,
+                label: subregID,
+              }))} />
+          : null}
+        <HTMLSelect
+          minimal
+          fill
+          disabled={availableClassIDs.length < 2}
+          value={selectedClassID}
+          onChange={(evt) => onChange!({
+            itemID: selectedItem,
+            subregisterID: selectedSubregisterID,
+            classID: evt.currentTarget.value,
+          })}
+          options={availableClassIDs.map(clsID => ({
+            label: getRelatedItemClassConfiguration(clsID).title,
+            value: clsID,
+          }))}
+        />
+      </ControlGroup>
+      <ItemBrowser
+        style={{ height: '80vh' }}
+        classID={selectedClassID}
+        selectedSubregisterID={selectedSubregisterID}
+        selectedItem={selectedItem}
+        indexID={indexID}
+        onSelectItem={(itemID) => onChange!({
+          itemID: itemID ?? '',
+          classID: selectedClassID,
+          subregisterID: selectedSubregisterID,
+        })}
+        getRelatedClassConfig={getRelatedItemClassConfiguration}
+        useRegisterItemData={useRegisterItemData} />
+    </Dialog>
+  );
+}
 
 
 export default GenericRelatedItemView;

@@ -30,7 +30,7 @@ export const ItemDetails: React.FC<{
   let details: JSX.Element;
 
   //const itemPath = `${itemClass.meta.id}/${itemID}`;
-  const _itemPath = `/${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}`;
+  const _itemPath = `/${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}.yaml`;
   const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : _itemPath;
 
   const itemResponse = useRegisterItemData({ itemPaths: [itemPath] });

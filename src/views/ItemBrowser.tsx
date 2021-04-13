@@ -19,7 +19,7 @@ import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/pane
 import ItemCount from '@riboseinc/paneron-extension-kit/widgets/ItemCount';
 import {
   ItemAction,
-  ItemClassConfiguration, ItemClassConfigurationSet,
+  ItemClassConfigurationSet,
   RegisterItem, RegisterItemDataHook,
   RegistryViewProps, RelatedItemClassConfiguration
 } from '../types';
@@ -35,6 +35,7 @@ interface ItemGridData {
   useObjectPathFromFilteredIndex: Hooks.Indexes.GetFilteredObject
   useObjectData: Hooks.Data.GetObjectDataset
 
+  selectedItemID?: string
   classID: string
   subregisterID?: string
   useRegisterItemData: RegisterItemDataHook
@@ -63,6 +64,8 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, width, height, pad
 
   const ListItemView = extraData.getRelatedClassConfig(extraData.classID).itemView;
 
+  const selectedItemID = itemPathToItemID(objPath);
+
   const itemView = itemPayload
     ? <ListItemView
         getRelatedItemClassConfiguration={extraData.getRelatedClassConfig}
@@ -75,7 +78,7 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, width, height, pad
 
   return (
     <LabelledGridIcon
-        isSelected={isSelected}
+        isSelected={extraData.selectedItemID === selectedItemID && selectedItemID !== undefined}
         onSelect={onSelect}
         onOpen={onOpen}
         width={width}
@@ -117,6 +120,11 @@ export const RegisterItemBrowser: React.FC<
   style,
 }) {
 
+  const ctx = useContext(DatasetContext);
+  //const { useObjectPaths } = useContext(DatasetContext);
+  const { useFilteredIndex } = ctx;
+
+  // Item path, not index position.
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
@@ -133,7 +141,7 @@ export const RegisterItemBrowser: React.FC<
     }
   }
 
-  const getRelatedClass = _getRelatedClass(classConfiguration);
+  const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
   useEffect(() => {
     if ((selectedClass === undefined && itemClasses.length > 0) ||
@@ -141,6 +149,23 @@ export const RegisterItemBrowser: React.FC<
       selectClass(itemClasses[0]);
     }
   }, [JSON.stringify(itemClasses)]);
+
+  const itemClassPath: string = selectedSubregisterID
+    ? `/subregisters/${selectedSubregisterID}/${selectedClass ?? 'NONEXISTENT_CLASS'}/`
+    : `/${selectedClass ?? 'NONEXISTENT_CLASS'}/`;
+
+  const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
+
+  const indexReq = useFilteredIndex({ queryExpression });
+  const indexID: string = indexReq.value.indexID ?? '';
+  //const objectPathsQuery = useObjectPaths({ pathPrefix });
+
+  //const registerItemQuery = objectPathsQuery.value.
+  //  filter(path => path !== '.DS_Store').
+  //  map(path => ({ [path.replace('.yaml', '')]: 'utf-8' as const })).
+  //  reduce((prev, curr) => ({ ...prev, ...curr }), {})
+
+  //const items = useRegisterItemData(registerItemQuery);
 
   if (selectedClass === undefined) {
     return <NonIdealState title="Please select item class" />;
@@ -202,14 +227,12 @@ export const RegisterItemBrowser: React.FC<
 
           <ItemBrowser
             css={css`flex: 1 1 auto`}
-
+            indexID={indexID}
             classID={selectedClass}
             selectedItem={selectedItem}
+            onSelectItem={selectItem}
             selectedSubregisterID={selectedSubregisterID}
             getRelatedClassConfig={getRelatedClass}
-            itemSorter={classConfiguration[selectedClass]?.itemSorter}
-
-            onSelectItem={selectItem}
             useRegisterItemData={useRegisterItemData}
           />
 
@@ -263,10 +286,10 @@ const ItemClassSelector: React.FC<{
 
 export const ItemBrowser: React.FC<{
   selectedItem?: string
-  onSelectItem: (item: string | undefined) => void
+  onSelectItem: (itemID: string | undefined) => void
+  indexID: string
   classID: string
   selectedSubregisterID?: string
-  itemSorter?: ItemClassConfiguration<any>["itemSorter"]
 
   useRegisterItemData: RegisterItemDataHook
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
@@ -276,43 +299,36 @@ export const ItemBrowser: React.FC<{
 }> = function ({
   selectedItem,
   onSelectItem,
+  indexID,
   classID,
   selectedSubregisterID,
-  itemSorter,
   useRegisterItemData,
   getRelatedClassConfig,
   style,
   className,
 }) {
-
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { useFilteredIndex, useIndexDescription, useObjectPathFromFilteredIndex, useObjectData } = ctx;
-
-  //const pathPrefix = selectedSubregisterID
-  //  ? `subregisters/${selectedSubregisterID}/${classID}`
-  //  : classID;
-
-  const itemClassPath: string = selectedSubregisterID
-    ? `/subregisters/${selectedSubregisterID}/${classID}/`
-    : `/${classID}/`;
-
-  const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
-
-  const indexReq = useFilteredIndex({ queryExpression });
-  const indexID: string = indexReq.value.indexID ?? '';
-  //const objectPathsQuery = useObjectPaths({ pathPrefix });
+  const { useIndexDescription, useObjectPathFromFilteredIndex, useObjectData } = ctx;
+  const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
   const indexDescReq = useIndexDescription({ indexID });
   const itemCount = indexDescReq.value.status.objectCount;
   const indexProgress = indexDescReq.value.status.progress;
 
-  //const registerItemQuery = objectPathsQuery.value.
-  //  filter(path => path !== '.DS_Store').
-  //  map(path => ({ [path.replace('.yaml', '')]: 'utf-8' as const })).
-  //  reduce((prev, curr) => ({ ...prev, ...curr }), {})
+  const objPathResp = useObjectPathFromFilteredIndex({
+    indexID,
+    position: parseInt(selectedIndexPos ?? `0`, 10),
+  });
 
-  //const items = useRegisterItemData(registerItemQuery);
+  useEffect(() => {
+    if (objPathResp.isUpdating) {
+      onSelectItem(undefined);
+    } else {
+      const itemID = itemPathToItemID(objPathResp.value.objectPath);
+      onSelectItem(itemID);
+    }
+  }, [objPathResp.isUpdating]);
 
   function getGridData(viewportWidth: number): GridData<ItemGridData> | null {
     if (classID && indexID) {
@@ -327,13 +343,14 @@ export const ItemBrowser: React.FC<{
           useObjectData,
           useObjectPathFromFilteredIndex,
           indexID,
+          selectedItemID: selectedItem,
           subregisterID: selectedSubregisterID,
           classID,
           useRegisterItemData,
           getRelatedClassConfig,
         },
-        selectedItem: selectedItem ?? null,
-        selectItem: (itemRef) => onSelectItem(itemRef ?? undefined),
+        selectedItem: selectedIndexPos,
+        selectItem: selectIndexPos,
         cellWidth: CELL_W_PX,
         cellHeight: CELL_H_PX,
         padding: CELL_PADDING,
@@ -341,11 +358,6 @@ export const ItemBrowser: React.FC<{
     }
     return null;
   }
-
-  const status = {
-    progress: indexProgress,
-    totalCount: itemCount,
-  };
 
   return (
     <div
@@ -361,7 +373,7 @@ export const ItemBrowser: React.FC<{
         css={css`font-size: 80%; height: 24px; padding: 0 10px; background: ${Colors.LIGHT_GRAY5}; z-index: 2;`}
         descriptiveName={{ plural: 'register items', singular: 'register item' }}
         totalCount={itemCount}
-        progress={status.progress}
+        progress={indexProgress}
       />
     </div>
   );
@@ -497,3 +509,12 @@ export const ItemBrowser: React.FC<{
 // }
 
 // const defaultItemSorterFunc = () => 0;
+
+
+function itemPathToItemID(objPath: string): string | undefined {
+  const objPathComponents = objPath?.split('/');
+  const selectedItemID = objPathComponents !== undefined
+    ? objPathComponents[objPathComponents.length - 1].split('.')[0]
+    : undefined;
+  return selectedItemID;
+}
