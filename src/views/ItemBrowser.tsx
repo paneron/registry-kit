@@ -186,7 +186,9 @@ export const RegisterItemBrowser: React.FC<
             className={Classes.ELEVATION_1}
             css={css`
               flex-shrink: 0;
+              flex-grow: 0;
               flex-basis: 300px;
+              width: 300px;
               display: flex;
               flex-flow: column nowrap;
               background: ${Colors.WHITE};
