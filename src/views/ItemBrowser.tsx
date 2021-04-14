@@ -124,8 +124,9 @@ export const RegisterItemBrowser: React.FC<
   //const { useObjectPaths } = useContext(DatasetContext);
   const { useFilteredIndex } = ctx;
 
-  // Item path, not index position.
+  // Item ID. NOT item path, nor item’s position in current filtered index:
   const [selectedItem, selectItem] = useState<string | undefined>(undefined);
+
   const [selectedClass, selectClass] = useState<string | undefined>(undefined);
 
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
@@ -223,7 +224,10 @@ export const RegisterItemBrowser: React.FC<
             css={css`select { font-weight: bold; }`}
             itemClasses={classConfiguration}
             selectedClassID={selectedClass}
-            onSelectClass={(newClass) => { selectClass(newClass); selectItem(undefined) }} />
+            onSelectClass={(newClass) => {
+              selectClass(newClass);
+              selectItem(undefined);
+            }} />
 
           <ItemBrowser
             css={css`flex: 1 1 auto`}
