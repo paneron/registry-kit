@@ -290,7 +290,7 @@ const ItemClassSelector: React.FC<{
 
 export const ItemBrowser: React.FC<{
   selectedItem?: string
-  onSelectItem: (itemID: string | undefined) => void
+  onSelectItem: (itemID: string) => void
   indexID: string
   classID: string
   selectedSubregisterID?: string
@@ -313,7 +313,7 @@ export const ItemBrowser: React.FC<{
 }) {
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { useIndexDescription, useObjectPathFromFilteredIndex, useObjectData } = ctx;
+  const { useIndexDescription, useObjectPathFromFilteredIndex, useFilteredIndexPosition, useObjectData } = ctx;
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
   const indexDescReq = useIndexDescription({ indexID });
@@ -322,17 +322,33 @@ export const ItemBrowser: React.FC<{
 
   const objPathResp = useObjectPathFromFilteredIndex({
     indexID,
-    position: parseInt(selectedIndexPos ?? `0`, 10),
+    position: selectedIndexPos ? parseInt(selectedIndexPos, 10) : 0,
+  });
+
+  const idxPosResp = useFilteredIndexPosition({
+    indexID,
+    objectPath: objPathResp.value.objectPath,
   });
 
   useEffect(() => {
-    if (objPathResp.isUpdating) {
-      onSelectItem(undefined);
-    } else {
-      const itemID = itemPathToItemID(objPathResp.value.objectPath);
-      onSelectItem(itemID);
+    if (selectedItem !== undefined && !idxPosResp.isUpdating) {
+      const pos = idxPosResp.value.position !== null
+        ? `${idxPosResp.value.position}`
+        : null;
+      if (selectedIndexPos !== pos) {
+        selectIndexPos(pos);
+      }
     }
-  }, [objPathResp.isUpdating]);
+  }, [selectedItem, idxPosResp.isUpdating]);
+
+  useEffect(() => {
+    if (selectedIndexPos !== null && !objPathResp.isUpdating) {
+      const itemID = itemPathToItemID(objPathResp.value.objectPath);
+      if (itemID && selectedItem !== itemID) {
+        onSelectItem(itemID);
+      }
+    }
+  }, [selectedIndexPos, objPathResp.isUpdating]);
 
   function getGridData(viewportWidth: number): GridData<ItemGridData> | null {
     if (classID && indexID) {
