@@ -62,7 +62,7 @@ export const ItemDetails: React.FC<{
     );
 
   } else {
-    details = <NonIdealState title="Item data not available" />;
+    details = <div className={Classes.SKELETON}>Loading…</div>;
   }
 
   function StyledTitle(props: RegistryItemViewProps<any>) {
@@ -100,7 +100,7 @@ export const ItemDetails: React.FC<{
                 intent={item?.status === 'valid' ? 'success' : undefined}
                 title="Item status"
                 icon={item?.status === 'valid' ? 'tick-circle' : 'blank'}>
-              {item?.status ?? 'unknown status'}
+              {item?.status}
             </Button>
             <InputGroup
               disabled

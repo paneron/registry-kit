@@ -2,119 +2,74 @@
 /** @jsxFrag React.Fragment */
 
 //import { debounce } from 'throttle-debounce';
-import { splitEvery } from 'ramda';
-
 //import log from 'electron-log';
 
-import React, { useState, useEffect, useContext } from 'react';
-import { css, jsx } from '@emotion/core';
+import React, { useContext } from 'react';
+import { jsx } from '@emotion/core';
 //import { FixedSizeList as List } from 'react-window';
 import {
-  /*Button, Callout,*/ Classes, Colors, HTMLSelect,
-  IOptionProps, NonIdealState,
+  NonIdealState,
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
-import ItemCount from '@riboseinc/paneron-extension-kit/widgets/ItemCount';
 import {
   ItemAction,
-  ItemClassConfigurationSet,
-  RegisterItem, RegisterItemDataHook,
-  RegistryViewProps, RelatedItemClassConfiguration
+  RegisterItemDataHook,
+  RegistryViewProps,
 } from '../types';
-import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
 import { BrowserCtx } from './BrowserCtx';
 import ItemDetails from './ItemDetails';
-import { Hooks } from '@riboseinc/paneron-extension-kit/types';
+import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
+import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
+import { itemPathToItemRefLike, itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
+import { CriteriaGroup, criteriaGroupToQueryExpression, makeBlankCriteria } from './FilterCriteria';
 
 
-interface ItemGridData {
-  indexID: string
-  useObjectPathFromFilteredIndex: Hooks.Indexes.GetFilteredObject
-  useObjectData: Hooks.Data.GetObjectDataset
-
-  selectedItemID?: string
-  classID: string
-  subregisterID?: string
-  useRegisterItemData: RegisterItemDataHook
-  getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
+interface Query {
+  criteria: CriteriaGroup;
 }
+type Action =
+  | { type: 'select-item'; payload: { itemPath: string | undefined; }; }
+  | { type: 'open-item'; payload: { itemPath: string; }; }
+  //| { type: 'select-class', payload: { classID: string | undefined } }
+  //| { type: 'open-class', payload: { classID: string } }
+  //| { type: 'select-subregister', payload: { subregisterID: string | undefined } }
+  //| { type: 'open-subregister', payload: { subregisterID: string } }
+  | { type: 'update-query'; payload: { query: Query; }; }
+  | { type: 'exit-item'; };
 
-
-const Item: React.FC<CellProps<ItemGridData>> =
-function ({ isSelected, onSelect, onOpen, extraData, itemRef, width, height, padding }) {
-  const filteredObjectResp = extraData.useObjectPathFromFilteredIndex({
-    indexID: extraData.indexID,
-    position: parseInt(itemRef, 10),
-  });
-  const objPath = filteredObjectResp.value.objectPath;
-  const objectDataResp = extraData.useObjectData({
-    objectPaths: objPath ? [objPath] : [],
-  });
-
-  const objData = objectDataResp.value.data[objPath];
-  const registerItemData = objData as RegisterItem<any> | null;
-  const itemPayload = registerItemData?.data;
-
-  const isUpdating = filteredObjectResp.isUpdating || objectDataResp.isUpdating;
-
-  const stringItemDescription = objPath ? `item at ${objPath}` : `item #${itemRef}`;
-
-  const ListItemView = extraData.getRelatedClassConfig(extraData.classID).itemView;
-
-  const selectedItemID = itemPathToItemID(objPath);
-
-  const itemView = itemPayload
-    ? <ListItemView
-        getRelatedItemClassConfiguration={extraData.getRelatedClassConfig}
-        useRegisterItemData={extraData.useRegisterItemData}
-        subregisterID={extraData.subregisterID}
-        itemData={itemPayload}
-        itemID={registerItemData?.id ?? 'N/A'}
-      />
-    : <>{stringItemDescription}</>
-
-  return (
-    <LabelledGridIcon
-        isSelected={extraData.selectedItemID === selectedItemID && selectedItemID !== undefined}
-        onSelect={onSelect}
-        onOpen={onOpen}
-        width={width}
-        height={height}
-        padding={padding}
-        contentClassName={isUpdating ? Classes.SKELETON : undefined}
-        entityType={{ iconProps: { icon: 'document', title: stringItemDescription, htmlTitle: `Icon for ${stringItemDescription}` }, name: 'reg. item' }}>
-      {itemView}
-    </LabelledGridIcon>
-  );
-};
-
-
-const Grid = makeGrid<ItemGridData>(Item);
-
-
-const CELL_W_PX = 150;
-const CELL_H_PX = 80;
-const CELL_PADDING = 10;
+interface BaseState {
+  view: 'item' | 'grid';
+  selectedItemPath: string | undefined;
+  query: Query;
+}
+interface ItemState extends BaseState {
+  view: 'item';
+  selectedItemPath: string;
+  query: Query;
+}
+interface GridState extends BaseState {
+  view: 'grid';
+  selectedItemPath: string | undefined;
+  query: Query;
+}
+type State = ItemState |
+  GridState;
 
 
 export const RegisterItemBrowser: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters'> & {
   availableClassIDs?: string[]
-  selectedSubregisterID?: string
   useRegisterItemData: RegisterItemDataHook
-  onSubregisterChange?: (newID: string | undefined) => void
   itemActions?: ItemAction[]
   className?: string
   style?: React.CSSProperties
 }> = function ({
   availableClassIDs,
-  selectedSubregisterID,
+  subregisters,
   itemClassConfiguration,
   useRegisterItemData,
-  onSubregisterChange,
   itemActions,
   className,
   style,
@@ -122,43 +77,107 @@ export const RegisterItemBrowser: React.FC<
 
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { useFilteredIndex } = ctx;
+  const { usePersistentDatasetStateReducer } = ctx;
+  const [ state, dispatch ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
+    (prevState, action) => {
+      switch (action.type) {
+        case 'select-item':
+          const selectedItemPath = action.payload.itemPath;
+          if (selectedItemPath) {
+            return {
+              ...prevState,
+              selectedItemPath,
+            };
+          } else {
+            return {
+              ...prevState,
+              view: 'grid',
+              selectedItemPath,
+            };
+          }
+        case 'open-item':
+          return {
+            ...prevState,
+            view: 'item',
+            selectedItemPath: action.payload.itemPath,
+          };
+        case 'update-query':
+          return {
+            ...prevState,
+            view: 'grid',
+            query: action.payload.query,
+          };
+        case 'exit-item':
+          return {
+            ...prevState,
+            view: 'grid',
+          };
+        default:
+          throw new Error("Unexpected register item browser state");
+      }
+    }, {
+      view: 'grid',
+      selectedItemPath: undefined,
+      query: { criteria: makeBlankCriteria() },
+    }, null, 'item-browser');
 
-  // Item ID. NOT item path, nor item’s position in current filtered index:
-  const [selectedItem, selectItem] = useState<string | undefined>(undefined);
+  //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
 
-  const [selectedClass, selectClass] = useState<string | undefined>(undefined);
+  const { subregisterID, classID, itemID } = itemPathToItemRefLike(subregisters !== undefined, state.selectedItemPath ?? '');
 
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
-  const classConfiguration: ItemClassConfigurationSet =
-    itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
-    { o[k] = itemClassConfiguration[k]; return o; }, {});
+  //const classConfiguration: ItemClassConfigurationSet =
+  //  itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
+  //  { o[k] = itemClassConfiguration[k]; return o; }, {});
 
   const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
-    if (itemClasses.indexOf(classID) >= 0) {
-      onSubregisterChange ? onSubregisterChange(subregisterID) : void 0;
-      selectClass(classID);
-      selectItem(itemID);
+    if (subregisters === undefined && subregisterID !== undefined) {
+      console.error("Unable to jump to register item: indicates subregister, but register does not have any", subregisterID);
+      throw new Error("Unable to jump to register item: indicates subregister, but register does not have any");
+    } else if (subregisters !== undefined && subregisterID === undefined) {
+      console.error("Unable to jump to register item: subregister is required");
+      throw new Error("Unable to jump to register item: subregister is required");
     }
+    if (subregisterID) {
+      if (subregisters![subregisterID] === undefined) {
+        console.error("Unable to jump to register item: requested subregister does not exist", subregisterID);
+        throw new Error("Unable to jump to register item: requested subregister does not exist");
+      } else if (itemClasses.indexOf(classID) < 0) {
+        console.error("Unable to jump to register item: requested item class is not allowed", classID);
+        throw new Error("Unable to jump to register item: requested item class is not allowed");
+      }
+    }
+
+    const itemPath: string = subregisterID
+      ? `/${subregisterID}/${classID}/${itemID}.yaml`
+      : `/${classID}/${itemID}.yaml`;
+
+    dispatch({ type: 'select-item', payload: { itemPath } });
   }
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
-  useEffect(() => {
-    if ((selectedClass === undefined && itemClasses.length > 0) ||
-        (selectedClass && itemClasses.indexOf(selectedClass) < 0)) {
-      selectClass(itemClasses[0]);
-    }
-  }, [JSON.stringify(itemClasses)]);
+  // useEffect(() => {
+  //   if ((selectedClass === undefined && itemClasses.length > 0) ||
+  //       (selectedClass && itemClasses.indexOf(selectedClass) < 0)) {
+  //     selectClass(itemClasses[0]);
+  //   }
+  // }, [JSON.stringify(itemClasses)]);
 
-  const itemClassPath: string = selectedSubregisterID
-    ? `/subregisters/${selectedSubregisterID}/${selectedClass ?? 'NONEXISTENT_CLASS'}/`
-    : `/${selectedClass ?? 'NONEXISTENT_CLASS'}/`;
 
-  const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
+  // XXX: QUERY EXPRESSION HANDLING IS HERE
+  // const itemClassPath: string = selectedSubregisterID
+  //   ? `/subregisters/${selectedSubregisterID}/${selectedClass ?? 'NONEXISTENT_CLASS'}/`
+  //   : `/${selectedClass ?? 'NONEXISTENT_CLASS'}/`;
 
-  const indexReq = useFilteredIndex({ queryExpression });
-  const indexID: string = indexReq.value.indexID ?? '';
+  // const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
+
+  // const normalizedQueryExp = state.queryExpression.trim() || 'return objPath.';
+  // const indexReq = useFilteredIndex({ queryExpression: state.queryExpression });
+  // const indexID: string = indexReq.value.indexID ?? '';
+  // END XXX
+
+
   //const objectPathsQuery = useObjectPaths({ pathPrefix });
 
   //const registerItemQuery = objectPathsQuery.value.
@@ -168,9 +187,9 @@ export const RegisterItemBrowser: React.FC<
 
   //const items = useRegisterItemData(registerItemQuery);
 
-  if (selectedClass === undefined) {
-    return <NonIdealState title="Please select item class" />;
-  }
+  // if (selectedClass === undefined) {
+  //   return <NonIdealState title="Please select item class" />;
+  // }
 
   //class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
   //  constructor(props: any) {
@@ -204,337 +223,56 @@ export const RegisterItemBrowser: React.FC<
   //  }
   //}
 
+  let view: JSX.Element;
+  if (state.view === 'grid') {
+    view = <RegisterItemGrid
+      selectedItem={state.selectedItemPath
+        ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
+        : undefined}
+      onSelectItem={(itemRef) => dispatch({
+        type: 'select-item',
+        payload: { itemPath: itemRefToItemPath(itemRef) },
+      })}
+      queryExpression={criteriaGroupToQueryExpression(state.query.criteria)}
+      toolbar={<SearchQuery
+        rootCriteria={state.query.criteria}
+        itemClasses={itemClassConfiguration}
+        availableClassIDs={availableClassIDs}
+        subregisters={subregisters}
+        onChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
+      />}
+      getRelatedClassConfig={getRelatedClass}
+      useRegisterItemData={useRegisterItemData}
+    />;
+  } else if (state.view === 'item' && classID && itemID) {
+    view = <ItemDetails
+      useRegisterItemData={useRegisterItemData}
+      getRelatedClass={_getRelatedClass(itemClassConfiguration)}
+      // TODO: convert class, subregister and ID combo into a single string item path?
+      itemClass={itemClassConfiguration[classID]}
+      subregisterID={subregisterID}
+      itemID={itemID}
+      itemActions={itemActions}
+    />
+  } else {
+    // If item view is requested, but item or class ID is missing,
+    // we can’t show any details because the only details view we have for now
+    // is regsiter item details view, which requires those.
+    view = <NonIdealState icon="heart-broken" title="Not sure what to show" description="Sorry! (Error code: 724A)" />;
+  }
+
   return (
-    <BrowserCtx.Provider value={{ jumpToItem }}>
-      <MainView style={style} wrapperClassName={className}>
-
-        <div
-            className={Classes.ELEVATION_1}
-            css={css`
-              flex-shrink: 0;
-              flex-grow: 0;
-              flex-basis: 300px;
-              width: 300px;
-              display: flex;
-              flex-flow: column nowrap;
-              background: ${Colors.WHITE};
-            `}>
-
-          <ItemClassSelector
-            css={css`select { font-weight: bold; }`}
-            itemClasses={classConfiguration}
-            selectedClassID={selectedClass}
-            onSelectClass={(newClass) => {
-              selectClass(newClass);
-              selectItem(undefined);
-            }} />
-
-          <ItemBrowser
-            css={css`flex: 1 1 auto`}
-            indexID={indexID}
-            classID={selectedClass}
-            selectedItem={selectedItem}
-            onSelectItem={selectItem}
-            selectedSubregisterID={selectedSubregisterID}
-            getRelatedClassConfig={getRelatedClass}
-            useRegisterItemData={useRegisterItemData}
-          />
-
-        </div>
-
-        {/*<ErrorBoundary>*/}
-          <ItemDetails
-            useRegisterItemData={useRegisterItemData}
-            getRelatedClass={_getRelatedClass(itemClassConfiguration)}
-            itemClass={itemClassConfiguration[selectedClass]}
-            subregisterID={selectedSubregisterID}
-            itemID={selectedItem}
-            itemActions={itemActions}
-          />
-        {/*</ErrorBoundary>*/}
-
-      </MainView>
+    <BrowserCtx.Provider
+        value={{
+          jumpToItem,
+          itemClasses: itemClassConfiguration,
+          subregisters,
+          useRegisterItemData,
+        }}>
+      {view}
     </BrowserCtx.Provider>
   );
 };
 
 
-const ItemClassSelector: React.FC<{
-  itemClasses: RegistryViewProps["itemClassConfiguration"]
-  selectedClassID: string | undefined
-  onSelectClass: (classID: string) => void
-  className?: string
-}> = function ({
-  itemClasses,
-  selectedClassID,
-  onSelectClass,
-  className,
-}) {
-
-  const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
-  map(([classID, classData]) => {
-    return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
-  });
-
-  return (
-    <HTMLSelect
-      className={className}
-      fill
-      minimal
-      options={itemClassChoices}
-      value={selectedClassID}
-      onChange={(evt) => onSelectClass(evt.currentTarget.value)} />
-  );
-};
-
-
-export const ItemBrowser: React.FC<{
-  selectedItem?: string
-  onSelectItem: (itemID: string) => void
-  indexID: string
-  classID: string
-  selectedSubregisterID?: string
-
-  useRegisterItemData: RegisterItemDataHook
-  getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
-
-  style?: React.CSSProperties
-  className?: string
-}> = function ({
-  selectedItem,
-  onSelectItem,
-  indexID,
-  classID,
-  selectedSubregisterID,
-  useRegisterItemData,
-  getRelatedClassConfig,
-  style,
-  className,
-}) {
-  const ctx = useContext(DatasetContext);
-  //const { useObjectPaths } = useContext(DatasetContext);
-  const { useIndexDescription, useObjectPathFromFilteredIndex, useFilteredIndexPosition, useObjectData } = ctx;
-  const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
-
-  const indexDescReq = useIndexDescription({ indexID });
-  const itemCount = indexDescReq.value.status.objectCount;
-  const indexProgress = indexDescReq.value.status.progress;
-
-  const objPathResp = useObjectPathFromFilteredIndex({
-    indexID,
-    position: selectedIndexPos ? parseInt(selectedIndexPos, 10) : 0,
-  });
-
-  const idxPosResp = useFilteredIndexPosition({
-    indexID,
-    objectPath: objPathResp.value.objectPath,
-  });
-
-  useEffect(() => {
-    if (selectedItem !== undefined && !idxPosResp.isUpdating) {
-      const pos = idxPosResp.value.position !== null
-        ? `${idxPosResp.value.position}`
-        : null;
-      if (selectedIndexPos !== pos) {
-        selectIndexPos(pos);
-      }
-    }
-  }, [selectedItem, idxPosResp.isUpdating]);
-
-  useEffect(() => {
-    if (selectedIndexPos !== null && !objPathResp.isUpdating) {
-      const itemID = itemPathToItemID(objPathResp.value.objectPath);
-      if (itemID && selectedItem !== itemID) {
-        onSelectItem(itemID);
-      }
-    }
-  }, [selectedIndexPos, objPathResp.isUpdating]);
-
-  function getGridData(viewportWidth: number): GridData<ItemGridData> | null {
-    if (classID && indexID) {
-      const stubs = [...new Array(itemCount)].map((_, idx) => `${idx}`);
-      //console.debug(`Getting grid data for ${itemCount} items…`, stubs);
-      //console.debug(`Getting grid data: index status for ${indexID}`, indexProgress);
-      return {
-        items: splitEvery(
-          Math.floor(viewportWidth / CELL_W_PX),
-          stubs),
-        extraData: {
-          useObjectData,
-          useObjectPathFromFilteredIndex,
-          indexID,
-          selectedItemID: selectedItem,
-          subregisterID: selectedSubregisterID,
-          classID,
-          useRegisterItemData,
-          getRelatedClassConfig,
-        },
-        selectedItem: selectedIndexPos,
-        selectItem: selectIndexPos,
-        cellWidth: CELL_W_PX,
-        cellHeight: CELL_H_PX,
-        padding: CELL_PADDING,
-      }
-    }
-    return null;
-  }
-
-  return (
-    <div
-        css={css`display: flex; flex-flow: column nowrap; & > :first-child { flex: 1 1 auto; }`}
-        className={className}
-        style={style}>
-
-      <div css={css`flex: 1;`}>
-        <Grid getGridData={getGridData} />
-      </div>
-
-      <ItemCount
-        css={css`font-size: 80%; height: 24px; padding: 0 10px; background: ${Colors.LIGHT_GRAY5}; z-index: 2;`}
-        descriptiveName={{ plural: 'register items', singular: 'register item' }}
-        totalCount={itemCount}
-        progress={indexProgress}
-      />
-    </div>
-  );
-};
-
-
-// const ItemList: React.FC<{
-//   itemCount: number
-//   classID: string
-//   subregisterID?: string
-//   useRegisterItemData: RegisterItemDataHook
-//   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration
-//   selectedItem?: string
-//   onSelectItem: (item: string | undefined) => void
-// }> = function ({
-//   itemCount,
-//   classID,
-//   selectedItem,
-//   subregisterID,
-//   onSelectItem,
-//   useRegisterItemData,
-//   getRelatedClassConfig,
-// }) {
-// 
-//   const CONTAINER_PADDINGS = 0;
-// 
-//   const listContainer = useRef<HTMLDivElement>(null);
-//   const listEl = useRef<List>(null);
-//   const [listHeight, setListHeight] = useState<number>(CONTAINER_PADDINGS);
-// 
-//   useEffect(() => {
-//     const updateListHeight = debounce(100, () => {
-//       setListHeight(listContainer.current?.parentElement?.offsetHeight ?? CONTAINER_PADDINGS);
-//       setImmediate(() => {
-//         if (selectedItem !== undefined) {
-//           scrollTo(selectedItem)
-//         }
-//       });
-//     });
-// 
-//     window.addEventListener('resize', updateListHeight);
-//     updateListHeight();
-// 
-//     return function cleanup() {
-//       window.removeEventListener('resize', updateListHeight);
-//     }
-//   }, [listContainer.current]);
-// 
-//   const ItemView = ({ index, style }: { index: number, style: React.CSSProperties }) => {
-//     const item = items[index];
-// 
-//     if (!item) {
-//       return <Button
-//         minimal fill style={style} alignText="left"
-//         css={css`white-space: nowrap; font-size: 90%;
-//                   & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }`}
-//         onClick={handleClick}>Loading…</Button>;
-//     }
-// 
-//     function handleClick(evt: React.MouseEvent) {
-//       if ((evt.target as Element).nodeName === 'INPUT') {
-//         evt.stopPropagation();
-//       } else {
-//         setImmediate(() => onSelectItem(item.id));
-//       }
-//     }
-// 
-//     const View = getRelatedClassConfig(classID).itemView;
-// 
-//     return (
-//       <Button
-//           active={item.id === selectedItem}
-//           minimal fill style={style} alignText="left"
-//           css={css`white-space: nowrap; font-size: 90%;
-//                     & > .bp3-button-text { overflow: hidden; text-overflow: ellipsis }`}
-//           onClick={handleClick}>
-//         <View
-//           getRelatedItemClassConfiguration={getRelatedClassConfig}
-//           useRegisterItemData={useRegisterItemData}
-//           subregisterID={subregisterID}
-//           itemData={item.data}
-//           itemID={item.id}
-//           css={css`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
-//         />
-//       </Button>
-//     );
-//   };
-// 
-//   function scrollTo(itemID: string) {
-//     if (listEl && listEl.current) {
-//       listEl.current.scrollToItem(
-//         items.findIndex(i => i.id === itemID),
-//         'smart');
-//     }
-//   }
-// 
-//   return (
-//     <div ref={listContainer}>
-//       <List
-//           ref={listEl}
-//           itemCount={itemCount}
-//           width="100%"
-//           height={listHeight - CONTAINER_PADDINGS}
-//           itemSize={ITEM_HEIGHT}>
-//         {ItemView}
-//       </List>
-//     </div>
-//   );
-// };
-// const ITEM_HEIGHT = 30;
-// 
-// 
-// function getItemSorter(sorterFunc?: ItemClassConfiguration<any>["itemSorter"]):
-// ItemClassConfiguration<any>["itemSorter"] {
-//   if (sorterFunc !== undefined) {
-//     return function (a, b) {
-//       if (a.data && b.data) {
-//         try {
-//           return sorterFunc(a.data, b.data)
-//         } catch (e) {
-//           // Error sorting items. Could happen if items
-//           // are not of the type expected by the sorter.
-//           // log.error("Error sorting items", a.data, b.data);
-//           return 0;
-//         }
-//       } else {
-//         return defaultItemSorterFunc();
-//       }
-//     }
-//   } {
-//     return defaultItemSorterFunc;
-//   }
-// }
-
-// const defaultItemSorterFunc = () => 0;
-
-
-function itemPathToItemID(objPath: string): string | undefined {
-  const objPathComponents = objPath?.split('/');
-  const selectedItemID = objPathComponents !== undefined
-    ? objPathComponents[objPathComponents.length - 1].split('.')[0]
-    : undefined;
-  return selectedItemID;
-}
+export default RegisterItemBrowser;

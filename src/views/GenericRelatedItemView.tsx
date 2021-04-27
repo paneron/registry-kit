@@ -4,11 +4,11 @@
 import { jsx, css } from '@emotion/core';
 import React, { useContext, useState } from 'react';
 import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
-import { Button, ButtonGroup, ControlGroup, Dialog, HTMLSelect } from '@blueprintjs/core';
+import { Button, ButtonGroup, ControlGroup, Dialog } from '@blueprintjs/core';
 import { BrowserCtx as BrowserCtxSpec } from './BrowserCtx';
 import { BrowserCtx } from './BrowserCtx';
-import { ItemBrowser } from './ItemBrowser';
-import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
+import { CriteriaGroup, criteriaGroupToQueryExpression } from './FilterCriteria';
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
@@ -117,7 +117,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             isOpen={selectDialogState}
             onClose={() => setSelectDialogState(false)}
             onChange={onChange}
-            selectedItem={itemID}
+            selectedItem={itemRef}
             selectedClassID={effectiveClassID}
             selectedSubregisterID={effectiveSubregisterID}
             availableClassIDs={classIDs}
@@ -135,7 +135,7 @@ const RelatedItemSelectionDialog: React.FC<{
   isOpen: boolean
   onClose: () => void
   onChange: (itemRef: InternalItemReference) => void
-  selectedItem: string
+  selectedItem?: InternalItemReference
   selectedClassID: string
   selectedSubregisterID?: string
   availableClassIDs: string[]
@@ -148,67 +148,35 @@ const RelatedItemSelectionDialog: React.FC<{
   availableClassIDs, availableSubregisterIDs,
   useRegisterItemData, getRelatedItemClassConfiguration,
 }) {
-  const ctx = useContext(DatasetContext);
-  //const { useObjectPaths } = useContext(DatasetContext);
-  const { useFilteredIndex } = ctx;
+  const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
+  const { itemClasses, subregisters } = useContext(BrowserCtx);
+  // const itemClassPath: string = selectedSubregisterID
+  //   ? `/subregisters/${selectedSubregisterID}/${selectedClassID}/`
+  //   : `/${selectedClassID}/`;
 
-  const itemClassPath: string = selectedSubregisterID
-    ? `/subregisters/${selectedSubregisterID}/${selectedClassID}/`
-    : `/${selectedClassID}/`;
-
-  const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
-
-  const indexReq = useFilteredIndex({ queryExpression });
-  const indexID: string = indexReq.value.indexID ?? '';
-  //const objectPathsQuery = useObjectPaths({ pathPrefix });
+  // const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
 
   return (
     <Dialog
         isOpen={isOpen}
         onClose={onClose}
         style={{ padding: '0' }}>
-      <ControlGroup>
-        {availableSubregisterIDs.length > 0 || selectedSubregisterID !== undefined
-          ? <HTMLSelect
-              minimal
-              fill
-              disabled={availableSubregisterIDs.length < 2}
-              value={selectedSubregisterID}
-              onChange={(evt) => onChange!({ itemID: selectedItem, classID: selectedClassID, subregisterID: evt.currentTarget.value })}
-              options={(availableSubregisterIDs ?? [selectedSubregisterID!]).map(subregID => ({
-                value: subregID,
-                label: subregID,
-              }))} />
-          : null}
-        <HTMLSelect
-          minimal
-          fill
-          disabled={availableClassIDs.length < 2}
-          value={selectedClassID}
-          onChange={(evt) => onChange!({
-            itemID: selectedItem,
-            subregisterID: selectedSubregisterID,
-            classID: evt.currentTarget.value,
-          })}
-          options={availableClassIDs.map(clsID => ({
-            label: getRelatedItemClassConfiguration(clsID).title,
-            value: clsID,
-          }))}
-        />
-      </ControlGroup>
-      <ItemBrowser
+      <RegisterItemGrid
         style={{ height: '80vh' }}
-        classID={selectedClassID}
-        selectedSubregisterID={selectedSubregisterID}
         selectedItem={selectedItem}
-        indexID={indexID}
-        onSelectItem={(itemID) => onChange!({
-          itemID: itemID ?? '',
-          classID: selectedClassID,
-          subregisterID: selectedSubregisterID,
-        })}
+        selectedSubregisterID={selectedSubregisterID}
+        queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
+        onSelectItem={(itemRef) => onChange!(itemRef)}
         getRelatedClassConfig={getRelatedItemClassConfiguration}
-        useRegisterItemData={useRegisterItemData} />
+        useRegisterItemData={useRegisterItemData}
+        toolbar={<SearchQuery
+          rootCriteria={filterCriteria}
+          itemClasses={itemClasses}
+          availableClassIDs={availableClassIDs}
+          subregisters={subregisters}
+          onChange={setFilterCriteria}
+        />}
+      />
     </Dialog>
   );
 }

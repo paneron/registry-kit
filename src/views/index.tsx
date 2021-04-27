@@ -1,26 +1,24 @@
 /** @jsx jsx */
 
-import yaml from 'js-yaml';
 import log from 'electron-log';
 
-import React, { useContext, useEffect, useState } from 'react';
-import { css, jsx } from '@emotion/core';
+import React, { useContext, useState } from 'react';
+import { jsx } from '@emotion/core';
 import { NonIdealState, } from '@blueprintjs/core';
 
 import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest,
-  Register,
+  //Register,
   RegisterItem,
   RegisterItemDataHook,
   RegistryViewProps,
 } from '../types';
-import { RegisterInformation } from './RegisterInformation';
+//import { RegisterInformation } from './RegisterInformation';
 import { ChangeRequestView } from './ChangeRequest';
 import { RegisterItemBrowser } from './ItemBrowser';
-import { Toolbar } from './Toolbar';
-import { REGISTER_METADATA_FILENAME } from '../common';
+//import { REGISTER_METADATA_FILENAME } from '../common';
 
 
 import GenericRelatedItemView from './GenericRelatedItemView';
@@ -42,37 +40,28 @@ export { GenericRelatedItemView };
 export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters }) {
 
   const {
-    title,
     useObjectData,
     updateObjects,
   } = useContext(DatasetContext);
 
-  const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
-  const [selectedSubregisterID, selectSubregisterID] = useState<undefined | string>(undefined);
+  //const [registerInfoOpen, setRegisterInfoOpen] = useState(false);
   const [selectedCRID, selectCR] = useState<string | undefined>(undefined);
   const [isBusy, setBusy] = useState(false);
 
   //const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
-  const registerObject = useObjectData({
-    objectPaths: [REGISTER_METADATA_FILENAME],
-  }).value.data?.[REGISTER_METADATA_FILENAME]?.value;
+  // const registerObject = useObjectData({
+  //   objectPaths: [REGISTER_METADATA_FILENAME],
+  // }).value.data?.[REGISTER_METADATA_FILENAME]?.value;
 
-  const registerInfo: Partial<Register> | null = registerObject
-    ? yaml.load(registerObject as string)
-    : null;
+  // const registerInfo: Partial<Register> | null = registerObject
+  //   ? yaml.load(registerObject as string)
+  //   : null;
 
   // const stakeholder: RegisterStakeholder | undefined = remoteUsername
   //   ? (registerInfo?.stakeholders || []).
   //     find(s => s.gitServerUsername === remoteUsername)
   //   : undefined;
-
-  useEffect(() => {
-    const subregisterIDs = Object.keys(subregisters || {});
-    if (subregisterIDs.length > 0) {
-      selectSubregisterID(subregisterIDs[0]);
-    }
-  }, [Object.keys(subregisters || {}).length]);
 
   const useRegisterItemData: RegisterItemDataHook = (opts) => {
     const result = useObjectData({
@@ -96,24 +85,24 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     };
   };
 
-  async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
-    if (!isBusy && updateObjects) {
-      setBusy(true);
-      try {
-        await updateObjects({
-          commitMessage: "Edit register metadata",
-          objectChangeset: {
-            [REGISTER_METADATA_FILENAME]: {
-              oldValue: oldValue ? oldValue : null,
-              newValue: value,
-            },
-          },
-        });
-      } finally {
-        setBusy(false);
-      }
-    }
-  }
+  // async function handleSaveRegisterInfo(value: Partial<Register>, oldValue: Partial<Register> | null) {
+  //   if (!isBusy && updateObjects) {
+  //     setBusy(true);
+  //     try {
+  //       await updateObjects({
+  //         commitMessage: "Edit register metadata",
+  //         objectChangeset: {
+  //           [REGISTER_METADATA_FILENAME]: {
+  //             oldValue: oldValue ? oldValue : null,
+  //             newValue: value,
+  //           },
+  //         },
+  //       });
+  //     } finally {
+  //       setBusy(false);
+  //     }
+  //   }
+  // }
 
   async function handleSaveCR(crID: string, value: ChangeRequest | null, oldValue: ChangeRequest) {
     if (!isBusy && crID === selectedCRID && updateObjects) {
@@ -141,7 +130,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   let mainViewEl: JSX.Element;
 
-  if (registerInfoOpen) {
+  /*if (registerInfoOpen) {
     mainViewEl = <RegisterInformation
       register={registerInfo}
       onSave={(!isBusy && updateObjects !== undefined)
@@ -149,7 +138,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
         : undefined}
     />;
 
-  } else if (selectedCRID) {
+  } else */ if (selectedCRID) {
     mainViewEl = <ChangeRequestView
       id={selectedCRID}
       itemClassConfiguration={itemClassConfiguration}
@@ -166,42 +155,12 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
   } else {
     mainViewEl = <RegisterItemBrowser
       itemClassConfiguration={itemClassConfiguration}
-      onSubregisterChange={selectSubregisterID}
-      selectedSubregisterID={selectedSubregisterID}
-      availableClassIDs={selectedSubregisterID
-        ? subregisters?.[selectedSubregisterID]?.itemClasses
-        : undefined}
+      subregisters={subregisters}
       useRegisterItemData={useRegisterItemData}
     />;
   }
 
-  return (
-    <div css={css`flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-
-      <Toolbar
-        title={title}
-
-        register={registerInfo || {}}
-
-        subregisters={subregisters}
-        selectedSubregisterID={selectedSubregisterID}
-        onSelectSubregister={selectSubregisterID}
-
-        registerInfoOpen={registerInfoOpen}
-        onOpenRegisterInfo={(selectedCRID === undefined && !isBusy)
-          ? setRegisterInfoOpen
-          : undefined}
-
-        selectedCRID={selectedCRID}
-        onSelectCR={(!registerInfoOpen && !isBusy)
-          ? selectCR
-          : undefined}
-      />
-
-      {mainViewEl}
-
-    </div>
-  );
+  return mainViewEl;
 };
 
 
