@@ -416,7 +416,9 @@ function criteriaToNodes(
           return { value: key, label: cfg.label };
         });
       const label = ci.key === 'custom' && ci.query === ''
-        ? <Button small onClick={() => opts.onEditItem!(
+        ? <Button
+            small
+            onClick={() => opts.onEditItem!(
               path,
               idx,
               { key: 'custom', query: cfg.toQuery({ customExpression: 'true' }, { subregisters, itemClasses }) },
