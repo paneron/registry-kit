@@ -1,9 +1,10 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx } from '@emotion/core';
-import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, EditableText, HTMLSelect, IOptionProps, ITreeNode, Tree } from '@blueprintjs/core';
+import { jsx, css } from '@emotion/core';
+import React, { ReactNode, ReactNodeArray, useEffect, useState } from 'react';
+import { Button, ButtonGroup, HTMLSelect, OptionProps, TreeNodeInfo, Tree, ControlGroup, Colors, InputGroup } from '@blueprintjs/core';
+import { Popover2 } from '@blueprintjs/popover2';
 import { ItemClassConfigurationSet, Subregisters } from '../types';
 
 
@@ -47,7 +48,7 @@ interface CommonOpts {
 }
 
 interface CriterionConfiguration<T extends Record<string, any>> {
-  label: JSX.Element | string
+  label: string
   widget: CriteriaWidget<T>
   toSummary: (data: T, opts: CommonOpts) => string | JSX.Element
   toQuery: (data: T, opts: CommonOpts) => string
@@ -62,7 +63,7 @@ const SUBREGISTER_PATH_PREFIX = '/subregisters/';
 
 const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
   'item-class': {
-    label: "Item class",
+    label: "Item class is",
     toQuery: ({ classID }, { subregisters }) =>
       `objPath.indexOf("/${classID}/") === ${subregisters ? SUBREGISTER_PATH_PREFIX.length : 0}`,
     fromQuery: (query) => ({
@@ -72,14 +73,17 @@ const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
       if (classID) {
         return itemClasses[classID]?.meta.title ?? classID;
       } else {
-        return "No class selected";
+        return "(N/A)";
       }
     },
     widget: ({ data, onChange, itemClasses, className, style }) => {
-      const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
-      map(([classID, classData]) => {
-        return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
-      });
+      const itemClassChoices: OptionProps[] = [
+        ...Object.entries(itemClasses).
+        map(([classID, classData]) => {
+          return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
+        }),
+        { value: '', label: "(not selected)" },
+      ];
       return (
         <HTMLSelect
           className={className}
@@ -87,7 +91,7 @@ const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
           fill
           minimal
           options={itemClassChoices}
-          value={data.classID ?? '—'}
+          value={data.classID ?? ''}
           disabled={!onChange}
           onChange={onChange
             ? (evt) => onChange!({ classID: evt.currentTarget.value })
@@ -96,29 +100,26 @@ const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
     },
   } as CriterionConfiguration<{ classID?: string }>,
   'custom': {
-    label: "Custom query",
+    label: "Satisfies expression",
     toQuery: ({ customExpression }) =>
-      `return ${customExpression}`,
+      customExpression,
     fromQuery: (query) => ({
       customExpression: query,
     }),
-    toSummary: ({ customExpression }) =>
-      <code>{customExpression}</code>,
+    toSummary: () =>
+      <>(custom exp.)</>,
     widget: ({ data, onChange, className }) => {
       return (
-        <EditableText
+        <InputGroup
           className={className}
           value={data.customExpression ?? 'true'}
           placeholder="Enter a valid query expression…"
           disabled={!onChange}
-          onChange={onChange ? (val) => onChange!({ customExpression: val }) : undefined}
-          onConfirm={(val) => val.trim() !== ''
-            ? onChange!({ customExpression: val.trim() })
-            : void 0} />
+          onChange={onChange ? (evt) => onChange!({ customExpression: evt.currentTarget.value }) : undefined} />
       );
     },
   } as CriterionConfiguration<{ customExpression?: string }>,
-}
+};
 
 export interface CriteriaGroup {
   require: 'all' | 'any' | 'none'
@@ -150,6 +151,7 @@ interface CriteriaProps {
 export const CriteriaTree: React.FC<CriteriaProps> =
 function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses, subregisters, className }) {
   const [crit, updateCriteria] = useState<CriteriaGroup>(criteria);
+  const [isExpanded, expand] = useState(false);
 
   useEffect(() => {
     updateCriteria(criteria);
@@ -185,7 +187,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     }
   }
 
-  const nodes: ITreeNode[] = criteriaToNodes([crit], {
+  const nodes: TreeNodeInfo[] = criteriaToNodes([crit], {
     onEditItem: onChange ? onEditItem : undefined,
     onAddGroup: onChange ? onAddGroup : undefined,
     onDeleteItem: onChange ? onDelete : undefined,
@@ -194,7 +196,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     availableClassIDs,
   });
 
-  const implied: ITreeNode[] = impliedCriteria !== undefined
+  const implied: TreeNodeInfo[] = impliedCriteria !== undefined
     ? criteriaToNodes([impliedCriteria], {
         implied: true,
         itemClasses,
@@ -204,7 +206,24 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     : [];
 
   return (
-    <Tree className={className} contents={[ ...implied, ...nodes ]} />
+    <Popover2
+        isOpen={isExpanded}
+        minimal
+        css={css`.bp3-popover2 .bp3-popover2-content { border-radius: 0 !important; }`}
+        content={
+          <div css={css`padding: 1rem 0`}>
+            <Tree contents={[ ...implied, ...nodes ]} />
+            <div css={css`padding: 1rem 1rem 0 1rem; color: ${Colors.GRAY3}; font-size: 90%;`}>
+              <code>{criteriaGroupToQueryExpression(crit)}</code>
+            </div>
+          </div>}>
+      <Button
+          className={className}
+          active={isExpanded}
+          onClick={() => expand(!isExpanded)}>
+        {criteriaGroupToSummary(crit, { itemClasses, subregisters })}
+      </Button>
+    </Popover2>
   );
 }
 
@@ -251,6 +270,42 @@ const CriteriaGroupLabel: React.FC<CriteriaGroupLabelProps> = function ({ criter
 //   };
 // }
 
+export function criteriaGroupToSummary(cg: CriteriaGroup, opts: CommonOpts): JSX.Element {
+  const exps: JSX.Element[] = [];
+
+  for (const c of cg.criteria) {
+    if (isCriteriaGroup(c)) {
+      exps.push(criteriaGroupToSummary(c, opts));
+    } else {
+      const cfg = CRITERIA_CONFIGURATION[c.key];
+      if (!cfg) {
+        console.error("Missing criterion configuration for key", c.key);
+        throw new Error("Missing criterion configuration");
+      }
+      exps.push(<>{cfg.label} “{cfg.toSummary(cfg.fromQuery(c.query, opts), opts)}”</>);
+    }
+  }
+
+  let result: JSX.Element;
+  if (exps.length < 1) {
+    result = <>(no-op)</>;
+  } else {
+    switch (cg.require) {
+      case 'all':
+        result = <>{exps.reduce((acc: ReactNodeArray, current: ReactNode, index: number) => [...acc, index ? ' and ' : '', current], [])}</>;
+        break;
+      case 'any':
+        result = <>{exps.reduce((acc: ReactNodeArray, current: ReactNode, index: number) => [...acc, index ? ' or ' : '', current], [])}</>;
+        break;
+      case 'none':
+        result = <>neither {exps.reduce((acc: ReactNodeArray, current: ReactNode, index: number) => [...acc, index ? ' nor ' : '', current], [])}</>;
+        break;
+    }
+  }
+
+  return result;
+}
+
 export function criteriaGroupToQueryExpression(cg: CriteriaGroup): string {
   const exps: string[] = [];
 
@@ -279,7 +334,7 @@ export function criteriaGroupToQueryExpression(cg: CriteriaGroup): string {
     }
   }
 
-  return `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${result}`;
+  return result;
 }
 
 
@@ -298,10 +353,10 @@ function criteriaToNodes(
     availableClassIDs: string[]
     subregisters?: Subregisters
   },
-): ITreeNode[] {
+): TreeNodeInfo[] {
   const path = opts.path ?? [];
 
-  return [ ...cs.entries() ].map(([idx, c]): ITreeNode => {
+  return [ ...cs.entries() ].map(([idx, c]): TreeNodeInfo => {
     const isRoot = path.length < 1;
     const icon = isRoot && opts.implied === true ? 'manual' : undefined;
     const disabled = opts.implied === true;
@@ -337,7 +392,9 @@ function criteriaToNodes(
           {deleteButton}
         </ButtonGroup>,
         childNodes: criteriaToNodes(
-          opts.onEditItem ? [ ...cg.criteria, { key: 'custom', query: 'return true;' } ] : cg.criteria,
+          opts.onEditItem
+            ? [ ...cg.criteria, { key: 'custom', query: '' } ]
+            : cg.criteria,
           { ...opts, path: [ ...path, idx ] }),
       };
     } else {
@@ -354,21 +411,52 @@ function criteriaToNodes(
       }
       const Widget = cfg.widget;
       const data = cfg.fromQuery(ci.query, { subregisters, itemClasses });
+      const criterionTypeOptions: OptionProps[] = Object.entries(CRITERIA_CONFIGURATION).
+        map(([key, cfg]) => {
+          return { value: key, label: cfg.label };
+        });
+      const label = ci.key === 'custom' && ci.query === ''
+        ? <Button small onClick={() => opts.onEditItem!(
+              path,
+              idx,
+              { key: 'custom', query: cfg.toQuery({ customExpression: 'true' }, { subregisters, itemClasses }) },
+              true)}>
+            Add…
+          </Button>
+        : <ControlGroup>
+            <HTMLSelect
+              minimal
+              options={criterionTypeOptions}
+              value={ci.key}
+              disabled={!opts.onEditItem}
+              onChange={opts.onEditItem
+                ? (evt) => {
+                    if (evt.currentTarget.value !== '' && isCriteriaKey(evt.currentTarget.value)) {
+                      opts.onEditItem!(
+                        path,
+                        idx,
+                        { key: evt.currentTarget.value, query: '' },
+                      );
+                    }
+                  }
+                : undefined} />
+            <Widget
+              itemClasses={opts.itemClasses}
+              availableClassIDs={opts.availableClassIDs}
+              subregisters={opts.subregisters}
+              data={data}
+              onChange={(val) => opts.onEditItem!(
+                path,
+                idx,
+                { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
+                true)}
+            />
+          </ControlGroup>;
       return {
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
         icon,
-        label: <Widget
-          itemClasses={opts.itemClasses}
-          availableClassIDs={opts.availableClassIDs}
-          subregisters={opts.subregisters}
-          data={data}
-          onChange={(val) => opts.onEditItem!(
-            path,
-            idx,
-            { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
-            true)}
-        />,
+        label,
         secondaryLabel: <ButtonGroup>
           {deleteButton}
         </ButtonGroup>,

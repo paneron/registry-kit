@@ -223,6 +223,9 @@ export const RegisterItemBrowser: React.FC<
   //  }
   //}
 
+  const queryExpression =
+    `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${criteriaGroupToQueryExpression(state.query.criteria)}`;
+
   let view: JSX.Element;
   if (state.view === 'grid') {
     view = <RegisterItemGrid
@@ -233,7 +236,7 @@ export const RegisterItemBrowser: React.FC<
         type: 'select-item',
         payload: { itemPath: itemRefToItemPath(itemRef) },
       })}
-      queryExpression={criteriaGroupToQueryExpression(state.query.criteria)}
+      queryExpression={queryExpression}
       toolbar={<SearchQuery
         rootCriteria={state.query.criteria}
         itemClasses={itemClassConfiguration}
