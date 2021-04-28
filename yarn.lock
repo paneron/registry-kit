@@ -844,12 +844,12 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@blueprintjs/core@^3.28.2", "@blueprintjs/core@^3.32.1":
-  version "3.32.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.32.1.tgz#16a2034727b2a71e492538193e31d38cd40fc61c"
-  integrity sha512-rJoBQEZaE3o3dKgow7ZVFnVDBoR0zUNzg94AfR3jTiSdWNyNHWpXHAv0/RSCxUF4nA4+jP+iqidfxZoKyYEZIg==
+"@blueprintjs/core@^3.42.0", "@blueprintjs/core@^3.44.0":
+  version "3.44.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/core/-/core-3.44.0.tgz#3d03adb6a11d6c9fa8031414a7dba1a3003e70ee"
+  integrity sha512-QjRa4LvygTJn5v75O1bvKQtxcs9u2sl2CXoQ3Hd2KLQwzAz8kongWyc2xOw/wiFE4gRyRZQK44c43bEPkoeKhA==
   dependencies:
-    "@blueprintjs/icons" "^3.21.0"
+    "@blueprintjs/icons" "^3.26.0"
     "@types/dom4" "^2.0.1"
     classnames "^2.2"
     dom4 "^2.1.5"
@@ -861,31 +861,44 @@
     resize-observer-polyfill "^1.5.1"
     tslib "~1.13.0"
 
-"@blueprintjs/datetime@^3.18.2":
-  version "3.19.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.19.1.tgz#d7030f6389a850a4080e1fbc7fc6aa5447885497"
-  integrity sha512-AmJJsAZdPWgEOjNzDCSr+m0sdut9TM23UX6ctZWmqmrA13irSX4Vg7IUt90IHKlIxucXOZXWlPhkii8C2TULuQ==
+"@blueprintjs/datetime@^3.22.0":
+  version "3.23.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/datetime/-/datetime-3.23.0.tgz#b295e474d5c8213395e00eedc95f725c906007ac"
+  integrity sha512-4WcJ1QwBGtemyTffYZOqpt1XOjX6sMcAW8tgTsVVM/isqKpjUuyiOoepOS4iwngpP6xRF1ZGMr+p/+FK73LJJA==
   dependencies:
-    "@blueprintjs/core" "^3.32.1"
+    "@blueprintjs/core" "^3.44.0"
     classnames "^2.2"
-    react-day-picker "7.4.8"
+    react-day-picker "7.4.9"
     react-lifecycles-compat "^3.0.4"
     tslib "~1.13.0"
 
-"@blueprintjs/icons@^3.18.1", "@blueprintjs/icons@^3.21.0":
-  version "3.21.0"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.21.0.tgz#1cab6d2de069674fd4909ca10fefa94d3563ea5f"
-  integrity sha512-5vszPkRNaCctDRp2wDLJLTzqQ1Qlp8gr2BqkjPcPBDVMGlYCdM1/LaBZazMgj+/52n7Z+kJzQ5rRNv9DX5LJoA==
+"@blueprintjs/icons@^3.26.0":
+  version "3.26.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/icons/-/icons-3.26.0.tgz#d3f0aa0d35a9ebe8648db9651af364dfcc529d9f"
+  integrity sha512-1+yhYH1Fjj5qGx8drZUL2L1R42MiN0WVHTTKYqGEV9TAzhvFHCSZgALD7WNQa+FEibw/8B4U+79IRgUPJNEjow==
   dependencies:
     classnames "^2.2"
     tslib "~1.13.0"
 
-"@blueprintjs/select@^3.13.3":
-  version "3.14.1"
-  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.14.1.tgz#1b29bc73bb33a393c0139080655fce5693427d2f"
-  integrity sha512-4z+1PB1CnnzfcxIjqjC9v1uamuwdJskoeI+XVYLA3PWScenKvk+29XoitiWUM6TcupdyNXhNRHM8ijva937vCg==
+"@blueprintjs/popover2@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/popover2/-/popover2-0.7.0.tgz#f1a9b694fd3ee54e5ef6fb70267d73658dc55b77"
+  integrity sha512-mUPLRBqIp+K/IgOlII69wtoBupmVn74TIFK5PCbaQ8dBxtHDBeyd2Ms/xLx7GaK2BGfrmrM6H0PCol+m1LxMQQ==
   dependencies:
-    "@blueprintjs/core" "^3.32.1"
+    "@blueprintjs/core" "^3.44.0"
+    "@popperjs/core" "^2.5.4"
+    classnames "^2.2"
+    dom4 "^2.1.5"
+    react-popper "^2.2.4"
+    resize-observer-polyfill "^1.5.1"
+    tslib "~1.13.0"
+
+"@blueprintjs/select@^3.15.9":
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/@blueprintjs/select/-/select-3.16.0.tgz#4d5c5a378b02937857517a4ff245991b9925d73e"
+  integrity sha512-x6ocSC1sxRfKtVGDIzP83xSWQvikzcq7Vpl+HvlonbpDWu4a9Ybx8wV5AM2Twjwp0laF8XSSUWFh75iA/g6rsg==
+  dependencies:
+    "@blueprintjs/core" "^3.44.0"
     classnames "^2.2"
     tslib "~1.13.0"
 
@@ -1006,6 +1019,11 @@
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@emotion/weak-memoize/-/weak-memoize-0.2.5.tgz#8eed982e2ee6f7f4e44c253e12962980791efd46"
   integrity sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==
+
+"@popperjs/core@^2.5.4":
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.2.tgz#adea7b6953cbb34651766b0548468e743c6a2353"
+  integrity sha512-VZMYa7+fXHdwIq1TDhSXoVmSPEGM/aa+6Aiq3nVVJ9bXr24zScr+NlKFKC3iPljA7ho/GAZr+d2jOf5GIRC30Q==
 
 "@riboseinc/paneron-extension-kit@2.0.0-dev15":
   version "2.0.0-dev15"
@@ -2600,12 +2618,17 @@ pump@^3.0.0:
     end-of-stream "^1.1.0"
     once "^1.3.1"
 
-react-day-picker@7.4.8:
-  version "7.4.8"
-  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.4.8.tgz#675625240d3fae1b41c0a9d5177c968c8517c1d4"
-  integrity sha512-pp0hnxFVoRuBQcRdR1Hofw4CQtOCGVmzCNrscyvS0Q8NEc+UiYLEDqE5dk37bf0leSnBW4lheIt0CKKhuKzDVw==
+react-day-picker@7.4.9:
+  version "7.4.9"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-7.4.9.tgz#ab556df9e838caa5bc988e55d1cb15318564149e"
+  integrity sha512-CcXf0p7p6gTYnG0+n/4wNGljZuQDXl4HhgcxsXB0nX+8D4LnRho9EclPA/aLz4WlvvVpfY+AEgj2ylgPj4nm/g==
   dependencies:
     prop-types "^15.6.2"
+
+react-fast-compare@^3.0.1:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.2.0.tgz#641a9da81b6a6320f270e89724fb45a0b39e43bb"
+  integrity sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==
 
 react-is@^16.8.1:
   version "16.13.1"
@@ -2628,6 +2651,14 @@ react-popper@^1.3.7:
     popper.js "^1.14.4"
     prop-types "^15.6.1"
     typed-styles "^0.0.7"
+    warning "^4.0.2"
+
+react-popper@^2.2.4:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-2.2.5.tgz#1214ef3cec86330a171671a4fbcbeeb65ee58e96"
+  integrity sha512-kxGkS80eQGtLl18+uig1UIf9MKixFSyPxglsgLBxlYnyDf65BiY9B3nZSc6C9XUNDgStROB0fMQlTEz1KxGddw==
+  dependencies:
+    react-fast-compare "^3.0.1"
     warning "^4.0.2"
 
 react-transition-group@^2.9.0:
