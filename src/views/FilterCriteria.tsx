@@ -21,44 +21,65 @@ const CRITERIA_KEYS = [
   'custom',
 ] as const;
 
-type CriteriaKey = typeof CRITERIA_KEYS[number];
+type CriterionKey = typeof CRITERIA_KEYS[number];
 
-function isCriteriaKey(val: string): val is CriteriaKey {
-  return CRITERIA_KEYS.indexOf(val as CriteriaKey) >= 0;
+function isCriteriaKey(val: string): val is CriterionKey {
+  return CRITERIA_KEYS.indexOf(val as CriterionKey) >= 0;
 }
 
-type CriteriaWidget = React.FC<{
-  query: string
-  onChange?: (newQuery: string) => void
-  itemClasses: ItemClassConfigurationSet
+type CriteriaWidget<T extends Record<string, any>> = React.FC<{
+  data: T
+  onChange?: (newData: T) => void
   availableClassIDs: string[]
+  itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
   className?: string
   style?: React.CSSProperties
 }>
-interface Criteria {
-  key: CriteriaKey
+interface Criterion {
+  key: CriterionKey
   query: string
 }
-type CriteriaWidgets = {
-  [key in CriteriaKey]: {
-    label: JSX.Element | string
-    widget: CriteriaWidget
-  }
+
+interface CommonOpts {
+  subregisters?: Subregisters
+  itemClasses: ItemClassConfigurationSet
 }
-const CRITERIA_WIDGETS: CriteriaWidgets = {
+
+interface CriterionConfiguration<T extends Record<string, any>> {
+  label: JSX.Element | string
+  widget: CriteriaWidget<T>
+  toSummary: (data: T, opts: CommonOpts) => string | JSX.Element
+  toQuery: (data: T, opts: CommonOpts) => string
+  fromQuery: (query: string, opts: CommonOpts) => T
+}
+
+type CriteriaConfiguration = {
+  [key in CriterionKey]: CriterionConfiguration<Record<string, unknown>>
+}
+
+const SUBREGISTER_PATH_PREFIX = '/subregisters/';
+
+const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
   'item-class': {
     label: "Item class",
-    widget: ({ query, onChange, itemClasses, subregisters, className, style }) => {
+    toQuery: ({ classID }, { subregisters }) =>
+      `objPath.indexOf("/${classID}/") === ${subregisters ? SUBREGISTER_PATH_PREFIX.length : 0}`,
+    fromQuery: (query) => ({
+      classID: query.split('/')[1],
+    }),
+    toSummary: ({ classID }, { itemClasses }) => {
+      if (classID) {
+        return itemClasses[classID]?.meta.title ?? classID;
+      } else {
+        return "No class selected";
+      }
+    },
+    widget: ({ data, onChange, itemClasses, className, style }) => {
       const itemClassChoices: IOptionProps[] = Object.entries(itemClasses).
       map(([classID, classData]) => {
         return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
       });
-      const subregisterPathPrefix = '/subregisters/';
-      function toQuery(classID: string): string {
-        return `objPath.indexOf("/${classID}/") === ${subregisters ? subregisterPathPrefix.length : 0}`;
-      }
-      const selectedClassID: string | undefined = query.split('/')[1];
       return (
         <HTMLSelect
           className={className}
@@ -66,33 +87,42 @@ const CRITERIA_WIDGETS: CriteriaWidgets = {
           fill
           minimal
           options={itemClassChoices}
-          value={selectedClassID}
+          value={data.classID ?? '—'}
           disabled={!onChange}
           onChange={onChange
-            ? (evt) => onChange!(toQuery(evt.currentTarget.value))
+            ? (evt) => onChange!({ classID: evt.currentTarget.value })
             : undefined} />
-      )
+      );
     },
-  },
+  } as CriterionConfiguration<{ classID?: string }>,
   'custom': {
     label: "Custom query",
-    widget: ({ query, onChange, className, style }) => {
+    toQuery: ({ customExpression }) =>
+      `return ${customExpression}`,
+    fromQuery: (query) => ({
+      customExpression: query.replace('return ', ''),
+    }),
+    toSummary: ({ customExpression }) =>
+      <code>${customExpression}</code>,
+    widget: ({ data, onChange, className }) => {
       return (
         <EditableText
           className={className}
-          value={query}
+          value={data.customExpression ?? 'return true'}
           placeholder="Enter a valid query expression…"
           disabled={!onChange}
-          onChange={onChange ? (val) => onChange!(val) : undefined}
-          onConfirm={(val) => val.trim() !== '' ? onChange!(val.trim()) : void 0} />
+          onChange={onChange ? (val) => onChange!({ customExpression: val }) : undefined}
+          onConfirm={(val) => val.trim() !== ''
+            ? onChange!({ customExpression: val.trim() })
+            : void 0} />
       );
     },
-  },
+  } as CriterionConfiguration<{ customExpression?: string }>,
 }
 
 export interface CriteriaGroup {
   require: 'all' | 'any' | 'none'
-  criteria: (CriteriaGroup | Criteria)[]
+  criteria: (CriteriaGroup | Criterion)[]
 }
 
 function isCriteriaGroup(val: any): val is CriteriaGroup {
@@ -144,7 +174,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     onChange!(newCriteria[0]);
   }
 
-  function onEditItem(parent: number[], idx: number, newItem: CriteriaGroup | Criteria, commit?: true) {
+  function onEditItem(parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) {
     var p = JSON.parse(JSON.stringify(parent));
     p.reverse();
     var newCriteria = JSON.parse(JSON.stringify([crit]));
@@ -256,11 +286,11 @@ export function criteriaGroupToQueryExpression(cg: CriteriaGroup): string {
 /* Building tree nodes */
 
 function criteriaToNodes(
-  cs: (CriteriaGroup | Criteria)[],
+  cs: (CriteriaGroup | Criterion)[],
   opts: {
     path?: number[],
     implied?: true,
-    onEditItem?: (parent: number[], idx: number, newItem: CriteriaGroup | Criteria, commit?: true) => void,
+    onEditItem?: (parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) => void,
     onDeleteItem?: (parent: number[], idx: number) => void,
     onAddGroup?: (parent: number[]) => void
 
@@ -311,12 +341,19 @@ function criteriaToNodes(
           { ...opts, path: [ ...path, idx ] }),
       };
     } else {
-      const ci = c as Criteria;
+      const ci = c as Criterion;
+      const { subregisters, itemClasses } = opts;
       if (!isCriteriaKey(ci.key)) {
         console.error("Invalid criteria key encountered", ci.key);
         throw new Error("Invalid criteria key encountered");
       }
-      const Widget = CRITERIA_WIDGETS[ci.key].widget;
+      const cfg = CRITERIA_CONFIGURATION[ci.key];
+      if (!cfg) {
+        console.error("Missing criterion configuration for key", ci.key)
+        throw new Error("Missing criterion configuration");
+      }
+      const Widget = cfg.widget;
+      const data = cfg.fromQuery(ci.query, { subregisters, itemClasses });
       return {
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
@@ -325,8 +362,12 @@ function criteriaToNodes(
           itemClasses={opts.itemClasses}
           availableClassIDs={opts.availableClassIDs}
           subregisters={opts.subregisters}
-          query={ci.query}
-          onChange={(val) => opts.onEditItem!(path, idx, { key: ci.key, query: val }, true)}
+          data={data}
+          onChange={(val) => opts.onEditItem!(
+            path,
+            idx,
+            { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
+            true)}
         />,
         secondaryLabel: <ButtonGroup>
           {deleteButton}
@@ -345,10 +386,10 @@ type TreeMutation<T> =
   { action: 'edit', idx: number, item: T };
 
 function mutateGroup(
-    criteria: (CriteriaGroup | Criteria)[],
+    criteria: (CriteriaGroup | Criterion)[],
     path: number[],
     // Here path must be parent node path in reverse (top-level index coming last).
-    mutation: TreeMutation<CriteriaGroup | Criteria>) {
+    mutation: TreeMutation<CriteriaGroup | Criterion>) {
 
   if (path.length < 1 && mutation.action === 'edit') {
     (criteria[0] as CriteriaGroup).require = (mutation.item as CriteriaGroup).require;
