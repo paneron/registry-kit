@@ -4,7 +4,7 @@
 import { splitEvery } from 'ramda';
 import React, { useState, useEffect, useContext } from 'react';
 import { jsx, css } from '@emotion/core';
-import { Classes } from '@blueprintjs/core';
+import { Button, Classes, Colors, ControlGroup, H4 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
 import {
@@ -15,8 +15,12 @@ import {
 } from '../types';
 import { Hooks } from '@riboseinc/paneron-extension-kit/types';
 import { itemPathToItemRef } from './itemPathUtils';
-import CriteriaTree, { CriteriaGroup } from './FilterCriteria';
+import CriteriaTree from './FilterCriteria';
+import { CriteriaGroup } from './FilterCriteria/models';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
+import { Popover2 } from '@blueprintjs/popover2';
+import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
+import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
 
 
 export const SearchQuery: React.FC<{
@@ -34,16 +38,43 @@ export const SearchQuery: React.FC<{
   subregisters,
   className,
 }) {
+  const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
-    <CriteriaTree
-      criteria={rootCriteria}
-      onChange={onChange}
-      itemClasses={itemClasses}
-      availableClassIDs={classIDs}
-      subregisters={subregisters}
-      className={className}
-    />
+    <ControlGroup>
+      <Button icon="search">
+        Criteria: {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
+      </Button>
+      <Popover2
+          isOpen={isExpanded}
+          minimal
+          fill
+          lazy
+          css={css`.bp3-popover2 .bp3-popover2-content { border-radius: 0 !important; }`}
+          content={
+            <div css={css`padding: 1rem`}>
+              <H4>Filter criteria</H4>
+              <CriteriaTree
+                criteria={rootCriteria}
+                onChange={onChange}
+                itemClasses={itemClasses}
+                availableClassIDs={classIDs}
+                subregisters={subregisters}
+                css={css`margin: 0 -1rem;`}
+              />
+              <div css={css`padding: 1rem 1rem 0 1rem; color: ${Colors.GRAY3}; font-size: 90%;`}>
+                <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
+              </div>
+            </div>}>
+        <Button
+            disabled
+            className={className}
+            active={isExpanded}
+            onClick={() => expand(!isExpanded)}>
+          Edit…
+        </Button>
+      </Popover2>
+    </ControlGroup>
   );
 };
 

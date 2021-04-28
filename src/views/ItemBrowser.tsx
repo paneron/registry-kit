@@ -23,7 +23,8 @@ import ItemDetails from './ItemDetails';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
 import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import { itemPathToItemRefLike, itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
-import { CriteriaGroup, criteriaGroupToQueryExpression, makeBlankCriteria } from './FilterCriteria';
+import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
+import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 
 
 interface Query {

@@ -8,7 +8,8 @@ import { Button, ButtonGroup, ControlGroup, Dialog } from '@blueprintjs/core';
 import { BrowserCtx as BrowserCtxSpec } from './BrowserCtx';
 import { BrowserCtx } from './BrowserCtx';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
-import { CriteriaGroup, criteriaGroupToQueryExpression } from './FilterCriteria';
+import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
+import { CriteriaGroup } from './FilterCriteria/models';
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
