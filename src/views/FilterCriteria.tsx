@@ -100,15 +100,15 @@ const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
     toQuery: ({ customExpression }) =>
       `return ${customExpression}`,
     fromQuery: (query) => ({
-      customExpression: query.replace('return ', ''),
+      customExpression: query,
     }),
     toSummary: ({ customExpression }) =>
-      <code>${customExpression}</code>,
+      <code>{customExpression}</code>,
     widget: ({ data, onChange, className }) => {
       return (
         <EditableText
           className={className}
-          value={data.customExpression ?? 'return true'}
+          value={data.customExpression ?? 'true'}
           placeholder="Enter a valid query expression…"
           disabled={!onChange}
           onChange={onChange ? (val) => onChange!({ customExpression: val }) : undefined}
