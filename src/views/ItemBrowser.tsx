@@ -11,6 +11,7 @@ import {
   NonIdealState,
 } from '@blueprintjs/core';
 
+import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ItemAction,
@@ -122,6 +123,11 @@ export const RegisterItemBrowser: React.FC<
       query: { criteria: makeBlankCriteria() },
     }, null, 'item-browser');
 
+  const queryExpression = useDebounce(
+    `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${criteriaGroupToQueryExpression(state.query.criteria)}`,
+    250);
+
+
   //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
 
   const { subregisterID, classID, itemID } = itemPathToItemRefLike(subregisters !== undefined, state.selectedItemPath ?? '');
@@ -223,9 +229,6 @@ export const RegisterItemBrowser: React.FC<
   //    return this.props.children;
   //  }
   //}
-
-  const queryExpression =
-    `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${criteriaGroupToQueryExpression(state.query.criteria)}`;
 
   let view: JSX.Element;
   if (state.view === 'grid') {
