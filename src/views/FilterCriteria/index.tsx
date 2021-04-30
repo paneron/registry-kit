@@ -83,7 +83,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     : [];
 
   return (
-    <Tree contents={[ ...implied, ...nodes ]} />
+    <Tree contents={[ ...implied, ...nodes ]} className={className} />
   );
 }
 
