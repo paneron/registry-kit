@@ -148,6 +148,16 @@ export const RegisterItemGrid: React.FC<{
     }
   }, [selectedIndexPos, objPathResp.isUpdating]);
 
+  const extraData = {
+    useObjectData,
+    useObjectPathFromFilteredIndex,
+    selectedItemID: selectedItem?.itemID,
+    indexID,
+    hasSubregisters: selectedSubregisterID !== undefined,
+    useRegisterItemData,
+    getRelatedClassConfig,
+  };
+
   function getGridData(viewportWidth: number): GridData<RegisterItemGridData> | null {
     if (indexID) {
       const stubs = [...new Array(itemCount)].map((_, idx) => `${idx}`);
@@ -157,15 +167,7 @@ export const RegisterItemGrid: React.FC<{
         items: splitEvery(
           Math.floor(viewportWidth / CELL_W_PX),
           stubs),
-        extraData: {
-          useObjectData,
-          useObjectPathFromFilteredIndex,
-          selectedItemID: selectedItem?.itemID,
-          indexID,
-          hasSubregisters: selectedSubregisterID !== undefined,
-          useRegisterItemData,
-          getRelatedClassConfig,
-        },
+        extraData,
         selectedItem: selectedIndexPos,
         selectItem: selectIndexPos,
         cellWidth: CELL_W_PX,
