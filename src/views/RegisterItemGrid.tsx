@@ -4,7 +4,7 @@
 import { splitEvery } from 'ramda';
 import React, { useState, useEffect, useContext } from 'react';
 import { jsx, css } from '@emotion/core';
-import { Button, Classes, Colors, ControlGroup, H4 } from '@blueprintjs/core';
+import { Button, Classes, Colors, ControlGroup, H4, Text } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
 import {
@@ -41,10 +41,10 @@ export const SearchQuery: React.FC<{
   const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
-    <ControlGroup>
-      <Button icon="search">
+    <ControlGroup css={css`align-items: center;`}>
+      <Text ellipsize css={css`flex: 1; padding: 0 10px;`}>
         Criteria: {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
-      </Button>
+      </Text>
       <Popover2
           isOpen={isExpanded}
           minimal
@@ -62,12 +62,11 @@ export const SearchQuery: React.FC<{
                 subregisters={subregisters}
                 css={css`margin: 0 -1rem;`}
               />
-              <div css={css`padding: 1rem 1rem 0 1rem; color: ${Colors.GRAY3}; font-size: 90%;`}>
+              <div css={css`padding: 1rem 0 0 0; color: ${Colors.GRAY3}; font-size: 90%;`}>
                 <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
               </div>
             </div>}>
         <Button
-            disabled
             className={className}
             active={isExpanded}
             onClick={() => expand(!isExpanded)}>
