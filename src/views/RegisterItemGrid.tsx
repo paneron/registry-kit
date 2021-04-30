@@ -212,7 +212,7 @@ interface RegisterItemGridData {
 
 
 const RegisterItem: React.FC<CellProps<RegisterItemGridData>> =
-function ({ isSelected, onSelect, onOpen, extraData, itemRef, width, height, padding }) {
+function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
   const filteredObjectResp = extraData.useObjectPathFromFilteredIndex({
     indexID: extraData.indexID,
     position: parseInt(itemRef, 10),
@@ -261,8 +261,6 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, width, height, pad
         isSelected={extraData.selectedItemID === _itemID && _itemID !== undefined}
         onSelect={onSelect}
         onOpen={onOpen}
-        width={width}
-        height={height}
         padding={padding}
         contentClassName={isUpdating ? Classes.SKELETON : undefined}
         entityType={{
