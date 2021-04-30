@@ -230,12 +230,14 @@ export const RegisterItemBrowser: React.FC<
   //  }
   //}
 
+  const selectedItemRef = state.selectedItemPath
+    ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
+    : undefined
+
   let view: JSX.Element;
   if (state.view === 'grid') {
     view = <RegisterItemGrid
-      selectedItem={state.selectedItemPath
-        ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
-        : undefined}
+      selectedItem={selectedItemRef}
       onSelectItem={(itemRef) => dispatch({
         type: 'select-item',
         payload: { itemPath: itemRefToItemPath(itemRef) },
