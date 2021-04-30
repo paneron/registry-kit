@@ -5,7 +5,7 @@ import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import { jsx, css } from '@emotion/core';
-import { Button, Classes, Colors, ControlGroup, H4, Text } from '@blueprintjs/core';
+import { Button, Classes, Colors, ControlGroup, Text } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
 import {
@@ -47,40 +47,41 @@ export const SearchQuery: React.FC<{
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
     <ControlGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
-      <Text ellipsize css={css`flex: 1; padding: 0 10px;`}>
-        Criteria: {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
-      </Text>
       <Popover2
           isOpen={isExpanded}
           minimal
           fill
           lazy
-          css={css`.bp3-popover2 .bp3-popover2-content { border-radius: 0 !important; }`}
           content={
-            <div css={css`padding: 1rem`}>
-              <H4>Filter criteria</H4>
+            <>
               <CriteriaTree
                 criteria={rootCriteria}
                 onChange={onChange}
                 itemClasses={itemClasses}
                 availableClassIDs={classIDs}
                 subregisters={subregisters}
-                css={css`margin: 0 -1rem;`}
+                css={css`width: 100vw;`}
               />
-              <div css={css`padding: 1rem 0 0 0; color: ${Colors.GRAY3}; font-size: 90%;`}>
-                <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
+              <div css={css`padding: 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
+                Underlying query expression: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
               </div>
-            </div>}>
+            </>}>
         <Button
             className={className}
             active={isExpanded}
+            title="Edit search criteria"
+            icon={isExpanded ? 'chevron-down' : 'chevron-right'}
+            intent={rootCriteria.criteria.length > 0 ? 'primary' : undefined}
             onClick={() => expand(!isExpanded)}>
-          Edit…
+          Find
         </Button>
       </Popover2>
+      <Text ellipsize css={css`flex: 1; padding: 0 10px;`}>
+        {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
+      </Text>
       {onViewMeta || viewingMeta
         ? <Button
-            icon="edit"
+            icon="settings"
             active={viewingMeta}
             title="View/edit dataset meta"
             onClick={onViewMeta && !viewingMeta ? onViewMeta : undefined}

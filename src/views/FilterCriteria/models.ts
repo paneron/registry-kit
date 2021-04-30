@@ -1,8 +1,10 @@
 import type React from 'react';
+import { IconName } from '@blueprintjs/core';
 import type { ItemClassConfigurationSet, Subregisters } from '../../types';
 
 
 export interface CriterionConfiguration<T extends Record<string, any>> {
+  icon?: IconName
   label: string;
   widget: CriteriaWidget<T>;
   toSummary: (data: T, opts: CommonOpts) => string | JSX.Element;

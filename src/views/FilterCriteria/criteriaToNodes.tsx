@@ -28,14 +28,18 @@ export default function criteriaToNodes(
 
   return [...cs.entries()].map(([idx, c]): TreeNodeInfo => {
     const isRoot = path.length < 1;
-    const icon = isRoot && opts.implied === true ? 'manual' : undefined;
+    const defaultIcon = isRoot && opts.implied === true
+      ? 'manual'
+      : undefined;
+
     const disabled = opts.implied === true;
     const deleteButton: JSX.Element | null = idx < (cs.length - 1) &&
       opts.onDeleteItem &&
       !isRoot
       ? <Button minimal small
-        onClick={() => opts.onDeleteItem!(path, idx)}
-        icon="cross" />
+          onClick={() => opts.onDeleteItem!(path, idx)}
+          title="Delete this criteria or criteria block"
+          icon="cross" />
       : null;
 
     if (isCriteriaGroup(c)) {
@@ -45,18 +49,21 @@ export default function criteriaToNodes(
         disabled,
         hasCaret: true,
         isExpanded: true,
-        icon,
+        icon: defaultIcon,
         label: <CriteriaGroupLabel
           criteriaGroup={cg}
           onUpdate={opts.onEditItem
             ? ((op) => opts.onEditItem!(path, idx, { ...cg, require: op }, true))
             : undefined} />,
         secondaryLabel: <ButtonGroup>
-          {opts.implied && isRoot ? <>(implied from plan)</> : null}
+          {opts.implied && isRoot ? <>(implied)</> : null}
           {opts.onAddGroup
-            ? <Button minimal small
-              onClick={() => opts.onAddGroup!([...path, idx])}
-              icon="more" />
+            ? <Button
+                minimal
+                small
+                title="Add nested criteria block"
+                onClick={() => opts.onAddGroup!([...path, idx])}
+                icon="more" />
             : null}
           {deleteButton}
         </ButtonGroup>,
@@ -84,19 +91,21 @@ export default function criteriaToNodes(
         map(([key, cfg]) => {
           return { value: key, label: cfg.label };
         });
-      const label = ci.key === 'custom' && ci.query === ''
+      const isPlaceholder = ci.key === 'custom' && ci.query === '';
+      const label = isPlaceholder
         ? <Button
-          small
-          onClick={() => opts.onEditItem!(
-            path,
-            idx,
-            { key: 'custom', query: cfg.toQuery({ customExpression: 'true' }, { subregisters, itemClasses }) },
-            true)}>
-          Add…
-          </Button>
-        : <ControlGroup css={css`margin: 5px 5px 5px 0;`}>
-            <HTMLSelect
+              small
               minimal
+              icon="add"
+              onClick={() => opts.onEditItem!(
+                path,
+                idx,
+                { key: 'custom', query: cfg.toQuery({ customExpression: 'true' }, { subregisters, itemClasses }) },
+                true)}>
+            add criteria
+          </Button>
+        : <ControlGroup fill css={css`margin-right: 2.5px; transform: scale(0.9); transform-origin: left center;`}>
+            <HTMLSelect
               options={criterionTypeOptions}
               value={ci.key}
               disabled={!opts.onEditItem}
@@ -125,7 +134,6 @@ export default function criteriaToNodes(
       return {
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
-        icon,
         label,
         secondaryLabel: <ButtonGroup>
           {deleteButton}

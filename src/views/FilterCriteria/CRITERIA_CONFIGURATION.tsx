@@ -11,6 +11,7 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
 
   'item-class': {
     label: "item class is",
+    icon: 'property',
     toQuery: ({ classID }, { subregisters }) => `objPath.indexOf("/${classID}/") === ${subregisters ? SUBREGISTER_PATH_PREFIX.length : 0}`,
     fromQuery: (query) => ({
       classID: query.split('/')[1],
@@ -35,7 +36,6 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
           className={className}
           style={style}
           fill
-          minimal
           options={itemClassChoices}
           value={data.classID ?? ''}
           disabled={!onChange}
@@ -48,6 +48,7 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
 
   'custom': {
     label: "satisfies expression",
+    icon: 'code',
     toQuery: ({ customExpression }) => customExpression,
     fromQuery: (query) => ({
       customExpression: query,
@@ -60,6 +61,7 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
           value={data.customExpression ?? 'true'}
           placeholder="Enter a valid query expression…"
           disabled={!onChange}
+          fill
           onChange={onChange ? (evt) => onChange!({ customExpression: evt.currentTarget.value }) : undefined} />
       );
     },

@@ -27,7 +27,7 @@ export default function criteriaGroupToSummary(cg: CriteriaGroup, opts: CommonOp
 
   let result: JSX.Element;
   if (exps.length < 1) {
-    result = <>(no-op)</>;
+    result = <>(no criteria)</>;
   } else {
     switch (cg.require) {
       case 'all':
