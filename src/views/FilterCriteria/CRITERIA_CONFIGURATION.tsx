@@ -1,7 +1,6 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React from 'react';
 import { jsx } from '@emotion/core';
 import { HTMLSelect, OptionProps, InputGroup } from '@blueprintjs/core';
 import { CriteriaConfiguration, CriterionConfiguration } from './models';
@@ -48,12 +47,12 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
   } as CriterionConfiguration<{ classID?: string; }>,
 
   'custom': {
-    label: "custom expression is satisfied",
+    label: "satisfies expression",
     toQuery: ({ customExpression }) => customExpression,
     fromQuery: (query) => ({
       customExpression: query,
     }),
-    toSummary: () => <></>,
+    toSummary: () => "custom",
     widget: ({ data, onChange, className }) => {
       return (
         <InputGroup
