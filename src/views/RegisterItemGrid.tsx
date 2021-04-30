@@ -41,7 +41,7 @@ export const SearchQuery: React.FC<{
   const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
-    <ControlGroup css={css`align-items: center;`}>
+    <ControlGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
       <Text ellipsize css={css`flex: 1; padding: 0 10px;`}>
         Criteria: {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
       </Text>
