@@ -2,7 +2,8 @@
 /** @jsxFrag React.Fragment */
 
 import { splitEvery } from 'ramda';
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useMemo, useState, useEffect, useContext } from 'react';
+import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import { jsx, css } from '@emotion/core';
 import { Button, Classes, Colors, ControlGroup, H4, Text } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -26,6 +27,8 @@ import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
 export const SearchQuery: React.FC<{
   rootCriteria: CriteriaGroup
   onChange?: (rootCriteria: CriteriaGroup) => void
+  viewingMeta: boolean
+  onViewMeta?: () => void
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   availableClassIDs?: string[]
   subregisters: RegistryViewProps["subregisters"]
@@ -33,6 +36,8 @@ export const SearchQuery: React.FC<{
 }> = function ({
   rootCriteria,
   onChange,
+  viewingMeta,
+  onViewMeta,
   itemClasses,
   availableClassIDs,
   subregisters,
@@ -73,6 +78,14 @@ export const SearchQuery: React.FC<{
           Edit…
         </Button>
       </Popover2>
+      {onViewMeta || viewingMeta
+        ? <Button
+            icon="edit"
+            active={viewingMeta}
+            title="View/edit dataset meta"
+            onClick={onViewMeta && !viewingMeta ? onViewMeta : undefined}
+          />
+        : null}
     </ControlGroup>
   );
 };
@@ -84,6 +97,7 @@ export const RegisterItemGrid: React.FC<{
   queryExpression: string;
   selectedSubregisterID?: string;
   toolbar: JSX.Element;
+  sidebarOverride?: JSX.Element;
 
   useRegisterItemData: RegisterItemDataHook;
   getRelatedClassConfig: (classID: string) => RelatedItemClassConfiguration;
@@ -96,6 +110,7 @@ export const RegisterItemGrid: React.FC<{
   queryExpression,
   selectedSubregisterID,
   toolbar,
+  sidebarOverride,
   useRegisterItemData,
   getRelatedClassConfig,
   style,
@@ -103,7 +118,18 @@ export const RegisterItemGrid: React.FC<{
 }) {
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { useFilteredIndex, useIndexDescription, useObjectPathFromFilteredIndex, useFilteredIndexPosition, useObjectData } = ctx;
+  const {
+    useFilteredIndex,
+    useIndexDescription,
+    useObjectPathFromFilteredIndex,
+    useFilteredIndexPosition,
+    useObjectData,
+    usePersistentDatasetStateReducer,
+  } = ctx;
+
+  
+  const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
+
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
   const normalizedQueryExp = queryExpression.trim();
@@ -178,6 +204,26 @@ export const RegisterItemGrid: React.FC<{
     return null;
   }
 
+  const maybeSelectedItemSidebar = <Sidebar
+    stateKey='selected-item'
+    css={css`width: 280px; z-index: 1;`}
+    representsSelection
+    title="Selected item"
+    blocks={[{
+      key: 'item-view',
+      title: "Summary",
+      height: 100,
+      content: selectedIndexPos !== null
+        ? <RegisterItem
+            isSelected
+            extraData={extraData}
+            itemRef={selectedIndexPos}
+            padding={10}
+          />
+        : <>No item is selected.</>,
+    }]}
+  />;
+
   return (
     <Workspace
         css={css`
@@ -190,6 +236,7 @@ export const RegisterItemGrid: React.FC<{
           totalCount: itemCount,
           progress: indexProgress,
         }}
+        sidebar={sidebarOverride ?? maybeSelectedItemSidebar}
         toolbar={toolbar}>
       <Grid getGridData={getGridData} />
     </Workspace>

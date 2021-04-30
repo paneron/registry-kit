@@ -4,8 +4,8 @@
 //import { debounce } from 'throttle-debounce';
 //import log from 'electron-log';
 
-import React, { useContext } from 'react';
-import { jsx } from '@emotion/core';
+import React, { useContext, useMemo } from 'react';
+import { jsx, css } from '@emotion/core';
 //import { FixedSizeList as List } from 'react-window';
 import {
   NonIdealState,
@@ -26,6 +26,7 @@ import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/use
 import { itemPathToItemRefLike, itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
+import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 
 
 interface Query {
@@ -126,6 +127,8 @@ export const RegisterItemBrowser: React.FC<
   const queryExpression = useDebounce(
     `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${criteriaGroupToQueryExpression(state.query.criteria)}`,
     250);
+  
+  const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
 
   //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
@@ -234,6 +237,8 @@ export const RegisterItemBrowser: React.FC<
     ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
     : undefined
 
+  const viewingMeta = state.selectedItemPath === undefined;
+
   let view: JSX.Element;
   if (state.view === 'grid') {
     view = <RegisterItemGrid
@@ -243,12 +248,28 @@ export const RegisterItemBrowser: React.FC<
         payload: { itemPath: itemRefToItemPath(itemRef) },
       })}
       queryExpression={queryExpression}
+      sidebarOverride={viewingMeta
+        ? <Sidebar
+            stateKey='register-info'
+            css={css`width: 280px; z-index: 1;`}
+            title="Register metadata"
+            blocks={[{
+              key: 'basics',
+              title: "Basics",
+              content: <>TBD</>,
+            }]}
+          />
+        : undefined}
       toolbar={<SearchQuery
         rootCriteria={state.query.criteria}
+        onChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
+        viewingMeta={viewingMeta}
+        onViewMeta={!viewingMeta
+          ? () => dispatch({ type: 'select-item', payload: { itemPath: undefined } })
+          : undefined}
         itemClasses={itemClassConfiguration}
         availableClassIDs={availableClassIDs}
         subregisters={subregisters}
-        onChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
       />}
       getRelatedClassConfig={getRelatedClass}
       useRegisterItemData={useRegisterItemData}
