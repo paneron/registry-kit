@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx } from '@emotion/core';
+import { jsx, css } from '@emotion/core';
 import React from 'react';
 import { Button, ButtonGroup, HTMLSelect, OptionProps, TreeNodeInfo, ControlGroup } from '@blueprintjs/core';
 import { ItemClassConfigurationSet, Subregisters } from '../../types';
@@ -94,34 +94,34 @@ export default function criteriaToNodes(
             true)}>
           Add…
           </Button>
-        : <ControlGroup>
-          <HTMLSelect
-            minimal
-            options={criterionTypeOptions}
-            value={ci.key}
-            disabled={!opts.onEditItem}
-            onChange={opts.onEditItem
-              ? (evt) => {
-                if (evt.currentTarget.value !== '' && isCriteriaKey(evt.currentTarget.value)) {
-                  opts.onEditItem!(
-                    path,
-                    idx,
-                    { key: evt.currentTarget.value, query: '' }
-                  );
+        : <ControlGroup css={css`margin: 5px 5px 5px 0;`}>
+            <HTMLSelect
+              minimal
+              options={criterionTypeOptions}
+              value={ci.key}
+              disabled={!opts.onEditItem}
+              onChange={opts.onEditItem
+                ? (evt) => {
+                  if (evt.currentTarget.value !== '' && isCriteriaKey(evt.currentTarget.value)) {
+                    opts.onEditItem!(
+                      path,
+                      idx,
+                      { key: evt.currentTarget.value, query: '' }
+                    );
+                  }
                 }
-              }
-              : undefined} />
-          <Widget
-            itemClasses={opts.itemClasses}
-            availableClassIDs={opts.availableClassIDs}
-            subregisters={opts.subregisters}
-            data={data}
-            onChange={(val) => opts.onEditItem!(
-              path,
-              idx,
-              { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
-              true)} />
-        </ControlGroup>;
+                : undefined} />
+            <Widget
+              itemClasses={opts.itemClasses}
+              availableClassIDs={opts.availableClassIDs}
+              subregisters={opts.subregisters}
+              data={data}
+              onChange={(val) => opts.onEditItem!(
+                path,
+                idx,
+                { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
+                true)} />
+          </ControlGroup>;
       return {
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
