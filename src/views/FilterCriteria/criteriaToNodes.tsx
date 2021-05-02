@@ -104,7 +104,7 @@ export default function criteriaToNodes(
                 true)}>
             add criteria
           </Button>
-        : <ControlGroup fill css={css`margin-right: 2.5px; transform: scale(0.9); transform-origin: left center;`}>
+        : <ControlGroup css={css`margin-right: 2.5px; & > * { transform: scale(0.9); } & > :first-child { transform-origin: left center; } }`}>
             <HTMLSelect
               options={criterionTypeOptions}
               value={ci.key}
