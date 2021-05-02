@@ -74,6 +74,7 @@ export const SearchQuery: React.FC<{
             active={isExpanded}
             title="Edit search criteria"
             icon='filter'
+            alignText='left'
             css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}
             intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
             onClick={() => expand(!isExpanded)}>
@@ -308,12 +309,16 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
 
   let isUpdating: boolean = filteredObjectResp.isUpdating;
   let _itemID: string | undefined;
+  let classTitle: string | undefined;
   let itemView: JSX.Element;
 
   if (objPath.trim() !== '') {
     try {
       const { itemID, subregisterID, classID } = itemPathToItemRef(extraData.hasSubregisters, objPath);
-      const ListItemView = extraData.getRelatedClassConfig(classID).itemView;
+      const clsConfig = extraData.getRelatedClassConfig(classID);
+      const ListItemView = clsConfig.itemView;
+
+      classTitle = clsConfig.title;
 
       const objData = objectDataResp.value[objPath];
       const registerItemData = objData as RegisterItemCell<any> | null;
@@ -332,10 +337,12 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
     } catch (e) {
       itemView = <>{stringItemDescription}</>;
       _itemID = undefined;
+      classTitle = undefined;
     }
   } else {
     itemView = <>{stringItemDescription}</>;
     _itemID = undefined;
+    classTitle = undefined;
   }
 
 
@@ -347,7 +354,7 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
         padding={padding}
         contentClassName={isUpdating ? Classes.SKELETON : undefined}
         entityType={{
-          name: 'reg. item',
+          name: classTitle ?? 'reg. item',
           iconProps: {
             icon: 'document',
             title: stringItemDescription,
