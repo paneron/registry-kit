@@ -77,11 +77,8 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
     //reduce((p, c) => ({ ...p, ...c }), {});
 
     return {
-      isUpdating: false,
-      errors: [],
+      ...result,
       value: result.value.data,
-      refresh: () => void 0,
-      _reqCounter: 0,
     };
   };
 
