@@ -234,7 +234,7 @@ export const RegisterItemBrowser: React.FC<
 
   const selectedItemRef = state.selectedItemPath
     ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
-    : undefined
+    : undefined;
 
   const viewingMeta = state.selectedItemPath === undefined;
 
