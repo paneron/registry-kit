@@ -124,7 +124,6 @@ export const RegisterItemGrid: React.FC<{
     useIndexDescription,
     useObjectPathFromFilteredIndex,
     useFilteredIndexPosition,
-    useObjectData,
     usePersistentDatasetStateReducer,
   } = ctx;
   
@@ -174,8 +173,7 @@ export const RegisterItemGrid: React.FC<{
     }
   }, [selectedIndexPos, objPathResp.isUpdating]);
 
-  const extraData = {
-    useObjectData,
+  const extraData: RegisterItemGridData = {
     useObjectPathFromFilteredIndex,
     selectedItemID: selectedItem?.itemID,
     indexID,
@@ -247,7 +245,6 @@ export const RegisterItemGrid: React.FC<{
 interface RegisterItemGridData {
   indexID: string;
   useObjectPathFromFilteredIndex: Hooks.Indexes.GetFilteredObject;
-  useObjectData: Hooks.Data.GetObjectDataset;
 
   hasSubregisters: boolean;
   selectedItemID?: string;
@@ -265,11 +262,11 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
     position: parseInt(itemRef, 10),
   });
   const objPath = filteredObjectResp.value.objectPath;
-  const objectDataResp = extraData.useObjectData({
-    objectPaths: objPath ? [objPath] : [],
+  const objectDataResp = extraData.useRegisterItemData({
+    itemPaths: objPath ? [objPath] : [],
   });
 
-  const objData = objectDataResp.value.data[objPath];
+  const objData = objectDataResp.value[objPath];
   const registerItemData = objData as RegisterItem<any> | null;
   const itemPayload = registerItemData?.data;
 
