@@ -1,6 +1,6 @@
 {
   "name": "@riboseinc/paneron-registry-kit",
-  "version": "2.0.0-dev11",
+  "version": "2.0.0-dev12",
   "main": "index.js",
   "author": "Ribose Inc. <open.source@ribose.com>",
   "scripts": {
@@ -28,7 +28,7 @@
     "@blueprintjs/select": "^3.15.9",
     "@emotion/core": "^10.0.35",
     "@emotion/styled": "^10.0.0",
-    "@riboseinc/paneron-extension-kit": "2.0.0-dev17",
+    "@riboseinc/paneron-extension-kit": "2.0.0-dev18",
     "@types/js-yaml": "^3.12.5",
     "@types/node": "^14.11.2",
     "@types/ramda": "^0.27.35",
