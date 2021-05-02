@@ -297,6 +297,7 @@ export const RegisterItemBrowser: React.FC<
           itemClasses: itemClassConfiguration,
           subregisters,
           useRegisterItemData,
+          getRelatedItemClassConfiguration: getRelatedClass,
         }}>
       {view}
     </BrowserCtx.Provider>

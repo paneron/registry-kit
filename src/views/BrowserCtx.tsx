@@ -1,5 +1,8 @@
+/** @jsx jsx */
+
+import { jsx } from '@emotion/core';
 import { createContext } from 'react';
-import { ItemClassConfigurationSet, RegisterItemDataHook, Subregisters } from '../types';
+import { ItemClassConfigurationSet, RegisterItemDataHook, RelatedItemClassConfiguration, Subregisters } from '../types';
 
 
 export type BrowserCtx = {
@@ -7,6 +10,7 @@ export type BrowserCtx = {
   subregisters?: Subregisters
   useRegisterItemData: RegisterItemDataHook
   jumpToItem?: (classID: string, itemID: string, subregisterID?: string) => void;
+  getRelatedItemClassConfiguration: (clsID: string) => RelatedItemClassConfiguration
 };
 
 export const BrowserCtx = createContext<BrowserCtx>({
@@ -18,4 +22,5 @@ export const BrowserCtx = createContext<BrowserCtx>({
     isUpdating: true,
     refresh: () => void 0,
   }),
+  getRelatedItemClassConfiguration: () => ({ title: 'N/A', itemView: () => <span>Loading…</span> })
 });
