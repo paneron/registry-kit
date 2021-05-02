@@ -29,7 +29,7 @@ export const SearchQuery: React.FC<{
   rootCriteria: CriteriaGroup
   onChange?: (rootCriteria: CriteriaGroup) => void
   viewingMeta: boolean
-  onViewMeta?: () => void
+  onViewMeta?: (newState: boolean) => void
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   availableClassIDs?: string[]
   subregisters: RegistryViewProps["subregisters"]
@@ -50,11 +50,11 @@ export const SearchQuery: React.FC<{
     <ButtonGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
       <Popover2
           isOpen={isExpanded}
-          minimal
           fill
           lazy
+          minimal
           popoverClassName="filter-popover"
-          css={css`overflow: hidden;`}
+          css={css`overflow: hidden; margin-top: -2.5px;`}
           content={
             <>
               <CriteriaTree
@@ -88,8 +88,9 @@ export const SearchQuery: React.FC<{
         ? <Button
             icon="settings"
             active={viewingMeta}
-            title="View/edit dataset meta"
-            onClick={onViewMeta && !viewingMeta ? onViewMeta : undefined}
+            disabled={!onViewMeta}
+            title="View or edit dataset metadata"
+            onClick={onViewMeta ? () => onViewMeta(!viewingMeta) : undefined}
           />
         : null}
     </ButtonGroup>

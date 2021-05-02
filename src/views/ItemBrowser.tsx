@@ -4,7 +4,7 @@
 //import { debounce } from 'throttle-debounce';
 //import log from 'electron-log';
 
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 //import { FixedSizeList as List } from 'react-window';
 import {
@@ -81,6 +81,7 @@ export const RegisterItemBrowser: React.FC<
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
   const { usePersistentDatasetStateReducer } = ctx;
+  const [viewingMeta, setViewingMeta] = useState(false);
   const [ state, dispatch ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     (prevState, action) => {
       switch (action.type) {
@@ -236,16 +237,17 @@ export const RegisterItemBrowser: React.FC<
     ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
     : undefined;
 
-  const viewingMeta = state.selectedItemPath === undefined;
-
   let view: JSX.Element;
   if (state.view === 'grid') {
     view = <RegisterItemGrid
-      selectedItem={selectedItemRef}
-      onSelectItem={(itemRef) => dispatch({
-        type: 'select-item',
-        payload: { itemPath: itemRefToItemPath(itemRef) },
-      })}
+      selectedItem={viewingMeta ? undefined : selectedItemRef}
+      onSelectItem={(itemRef) => {
+        dispatch({
+          type: 'select-item',
+          payload: { itemPath: itemRefToItemPath(itemRef) },
+        });
+        setViewingMeta(false);
+      }}
       queryExpression={queryExpression}
       sidebarOverride={viewingMeta
         ? <Sidebar
@@ -263,9 +265,7 @@ export const RegisterItemBrowser: React.FC<
         rootCriteria={state.query.criteria}
         onChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
         viewingMeta={viewingMeta}
-        onViewMeta={!viewingMeta
-          ? () => dispatch({ type: 'select-item', payload: { itemPath: undefined } })
-          : undefined}
+        onViewMeta={setViewingMeta}
         itemClasses={itemClassConfiguration}
         availableClassIDs={availableClassIDs}
         subregisters={subregisters}
