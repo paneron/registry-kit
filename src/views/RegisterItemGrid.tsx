@@ -10,7 +10,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
 import {
   InternalItemReference,
-  RegisterItem, RegisterItemDataHook,
+  RegisterItem as RegisterItemCell, RegisterItemDataHook,
   RegistryViewProps,
   RelatedItemClassConfiguration
 } from '../types';
@@ -212,7 +212,7 @@ export const RegisterItemGrid: React.FC<{
       title: "Summary",
       height: 100,
       content: selectedIndexPos !== null
-        ? <RegisterItem
+        ? <RegisterItemCell
             isSelected
             extraData={extraData}
             itemRef={selectedIndexPos}
@@ -255,7 +255,7 @@ interface RegisterItemGridData {
 }
 
 
-const RegisterItem: React.FC<CellProps<RegisterItemGridData>> =
+const RegisterItemCell: React.FC<CellProps<RegisterItemGridData>> =
 function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
   const filteredObjectResp = extraData.useObjectPathFromFilteredIndex({
     indexID: extraData.indexID,
@@ -267,7 +267,7 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
   });
 
   const objData = objectDataResp.value[objPath];
-  const registerItemData = objData as RegisterItem<any> | null;
+  const registerItemData = objData as RegisterItemCell<any> | null;
   const itemPayload = registerItemData?.data;
 
   const isUpdating = filteredObjectResp.isUpdating || objectDataResp.isUpdating;
@@ -320,7 +320,7 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
   );
 };
 
-const Grid = makeGrid<RegisterItemGridData>(RegisterItem);
+const Grid = makeGrid<RegisterItemGridData>(RegisterItemCell);
 
 const CELL_W_PX = 150;
 const CELL_H_PX = 80;
