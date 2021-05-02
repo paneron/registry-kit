@@ -6,14 +6,14 @@ import { css, jsx } from '@emotion/core';
 //import log from 'electron-log';
 import React from 'react';
 import { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
-import { FormGroup, IFormGroupProps } from '@blueprintjs/core';
+import { FormGroup, FormGroupProps } from '@blueprintjs/core';
 export { GenericRelatedItemView } from './GenericRelatedItemView';
 
 
 export const PropertyDetailView: React.FC<{
-  title: IFormGroupProps["label"]
-  secondaryTitle?: IFormGroupProps["labelInfo"]
-  inline?: IFormGroupProps["inline"]
+  title: FormGroupProps["label"]
+  secondaryTitle?: FormGroupProps["labelInfo"]
+  inline?: FormGroupProps["inline"]
 }> = function ({ title, inline, children, secondaryTitle }) {
   return <FormGroup
       label={`${title}:`}
