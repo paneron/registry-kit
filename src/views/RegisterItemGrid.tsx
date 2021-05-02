@@ -150,7 +150,7 @@ export const RegisterItemGrid: React.FC<{
   });
 
   useEffect(() => {
-    if (selectedItem !== undefined && !idxPosResp.isUpdating) {
+    if (selectedItem !== undefined && !idxPosResp.isUpdating && !objPathResp.isUpdating) {
       const pos = idxPosResp.value.position !== null
         ? `${idxPosResp.value.position}`
         : null;
@@ -158,10 +158,10 @@ export const RegisterItemGrid: React.FC<{
         selectIndexPos(pos);
       }
     }
-  }, [selectedItem, idxPosResp.isUpdating]);
+  }, [selectedItem, idxPosResp.isUpdating, objPathResp.isUpdating]);
 
   useEffect(() => {
-    if (selectedIndexPos !== null && !objPathResp.isUpdating) {
+    if (selectedIndexPos !== null && !objPathResp.isUpdating && !idxPosResp.isUpdating) {
       try {
         const itemRef = itemPathToItemRef(selectedSubregisterID !== undefined, objPathResp.value.objectPath);
         if (itemRef && selectedItem?.itemID !== itemRef.itemID) {
@@ -171,7 +171,7 @@ export const RegisterItemGrid: React.FC<{
         console.error("Unable to construct item ref from item path", objPathResp.value.objectPath);
       }
     }
-  }, [selectedIndexPos, objPathResp.isUpdating]);
+  }, [selectedIndexPos, objPathResp.isUpdating, idxPosResp.isUpdating]);
 
   const extraData: RegisterItemGridData = {
     useObjectPathFromFilteredIndex,
