@@ -130,7 +130,6 @@ export const RegisterItemBrowser: React.FC<
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
-
   //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
 
   const { subregisterID, classID, itemID } = itemPathToItemRefLike(subregisters !== undefined, state.selectedItemPath ?? '');

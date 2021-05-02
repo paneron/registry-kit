@@ -127,7 +127,6 @@ export const RegisterItemGrid: React.FC<{
     useObjectData,
     usePersistentDatasetStateReducer,
   } = ctx;
-
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
