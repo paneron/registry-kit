@@ -47,13 +47,13 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
   } as CriterionConfiguration<{ classID?: string; }>,
 
   'custom': {
-    label: "satisfies expression",
+    label: "condition is met",
     icon: 'code',
     toQuery: ({ customExpression }) => customExpression,
     fromQuery: (query) => ({
       customExpression: query,
     }),
-    toSummary: () => "custom",
+    toSummary: () => "(custom test expr.)",
     widget: ({ data, onChange, className }) => {
       return (
         <InputGroup
