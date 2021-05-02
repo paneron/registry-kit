@@ -3,23 +3,24 @@
 
 import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
-import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import { jsx, css } from '@emotion/core';
-import { Button, Classes, Colors, ControlGroup, Text } from '@blueprintjs/core';
+import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
+import { Popover2 } from '@blueprintjs/popover2';
+import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
+import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeGrid, { GridData, CellProps, LabelledGridIcon } from '@riboseinc/paneron-extension-kit/widgets/Grid';
+import { Hooks } from '@riboseinc/paneron-extension-kit/types';
 import {
   InternalItemReference,
   RegisterItem as RegisterItemCell, RegisterItemDataHook,
   RegistryViewProps,
   RelatedItemClassConfiguration
 } from '../types';
-import { Hooks } from '@riboseinc/paneron-extension-kit/types';
-import { itemPathToItemRef } from './itemPathUtils';
+import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import CriteriaTree from './FilterCriteria';
 import { CriteriaGroup } from './FilterCriteria/models';
-import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
-import { Popover2 } from '@blueprintjs/popover2';
+import { BrowserCtx } from './BrowserCtx';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
 
@@ -46,12 +47,14 @@ export const SearchQuery: React.FC<{
   const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
-    <ControlGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
+    <ButtonGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
       <Popover2
           isOpen={isExpanded}
           minimal
           fill
           lazy
+          popoverClassName="filter-popover"
+          css={css`overflow: hidden;`}
           content={
             <>
               <CriteriaTree
@@ -62,23 +65,25 @@ export const SearchQuery: React.FC<{
                 subregisters={subregisters}
                 css={css`width: 100vw;`}
               />
-              <div css={css`padding: 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
-                Underlying query expression: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
+              <div css={css`padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
+                Computed query: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
               </div>
             </>}>
         <Button
             className={className}
             active={isExpanded}
             title="Edit search criteria"
-            icon={isExpanded ? 'chevron-down' : 'chevron-right'}
-            intent={rootCriteria.criteria.length > 0 ? 'primary' : undefined}
+            icon='filter'
+            css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}
+            intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
             onClick={() => expand(!isExpanded)}>
-          Find
+          Showing
+          {" "}
+          {rootCriteria.criteria.length > 0
+            ? <>items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}</>
+            : <>all items</>}
         </Button>
       </Popover2>
-      <Text ellipsize css={css`flex: 1; padding: 0 10px;`}>
-        {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
-      </Text>
       {onViewMeta || viewingMeta
         ? <Button
             icon="settings"
@@ -87,7 +92,7 @@ export const SearchQuery: React.FC<{
             onClick={onViewMeta && !viewingMeta ? onViewMeta : undefined}
           />
         : null}
-    </ControlGroup>
+    </ButtonGroup>
   );
 };
 
@@ -124,10 +129,7 @@ export const RegisterItemGrid: React.FC<{
     useIndexDescription,
     useObjectPathFromFilteredIndex,
     useFilteredIndexPosition,
-    usePersistentDatasetStateReducer,
   } = ctx;
-  
-  const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
@@ -202,26 +204,6 @@ export const RegisterItemGrid: React.FC<{
     return null;
   }
 
-  const maybeSelectedItemSidebar = <Sidebar
-    stateKey='selected-item'
-    css={css`width: 280px; z-index: 1;`}
-    representsSelection
-    title="Selected item"
-    blocks={[{
-      key: 'item-view',
-      title: "Summary",
-      height: 100,
-      content: selectedIndexPos !== null
-        ? <RegisterItemCell
-            isSelected
-            extraData={extraData}
-            itemRef={selectedIndexPos}
-            padding={10}
-          />
-        : <>No item is selected.</>,
-    }]}
-  />;
-
   return (
     <Workspace
         css={css`
@@ -234,7 +216,9 @@ export const RegisterItemGrid: React.FC<{
           totalCount: itemCount,
           progress: indexProgress,
         }}
-        sidebar={sidebarOverride ?? maybeSelectedItemSidebar}
+        sidebar={sidebarOverride ?? (selectedItem !== undefined
+          ? <SelectedRegisterItemSidebar itemRef={selectedItem} />
+          : undefined)}
         toolbar={toolbar}>
       <Grid getGridData={getGridData} />
     </Workspace>
@@ -255,6 +239,57 @@ interface RegisterItemGridData {
 }
 
 
+const SelectedRegisterItemSidebar: React.FC<{ itemRef: InternalItemReference, className?: string }> =
+function ({ itemRef, className }) {
+  const { usePersistentDatasetStateReducer  } = useContext(DatasetContext);
+  const { useRegisterItemData, getRelatedItemClassConfiguration, itemClasses } = useContext(BrowserCtx);
+  const { itemID, classID, subregisterID } = itemRef;
+  const ListItemView = getRelatedItemClassConfiguration(classID).itemView;
+  
+  const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
+
+  const _path = itemRefToItemPath(itemRef!);
+
+  const objectDataResp = useRegisterItemData({
+    itemPaths: _path ? [_path] : [],
+  });
+  const objData = objectDataResp.value[_path];
+
+  const registerItemData = objData as RegisterItemCell<any> | null;
+  const itemPayload = registerItemData?.data;
+  const stringItemDescription = `item at ${_path}`;
+
+  const itemView = itemPayload
+    ? <ListItemView
+        getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+        useRegisterItemData={useRegisterItemData}
+        subregisterID={subregisterID}
+        itemData={itemPayload}
+        className={className}
+        itemID={registerItemData?.id ?? itemID} />
+    : <>{stringItemDescription}</>;
+
+  const clsMeta = itemClasses[classID].meta;
+
+  return <Sidebar
+    stateKey='selected-item'
+    css={css`width: 280px; z-index: 1;`}
+    representsSelection
+    title="Selected reg. item"
+    blocks={[{
+      key: 'item-view',
+      title: "Summary",
+      height: 100,
+      content: itemView,
+    }, {
+      key: 'class',
+      title: "Classification",
+      content: <>{clsMeta.title}</>,
+    }]}
+  />
+};
+
+
 const RegisterItemCell: React.FC<CellProps<RegisterItemGridData>> =
 function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
   const filteredObjectResp = extraData.useObjectPathFromFilteredIndex({
@@ -262,26 +297,29 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
     position: parseInt(itemRef, 10),
   });
   const objPath = filteredObjectResp.value.objectPath;
+
+  const stringItemDescription = objPath ? `item at ${objPath}` : `item #${itemRef}`;
+
   const objectDataResp = extraData.useRegisterItemData({
     itemPaths: objPath ? [objPath] : [],
   });
 
-  const objData = objectDataResp.value[objPath];
-  const registerItemData = objData as RegisterItemCell<any> | null;
-  const itemPayload = registerItemData?.data;
 
-  const isUpdating = filteredObjectResp.isUpdating || objectDataResp.isUpdating;
-
-  const stringItemDescription = objPath ? `item at ${objPath}` : `item #${itemRef}`;
-
+  let isUpdating: boolean = filteredObjectResp.isUpdating;
   let _itemID: string | undefined;
   let itemView: JSX.Element;
 
   if (objPath.trim() !== '') {
     try {
-      const { itemID, classID, subregisterID } = itemPathToItemRef(extraData.hasSubregisters, objPath);
-      _itemID = itemID;
+      const { itemID, subregisterID, classID } = itemPathToItemRef(extraData.hasSubregisters, objPath);
       const ListItemView = extraData.getRelatedClassConfig(classID).itemView;
+
+      const objData = objectDataResp.value[objPath];
+      const registerItemData = objData as RegisterItemCell<any> | null;
+      const itemPayload = registerItemData?.data;
+
+      _itemID = itemID;
+      isUpdating = isUpdating || objectDataResp.isUpdating;
       itemView = itemPayload
         ? <ListItemView
             getRelatedItemClassConfiguration={extraData.getRelatedClassConfig}
