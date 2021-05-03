@@ -168,6 +168,7 @@ const RelatedItemSelectionDialog: React.FC<{
         selectedSubregisterID={selectedSubregisterID}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
         onSelectItem={(itemRef) => onChange!(itemRef)}
+        onOpenItem={(itemRef) => { onChange!(itemRef); onClose(); }}
         getRelatedClassConfig={getRelatedItemClassConfiguration}
         useRegisterItemData={useRegisterItemData}
         toolbar={<SearchQuery

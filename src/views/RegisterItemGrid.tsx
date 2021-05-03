@@ -102,6 +102,7 @@ export const SearchQuery: React.FC<{
 export const RegisterItemGrid: React.FC<{
   selectedItem?: InternalItemReference;
   onSelectItem: (itemRef: InternalItemReference) => void;
+  onOpenItem: (itemRef: InternalItemReference) => void;
   queryExpression: string;
   selectedSubregisterID?: string;
   toolbar: JSX.Element;
@@ -115,6 +116,7 @@ export const RegisterItemGrid: React.FC<{
 }> = function ({
   selectedItem,
   onSelectItem,
+  onOpenItem,
   queryExpression,
   selectedSubregisterID,
   toolbar,
@@ -131,6 +133,7 @@ export const RegisterItemGrid: React.FC<{
     useIndexDescription,
     useObjectPathFromFilteredIndex,
     useFilteredIndexPosition,
+    getObjectPathFromFilteredIndex,
   } = ctx;
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
@@ -198,6 +201,9 @@ export const RegisterItemGrid: React.FC<{
         extraData,
         selectedItem: selectedIndexPos,
         selectItem: selectIndexPos,
+        openItem: async (itemRef) => onOpenItem(itemPathToItemRef(
+          selectedSubregisterID !== undefined,
+          (await getObjectPathFromFilteredIndex({ indexID, position: parseInt(itemRef, 10) })).objectPath)),
         cellWidth: CELL_W_PX,
         cellHeight: CELL_H_PX,
         padding: CELL_PADDING,

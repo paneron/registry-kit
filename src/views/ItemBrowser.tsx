@@ -248,6 +248,12 @@ export const RegisterItemBrowser: React.FC<
         });
         setViewingMeta(false);
       }}
+      onOpenItem={(itemRef) => {
+        dispatch({
+          type: 'open-item',
+          payload: { itemPath: itemRefToItemPath(itemRef) },
+        })
+      }}
       queryExpression={queryExpression}
       sidebarOverride={viewingMeta
         ? <Sidebar
