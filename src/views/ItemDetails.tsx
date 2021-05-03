@@ -8,8 +8,10 @@ import styled from '@emotion/styled';
 import {
   Button, /*Callout,*/ Classes, Colors, ControlGroup,
   FormGroup,
-  InputGroup, NonIdealState, Tooltip
+  InputGroup, NonIdealState
 } from '@blueprintjs/core';
+
+import { Tooltip2 } from '@blueprintjs/popover2';
 
 import {
   ItemAction,
@@ -92,9 +94,9 @@ export const ItemDetails: React.FC<{
       {itemID
         ? <div css={css`flex-shrink: 0; margin-bottom: 1rem; display: flex; flex-flow: column nowrap;`}>
           <ControlGroup>
-            <Tooltip content="Internal unique item ID">
+            <Tooltip2 content="Internal unique item ID">
               <InputGroup disabled value={item?.id || itemID || ''} fill />
-            </Tooltip>
+            </Tooltip2>
             <Button
                 disabled
                 intent={item?.status === 'valid' ? 'success' : undefined}
