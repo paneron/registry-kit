@@ -50,14 +50,12 @@ export const SearchQuery: React.FC<{
   const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
-    <ButtonGroup css={css`flex: 1; align-items: center; overflow: hidden;`}>
+    <ButtonGroup css={css`flex: 1; align-items: center; overflow: hidden;`} className={className}>
       <Popover2
           isOpen={isExpanded}
-          fill
           lazy
           minimal
           popoverClassName="filter-popover"
-          css={css`overflow: hidden; margin-top: -2.5px;`}
           content={
             <>
               <CriteriaTree
@@ -73,27 +71,36 @@ export const SearchQuery: React.FC<{
               </div>
             </>}>
         <Button
-            className={className}
             active={isExpanded}
             title="Edit search criteria"
             icon='filter'
             alignText='left'
-            css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}
             intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
             onClick={() => expand(!isExpanded)}>
-          Showing
-          {" "}
-          {rootCriteria.criteria.length > 0
-            ? <>items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}</>
-            : <>all items</>}
+          Filter…
         </Button>
       </Popover2>
-      <Button
-        disabled={!onChange}
-        icon="filter-remove"
-        minimal small
-        title="Clear query (show all)"
-        onClick={() => onChange!({ criteria: [], require: 'all' })} />
+      {rootCriteria.criteria.length > 0
+        ? <>
+            <Button
+                disabled
+                active={isExpanded}
+                small
+                fill
+                alignText='left'
+                css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}
+                intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
+                onClick={() => expand(!isExpanded)}>
+              Showing items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
+            </Button>
+            <Button
+              disabled={!onChange}
+              icon="filter-remove"
+              minimal small
+              title="Clear query (show all)"
+              onClick={() => onChange!({ criteria: [], require: 'all' })} />
+          </> 
+        : null}
       {onViewMeta || viewingMeta
         ? <Button
             icon="settings"
