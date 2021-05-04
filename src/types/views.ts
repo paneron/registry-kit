@@ -1,6 +1,6 @@
 
 import type React from 'react';
-import type { IButtonProps } from '@blueprintjs/core';
+import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 
@@ -65,7 +65,7 @@ extends RegisterConfiguration<Items> {
 }
 
 export interface ItemAction {
-  getButtonProps: (item: RegisterItem<any>, itemClass: ItemClassConfiguration<any>, subregisterID?: string) => IButtonProps
+  getButtonProps: (item: RegisterItem<any>, itemClass: ItemClassConfiguration<any>, subregisterID?: string) => ButtonProps | MenuItemProps
 }
 
 export type RegistryView = React.FC<RegistryViewProps>

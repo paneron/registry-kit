@@ -19,10 +19,13 @@ import {
 } from '../types';
 import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import CriteriaTree from './FilterCriteria';
-import { CriteriaGroup } from './FilterCriteria/models';
-import { BrowserCtx } from './BrowserCtx';
+import { CriteriaGroup, CriteriaTransformer } from './FilterCriteria/models';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
+import ItemSummary from './sidebar-blocks/ItemSummary';
+import ItemClass from './sidebar-blocks/ItemClass';
+import { BrowserCtx } from './BrowserCtx';
+import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 
 
 export const SearchQuery: React.FC<{
@@ -65,7 +68,7 @@ export const SearchQuery: React.FC<{
                 subregisters={subregisters}
                 css={css`width: 100vw;`}
               />
-              <div css={css`padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
+              <div css={css`margin-top: 5px; padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
                 Computed query: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
               </div>
             </>}>
@@ -85,6 +88,12 @@ export const SearchQuery: React.FC<{
             : <>all items</>}
         </Button>
       </Popover2>
+      <Button
+        disabled={!onChange}
+        icon="filter-remove"
+        minimal small
+        title="Clear query (show all)"
+        onClick={() => onChange!({ criteria: [], require: 'all' })} />
       {onViewMeta || viewingMeta
         ? <Button
             icon="settings"
@@ -101,8 +110,9 @@ export const SearchQuery: React.FC<{
 
 export const RegisterItemGrid: React.FC<{
   selectedItem?: InternalItemReference;
-  onSelectItem: (itemRef: InternalItemReference) => void;
+  onSelectItem: (itemRef: InternalItemReference | null) => void;
   onOpenItem: (itemRef: InternalItemReference) => void;
+  onTransformFilterCriteria?: (transformer: CriteriaTransformer) => void
   queryExpression: string;
   selectedSubregisterID?: string;
   toolbar: JSX.Element;
@@ -117,6 +127,7 @@ export const RegisterItemGrid: React.FC<{
   selectedItem,
   onSelectItem,
   onOpenItem,
+  onTransformFilterCriteria,
   queryExpression,
   selectedSubregisterID,
   toolbar,
@@ -132,8 +143,8 @@ export const RegisterItemGrid: React.FC<{
     useFilteredIndex,
     useIndexDescription,
     useObjectPathFromFilteredIndex,
-    useFilteredIndexPosition,
     getObjectPathFromFilteredIndex,
+    getFilteredIndexPosition,
   } = ctx;
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
@@ -146,39 +157,30 @@ export const RegisterItemGrid: React.FC<{
   const itemCount = indexDescReq.value.status.objectCount;
   const indexProgress = indexDescReq.value.status.progress;
 
-  const objPathResp = useObjectPathFromFilteredIndex({
-    indexID,
-    position: selectedIndexPos ? parseInt(selectedIndexPos, 10) : 0,
-  });
-
-  const idxPosResp = useFilteredIndexPosition({
-    indexID,
-    objectPath: objPathResp.value.objectPath,
-  });
-
   useEffect(() => {
-    if (selectedItem !== undefined && !idxPosResp.isUpdating && !objPathResp.isUpdating) {
-      const pos = idxPosResp.value.position !== null
-        ? `${idxPosResp.value.position}`
-        : null;
-      if (selectedIndexPos !== pos) {
-        selectIndexPos(pos);
-      }
-    }
-  }, [selectedItem, idxPosResp.isUpdating, objPathResp.isUpdating]);
-
-  useEffect(() => {
-    if (selectedIndexPos !== null && !objPathResp.isUpdating && !idxPosResp.isUpdating) {
-      try {
-        const itemRef = itemPathToItemRef(selectedSubregisterID !== undefined, objPathResp.value.objectPath);
-        if (itemRef && selectedItem?.itemID !== itemRef.itemID) {
-          onSelectItem(itemRef);
+    if (selectedItem !== undefined && indexID !== '') {
+      getFilteredIndexPosition({ indexID, objectPath: itemRefToItemPath(selectedItem) }).then(({ position }) => {
+        if (selectedIndexPos !== position && position !== null) {
+          selectIndexPos(`${position}`);
         }
-      } catch (e) {
-        console.error("Unable to construct item ref from item path", objPathResp.value.objectPath);
-      }
+      });
     }
-  }, [selectedIndexPos, objPathResp.isUpdating, idxPosResp.isUpdating]);
+  }, [selectedItem, indexID]);
+
+  function selectItemByPosition(pos: string) {
+    getObjectPathFromFilteredIndex({ indexID, position: parseInt(pos, 10) }).then(({ objectPath }) => {
+      const itemRef = itemPathToItemRef(selectedSubregisterID !== undefined, objectPath);
+      if (itemRef && selectedItem?.itemID !== itemRef.itemID) {
+        onSelectItem(itemRef);
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (selectedIndexPos !== null && selectedItem === undefined) {
+      selectItemByPosition(selectedIndexPos);
+    }
+  }, [selectedIndexPos, selectedItem]);
 
   const extraData: RegisterItemGridData = {
     useObjectPathFromFilteredIndex,
@@ -200,7 +202,14 @@ export const RegisterItemGrid: React.FC<{
           stubs),
         extraData,
         selectedItem: selectedIndexPos,
-        selectItem: selectIndexPos,
+        selectItem: (pos) => {
+          selectIndexPos(pos);
+          if (pos) {
+            selectItemByPosition(pos);
+          } else {
+            onSelectItem(null);
+          }
+        },
         openItem: async (itemRef) => onOpenItem(itemPathToItemRef(
           selectedSubregisterID !== undefined,
           (await getObjectPathFromFilteredIndex({ indexID, position: parseInt(itemRef, 10) })).objectPath)),
@@ -208,8 +217,9 @@ export const RegisterItemGrid: React.FC<{
         cellHeight: CELL_H_PX,
         padding: CELL_PADDING,
       };
+    } else {
+      return null;
     }
-    return null;
   }
 
   return (
@@ -225,7 +235,9 @@ export const RegisterItemGrid: React.FC<{
           progress: indexProgress,
         }}
         sidebar={sidebarOverride ?? (selectedItem !== undefined
-          ? <SelectedRegisterItemSidebar itemRef={selectedItem} />
+          ? <SelectedRegisterItemSidebar
+              itemRef={selectedItem}
+              onTransformFilterCriteria={onTransformFilterCriteria} />
           : undefined)}
         toolbar={toolbar}>
       <Grid getGridData={getGridData} />
@@ -247,52 +259,41 @@ interface RegisterItemGridData {
 }
 
 
-const SelectedRegisterItemSidebar: React.FC<{ itemRef: InternalItemReference, className?: string }> =
-function ({ itemRef, className }) {
-  const { usePersistentDatasetStateReducer  } = useContext(DatasetContext);
-  const { useRegisterItemData, getRelatedItemClassConfiguration, itemClasses } = useContext(BrowserCtx);
-  const { itemID, classID, subregisterID } = itemRef;
-  const ListItemView = getRelatedItemClassConfiguration(classID).itemView;
-  
+const SelectedRegisterItemSidebar: React.FC<{
+  itemRef: InternalItemReference
+  onTransformFilterCriteria?: (transformer: CriteriaTransformer) => void
+  className?: string
+}> = function ({ itemRef, onTransformFilterCriteria, className }) {
+  const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
+  const { itemClasses, subregisters } = useContext(BrowserCtx);
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
-
-  const _path = itemRefToItemPath(itemRef!);
-
-  const objectDataResp = useRegisterItemData({
-    itemPaths: _path ? [_path] : [],
-  });
-  const objData = objectDataResp.value[_path];
-
-  const registerItemData = objData as RegisterItemCell<any> | null;
-  const itemPayload = registerItemData?.data;
-  const stringItemDescription = `item at ${_path}`;
-
-  const itemView = itemPayload
-    ? <ListItemView
-        getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
-        useRegisterItemData={useRegisterItemData}
-        subregisterID={subregisterID}
-        itemData={itemPayload}
-        className={className}
-        itemID={registerItemData?.id ?? itemID} />
-    : <>{stringItemDescription}</>;
-
-  const clsMeta = itemClasses[classID].meta;
 
   return <Sidebar
     stateKey='selected-item'
+    className={className}
     css={css`width: 280px; z-index: 1;`}
     representsSelection
     title="Selected reg. item"
     blocks={[{
       key: 'item-view',
       title: "Summary",
-      height: 100,
-      content: itemView,
+      content: <ItemSummary itemRef={itemRef} />,
     }, {
       key: 'class',
       title: "Classification",
-      content: <>{clsMeta.title}</>,
+      content: <ItemClass
+        classID={itemRef.classID}
+        onApplyCriteria={onTransformFilterCriteria
+          ? () =>
+            onTransformFilterCriteria(() => ({
+              criteria: [{
+                key: 'item-class',
+                query: CRITERIA_CONFIGURATION['item-class'].toQuery({ classID: itemRef.classID }, { itemClasses, subregisters }),
+              }],
+              require: 'all',
+            }))
+          : undefined}
+      />,
     }]}
   />
 };

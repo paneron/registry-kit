@@ -24,8 +24,6 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const _itemPath = `${classID}/${itemID}.yaml`;
   const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : `/${_itemPath}`;
 
-  console.debug("GenericRelatedItemView", itemPath);
-
   const [selectDialogState, setSelectDialogState] = useState(false);
 
   //log.debug("Rendering generic related item view", itemRef);
@@ -118,6 +116,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             isOpen={selectDialogState}
             onClose={() => setSelectDialogState(false)}
             onChange={onChange}
+            onClear={onClear}
             selectedItem={itemRef}
             selectedClassID={effectiveClassID}
             selectedSubregisterID={effectiveSubregisterID}
@@ -136,6 +135,7 @@ const RelatedItemSelectionDialog: React.FC<{
   isOpen: boolean
   onClose: () => void
   onChange: (itemRef: InternalItemReference) => void
+  onClear?: () => void
   selectedItem?: InternalItemReference
   selectedClassID: string
   selectedSubregisterID?: string
@@ -144,7 +144,7 @@ const RelatedItemSelectionDialog: React.FC<{
   useRegisterItemData: GenericRelatedItemViewProps["useRegisterItemData"]
   getRelatedItemClassConfiguration: GenericRelatedItemViewProps["getRelatedItemClassConfiguration"]
 }> = function ({
-  isOpen, onClose, onChange,
+  isOpen, onClose, onChange, onClear,
   selectedItem, selectedClassID, selectedSubregisterID,
   availableClassIDs, availableSubregisterIDs,
   useRegisterItemData, getRelatedItemClassConfiguration,
@@ -167,8 +167,8 @@ const RelatedItemSelectionDialog: React.FC<{
         selectedItem={selectedItem}
         selectedSubregisterID={selectedSubregisterID}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
-        onSelectItem={(itemRef) => onChange!(itemRef)}
-        onOpenItem={(itemRef) => { onChange!(itemRef); onClose(); }}
+        onSelectItem={(itemRef) => itemRef ? onChange(itemRef) : onClear ? onClear() : void 0}
+        onOpenItem={(itemRef) => { onChange(itemRef); onClose(); }}
         getRelatedClassConfig={getRelatedItemClassConfiguration}
         useRegisterItemData={useRegisterItemData}
         toolbar={<SearchQuery

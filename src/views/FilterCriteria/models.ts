@@ -16,6 +16,8 @@ export type CriteriaConfiguration = {
   [key in CriterionKey]: CriterionConfiguration<Record<string, unknown>>;
 };
 
+export type CriteriaTransformer = (existing: CriteriaGroup) => CriteriaGroup;
+
 export const COMPOSITION_OPERATORS = [
   'all',
   'any',

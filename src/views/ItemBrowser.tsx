@@ -23,7 +23,7 @@ import { BrowserCtx } from './BrowserCtx';
 import ItemDetails from './ItemDetails';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
 import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
-import { itemPathToItemRefLike, itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
+import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
@@ -133,8 +133,6 @@ export const RegisterItemBrowser: React.FC<
 
   //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
 
-  const { subregisterID, classID, itemID } = itemPathToItemRefLike(subregisters !== undefined, state.selectedItemPath ?? '');
-
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
   //const classConfiguration: ItemClassConfigurationSet =
   //  itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
@@ -241,10 +239,14 @@ export const RegisterItemBrowser: React.FC<
   if (state.view === 'grid') {
     view = <RegisterItemGrid
       selectedItem={viewingMeta ? undefined : selectedItemRef}
+      onTransformFilterCriteria={(transformer) => dispatch({
+        type: 'update-query',
+        payload: { query: { criteria: transformer(state.query.criteria) } },
+      })}
       onSelectItem={(itemRef) => {
         dispatch({
           type: 'select-item',
-          payload: { itemPath: itemRefToItemPath(itemRef) },
+          payload: { itemPath: itemRef ? itemRefToItemPath(itemRef) : undefined },
         });
         setViewingMeta(false);
       }}
@@ -279,16 +281,12 @@ export const RegisterItemBrowser: React.FC<
       getRelatedClassConfig={getRelatedClass}
       useRegisterItemData={useRegisterItemData}
     />;
-  } else if (state.view === 'item' && classID && itemID) {
+  } else if (state.view === 'item' && selectedItemRef !== undefined) {
     view = <ItemDetails
-      useRegisterItemData={useRegisterItemData}
-      getRelatedClass={_getRelatedClass(itemClassConfiguration)}
-      // TODO: convert class, subregister and ID combo into a single string item path?
-      itemClass={itemClassConfiguration[classID]}
-      subregisterID={subregisterID}
-      itemID={itemID}
+      itemRef={selectedItemRef}
       itemActions={itemActions}
-    />
+      onClose={() => dispatch({ type: 'exit-item' })}
+    />;
   } else {
     // If item view is requested, but item or class ID is missing,
     // we can’t show any details because the only details view we have for now
