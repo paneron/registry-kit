@@ -238,6 +238,7 @@ export const RegisterItemBrowser: React.FC<
   if (state.view === 'grid') {
     view = <RegisterItemGrid
       selectedItem={viewingMeta ? undefined : selectedItemRef}
+      queryExpression={queryExpression} // TODO: Should pass actual structured criteria here probably.
       onTransformFilterCriteria={(transformer) => dispatch({
         type: 'update-query',
         payload: { query: { criteria: transformer(state.query.criteria) } },
@@ -255,7 +256,6 @@ export const RegisterItemBrowser: React.FC<
           payload: { itemPath: itemRefToItemPath(itemRef) },
         })
       }}
-      queryExpression={queryExpression}
       sidebarOverride={viewingMeta
         ? <Sidebar
             stateKey='register-info'
