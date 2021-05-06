@@ -125,7 +125,7 @@ export const RegisterItemBrowser: React.FC<
     }, null, 'item-browser');
 
   const queryExpression = useDebounce(
-    `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${criteriaGroupToQueryExpression(state.query.criteria)}`,
+    criteriaGroupToQueryExpression(state.query.criteria),
     500);
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);

@@ -120,7 +120,7 @@ export const RegisterItemGrid: React.FC<{
   onSelectItem: (itemRef: InternalItemReference | null) => void;
   onOpenItem: (itemRef: InternalItemReference) => void;
   onTransformFilterCriteria?: (transformer: CriteriaTransformer) => void
-  queryExpression: string;
+  queryExpression: string; // Should return just the expressions, no “return” statement etc.
   selectedSubregisterID?: string;
   toolbar: JSX.Element;
   sidebarOverride?: JSX.Element;
@@ -156,7 +156,7 @@ export const RegisterItemGrid: React.FC<{
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
-  const normalizedQueryExp = queryExpression.trim();
+  const normalizedQueryExp = `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${queryExpression.trim()}`;
   const indexReq = useFilteredIndex({ queryExpression: normalizedQueryExp });
   const indexID: string = indexReq.value.indexID ?? '';
 
