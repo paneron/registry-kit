@@ -57,8 +57,7 @@ interface GridState extends BaseState {
   selectedItemPath: string | undefined;
   query: Query;
 }
-type State = ItemState |
-  GridState;
+type State = ItemState | GridState;
 
 
 export const RegisterItemBrowser: React.FC<
