@@ -1,13 +1,13 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
 
 import {
-  Button, /*Callout,*/ Classes, ControlGroup,
-  InputGroup, Menu, MenuItem, NonIdealState
+  Button, ButtonGroup, /*Callout,*/ Classes, ControlGroup,
+  InputGroup, Menu, MenuItem, NonIdealState, OverflowList
 } from '@blueprintjs/core';
 
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
@@ -18,6 +18,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   InternalItemReference,
   ItemAction,
+  RegisterItem,
 } from '../types';
 
 import { BrowserCtx } from './BrowserCtx';
@@ -30,12 +31,14 @@ export const ItemDetails: React.FC<{
   itemRef: InternalItemReference
   itemActions?: ItemAction[]
   onClose?: () => void
+  onChange?: (oldData: RegisterItem<any>, newData: RegisterItem<any>, commitMessage: string) => Promise<void>
   className?: string
   style?: React.CSSProperties
-}> = function ({ itemRef, onClose, itemActions, className, style }) {
+}> = function ({ itemRef, onClose, onChange, itemActions, className, style }) {
   let details: JSX.Element;
 
   const { itemID, classID, subregisterID } = itemRef;
+  const [editedItemData, setEditedItemData] = useState<RegisterItem<any>["data"] | null>(null);
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
@@ -50,6 +53,47 @@ export const ItemDetails: React.FC<{
   const itemResponse = useRegisterItemData({ itemPaths: [itemPath] });
   const itemData = itemResponse.value[itemPath];
 
+  const isEdited = onChange && itemData && editedItemData && JSON.stringify(editedItemData) !== JSON.stringify(itemData.data);
+
+  let actions: ItemAction[] = [];
+  if ((itemActions ?? []).length > 0) {
+    actions = itemActions!;
+  } else if (onChange && itemData) {
+    if (editedItemData === null) {
+      actions.push({
+        getButtonProps: () => ({
+          disabled: !onChange || !itemData || editedItemData !== null,
+          onClick: () => setEditedItemData(JSON.parse(JSON.stringify(itemData!.data))),
+          text: "Clarify",
+        }),
+      });
+    } else {
+      actions.push({
+        getButtonProps: () => ({
+          disabled: !isEdited,
+          onClick: handleChange,
+          intent: isEdited ? 'primary' : undefined,
+          text: "Save",
+        })
+      });
+      actions.push({
+        getButtonProps: () => ({
+          onClick: () => setEditedItemData(null),
+          text: "Do not save",
+        }),
+      });
+    }
+  }
+
+  async function handleChange() {
+    if (!isEdited || !itemData || !onChange || !editedItemData) {
+      throw new Error("Can’t handle change: missing functions");
+    }
+    console.debug("Clarifying item", itemData.data, editedItemData);
+    await onChange!(itemData, { ...itemData, data: editedItemData }, "Clarify item");
+    setEditedItemData(null);
+  }
+
   if (!itemClass) {
     return <NonIdealState
       icon="heart-broken"
@@ -60,59 +104,77 @@ export const ItemDetails: React.FC<{
     details = <div className={Classes.SKELETON}>Loading…</div>;
 
   } else if (itemData) {
-    const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
+    if (editedItemData !== null) {
+      const EditView = itemClass.views.editView;
+      details = (
+        <EditView
+          getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+          subregisterID={subregisterID}
+          useRegisterItemData={useRegisterItemData}
+          itemData={editedItemData}
+          onChange={(newData) => {
+            setEditedItemData(newData);
+          }}
+        />
+      );
 
-    details = (
-      <DetailView
-        getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
-        subregisterID={subregisterID}
-        useRegisterItemData={useRegisterItemData}
-        itemData={itemData.data} />
-    );
+    } else {
+      const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
+      details = (
+        <DetailView
+          getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+          subregisterID={subregisterID}
+          useRegisterItemData={useRegisterItemData}
+          itemData={itemData.data}
+        />
+      );
+    }
 
   } else {
     details = <div className={Classes.SKELETON}>Loading…</div>;
   }
 
-  // function StyledTitle(props: RegistryItemViewProps<any>) {
-  //   const Component = itemResponse.isUpdating || !itemID
-  //     ? (props: { className?: string; }) => (
-  //         <span className={props.className}>
-  //           <span className={Classes.SKELETON}>Loading…</span>
-  //           &emsp;
-  //         </span>
-  //       )
-  //     : ItemTitle;
-
-  //   return (
-  //     <Component
-  //       css={css`font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`}
-  //       itemID={itemID!}
-  //       {...props} />
-  //   );
-  // }
-
-  const itemActionMenu = itemData && ((itemActions ?? []).length > 0)
+  const itemActionMenu = itemData && ((actions ?? []).length > 0)
     ? (
-        <Menu css={css`margin-bottom: 0;`}>
-          {itemActions!.map((action, idx) =>
-            <MenuItem
-              key={idx}
-              {...action.getButtonProps(itemData, itemClass)} />
-          )}
-        </Menu>
+      <ButtonGroup>
+        <OverflowList
+          items={actions}
+          visibleItemRenderer={(action, idx) =>
+            <Button key={idx} {...action.getButtonProps(itemData, itemClass)} />
+          }
+          overflowRenderer={(actions) => {
+            if (actions.length > 0) {
+              return (
+                <Popover2
+                    content={
+                      <Menu css={css`margin-bottom: 0;`}>
+                        {actions.map((action, idx) =>
+                          <MenuItem
+                            key={idx}
+                            {...action.getButtonProps(itemData, itemClass)} />
+                        )}
+                      </Menu>}>
+                  <Button icon="more" />
+                </Popover2>
+              );
+            } else {
+              return null;
+            }
+          }}
+        />
+      </ButtonGroup>
       )
     : undefined;
 
   const toolbar = (
     <>
       <ControlGroup>
-        {onClose
-          ? <Button icon="arrow-left" title="Return to item grid" onClick={onClose} />
-          : null}
-        {itemActionMenu
-          ? <Popover2 content={itemActionMenu}><Button icon="more" /></Popover2>
-          : null}
+        <Button
+          disabled={!onClose || editedItemData !== null}
+          icon="arrow-left"
+          title="Close item"
+          onClick={onClose} />
+        {itemActionMenu}
       </ControlGroup>
     </>
   );

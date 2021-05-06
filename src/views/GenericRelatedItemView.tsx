@@ -161,9 +161,10 @@ const RelatedItemSelectionDialog: React.FC<{
     <Dialog
         isOpen={isOpen}
         onClose={onClose}
-        style={{ padding: '0' }}>
+        enforceFocus={false}
+        style={{ padding: '0', width: 'unset' }}>
       <RegisterItemGrid
-        style={{ height: '80vh' }}
+        style={{ height: '90vh', width: '90vw' }}
         selectedItem={selectedItem}
         selectedSubregisterID={selectedSubregisterID}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
@@ -177,7 +178,7 @@ const RelatedItemSelectionDialog: React.FC<{
           itemClasses={itemClasses}
           availableClassIDs={availableClassIDs}
           subregisters={subregisters}
-          onChange={setFilterCriteria}
+          onCriteriaChange={setFilterCriteria}
         />}
       />
     </Dialog>

@@ -8,13 +8,15 @@ import React, { useContext, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 //import { FixedSizeList as List } from 'react-window';
 import {
-  NonIdealState,
+  Icon,
+  NonIdealState, Spinner, Toaster,
 } from '@blueprintjs/core';
 
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ItemAction,
+  RegisterItem,
   RegisterItemDataHook,
   RegistryViewProps,
 } from '../types';
@@ -29,22 +31,28 @@ import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 
 
+const toaster = Toaster.create({ position: 'bottom' });
+
+
 interface Query {
   criteria: CriteriaGroup;
 }
 type Action =
+  | { type: 'update-query'; payload: { query: Query; }; }
+  | { type: 'enter-cr'; payload: { crid: string; }; }
+  | { type: 'exit-cr' }
   | { type: 'select-item'; payload: { itemPath: string | undefined; }; }
   | { type: 'open-item'; payload: { itemPath: string; }; }
   //| { type: 'select-class', payload: { classID: string | undefined } }
   //| { type: 'open-class', payload: { classID: string } }
   //| { type: 'select-subregister', payload: { subregisterID: string | undefined } }
   //| { type: 'open-subregister', payload: { subregisterID: string } }
-  | { type: 'update-query'; payload: { query: Query; }; }
   | { type: 'exit-item'; };
 
 interface BaseState {
   view: 'item' | 'grid';
   selectedItemPath: string | undefined;
+  selectedCRID: string | undefined;
   query: Query;
 }
 interface ItemState extends BaseState {
@@ -79,7 +87,7 @@ export const RegisterItemBrowser: React.FC<
 
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { usePersistentDatasetStateReducer } = ctx;
+  const { usePersistentDatasetStateReducer, updateObjects } = ctx;
   const [viewingMeta, setViewingMeta] = useState(false);
   const [ state, dispatch ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     (prevState, action) => {
@@ -115,12 +123,23 @@ export const RegisterItemBrowser: React.FC<
             ...prevState,
             view: 'grid',
           };
+        case 'enter-cr':
+          return {
+            ...prevState,
+            selectedCRID: action.payload.crid,
+          };
+        case 'exit-cr':
+          return {
+            ...prevState,
+            selectedCRID: undefined,
+          };
         default:
           throw new Error("Unexpected register item browser state");
       }
     }, {
       view: 'grid',
       selectedItemPath: undefined,
+      selectedCRID: undefined,
       query: { criteria: makeBlankCriteria() },
     }, null, 'item-browser');
 
@@ -130,12 +149,52 @@ export const RegisterItemBrowser: React.FC<
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
-  //const subregisterIsSelected = subregisters !== undefined && selectedItemPathComponents.length === 3;
+  // TODO: Duplicated in Paneron host, move out?
+  const [_operationKey, setOperationKey] = useState<string | undefined>(undefined);
+  const isBusy = _operationKey !== undefined;
+  function performOperation<P extends any[], R>(gerund: string, func: (...opts: P) => Promise<R>) {
+    return async (...opts: P) => {
+      if (_operationKey !== undefined) {
+        console.debug("performOperation: another operation is in progress");
+        return;
+      }
+      const opKey = toaster.show({
+        message: `${gerund}…`,
+        intent: 'primary',
+        icon: <Spinner size={Icon.SIZE_STANDARD} />,
+        timeout: 0,
+      });
+      setOperationKey(opKey);
+      try {
+        const result: R = await func(...opts);
+        toaster.dismiss(opKey);
+        toaster.show({ message: `Done ${gerund}`, intent: 'success', icon: 'tick-circle' });
+        setOperationKey(undefined);
+        return result;
+      } catch (e) {
+        let errMsg: string;
+        if (e.message.indexOf('Error:')) {
+          const msgParts = e.message.split('Error:');
+          errMsg = msgParts[msgParts.length - 1].trim();
+        } else {
+          errMsg = e.message;
+        }
+        toaster.dismiss(opKey);
+        toaster.show({
+          message: `Problem ${gerund}. The error said: “${errMsg}”`,
+          intent: 'danger',
+          icon: 'error',
+          timeout: 0,
+          onDismiss: () => {
+            setOperationKey(undefined);
+          },
+        });
+        throw e;
+      }
+    }
+  }
 
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
-  //const classConfiguration: ItemClassConfigurationSet =
-  //  itemClasses.reduce((o: typeof itemClassConfiguration, k: keyof typeof itemClassConfiguration) =>
-  //  { o[k] = itemClassConfiguration[k]; return o; }, {});
 
   const jumpToItem = (classID: string, itemID: string, subregisterID?: string) => {
     if (subregisters === undefined && subregisterID !== undefined) {
@@ -160,42 +219,48 @@ export const RegisterItemBrowser: React.FC<
       : `/${classID}/${itemID}.yaml`;
 
     dispatch({ type: 'select-item', payload: { itemPath } });
-  }
+  };
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
-  // useEffect(() => {
-  //   if ((selectedClass === undefined && itemClasses.length > 0) ||
-  //       (selectedClass && itemClasses.indexOf(selectedClass) < 0)) {
-  //     selectClass(itemClasses[0]);
-  //   }
-  // }, [JSON.stringify(itemClasses)]);
+  // NOTE: Calls to these functions are guarded by checks
+  // that updateObjects & makeRandomID are specified.
+  async function handleClarifyItem(
+      oldValue: RegisterItem<any>,
+      newValue: RegisterItem<any>,
+      commitMessage: string) {
+    if (!selectedItemRef) {
+      throw new Error("Unable to clarify item: item is not selected");
+    }
+    const objectPath = itemRefToItemPath(selectedItemRef);
+    await updateObjects!({
+      commitMessage,
+      objectChangeset: {
+        [objectPath]: {
+          oldValue,
+          newValue,
+        },
+      },
+    });
+  }
 
-
-  // XXX: QUERY EXPRESSION HANDLING IS HERE
-  // const itemClassPath: string = selectedSubregisterID
-  //   ? `/subregisters/${selectedSubregisterID}/${selectedClass ?? 'NONEXISTENT_CLASS'}/`
-  //   : `/${selectedClass ?? 'NONEXISTENT_CLASS'}/`;
-
-  // const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
-
-  // const normalizedQueryExp = state.queryExpression.trim() || 'return objPath.';
-  // const indexReq = useFilteredIndex({ queryExpression: state.queryExpression });
-  // const indexID: string = indexReq.value.indexID ?? '';
-  // END XXX
-
-
-  //const objectPathsQuery = useObjectPaths({ pathPrefix });
-
-  //const registerItemQuery = objectPathsQuery.value.
-  //  filter(path => path !== '.DS_Store').
-  //  map(path => ({ [path.replace('.yaml', '')]: 'utf-8' as const })).
-  //  reduce((prev, curr) => ({ ...prev, ...curr }), {})
-
-  //const items = useRegisterItemData(registerItemQuery);
-
-  // if (selectedClass === undefined) {
-  //   return <NonIdealState title="Please select item class" />;
+  // async function handleAddItem(
+  //     classID: string,
+  //     subregisterID: string | undefined,
+  //     newValue: RegisterItem<any>,
+  //     commitMessage: string) {
+  //   const itemID = await makeRandomID!();
+  //   const itemRef: InternalItemReference = { classID, subregisterID, itemID };
+  //   const objectPath = itemRefToItemPath(itemRef);
+  //   await updateObjects!({
+  //     commitMessage,
+  //     objectChangeset: {
+  //       [objectPath]: {
+  //         oldValue: null,
+  //         newValue,
+  //       },
+  //     },
+  //   });
   // }
 
   //class ErrorBoundary extends React.Component<Record<never, never>, { error?: string }> {
@@ -270,12 +335,16 @@ export const RegisterItemBrowser: React.FC<
         : undefined}
       toolbar={<SearchQuery
         rootCriteria={state.query.criteria}
-        onChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
+        onCriteriaChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
         viewingMeta={viewingMeta}
         onViewMeta={setViewingMeta}
         itemClasses={itemClassConfiguration}
         availableClassIDs={availableClassIDs}
         subregisters={subregisters}
+        activeCRID={state.selectedCRID}
+        onSelectCR={(crid) => crid
+          ? dispatch({ type: 'enter-cr', payload: { crid } })
+          : dispatch({ type: 'exit-cr' })}
       />}
       getRelatedClassConfig={getRelatedClass}
       useRegisterItemData={useRegisterItemData}
@@ -284,7 +353,8 @@ export const RegisterItemBrowser: React.FC<
     view = <ItemDetails
       itemRef={selectedItemRef}
       itemActions={itemActions}
-      onClose={() => dispatch({ type: 'exit-item' })}
+      onClose={!isBusy ? () => dispatch({ type: 'exit-item' }) : undefined}
+      onChange={!isBusy && updateObjects ? performOperation('saving item changes', handleClarifyItem) : undefined}
     />;
   } else {
     // If item view is requested, but item or class ID is missing,

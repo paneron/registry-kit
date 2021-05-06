@@ -4,8 +4,8 @@
 import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
 import { jsx, css } from '@emotion/core';
-import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
-import { Popover2 } from '@blueprintjs/popover2';
+import { Button, ButtonGroup, Classes, Colors, Tag } from '@blueprintjs/core';
+import { Popover2, Tooltip2 } from '@blueprintjs/popover2';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -17,29 +17,33 @@ import {
   RegistryViewProps,
   RelatedItemClassConfiguration
 } from '../types';
+import { BrowserCtx } from './BrowserCtx';
 import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import CriteriaTree from './FilterCriteria';
 import { CriteriaGroup, CriteriaTransformer } from './FilterCriteria/models';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
+import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 import ItemSummary from './sidebar-blocks/ItemSummary';
 import ItemClass from './sidebar-blocks/ItemClass';
-import { BrowserCtx } from './BrowserCtx';
-import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 
 
 export const SearchQuery: React.FC<{
   rootCriteria: CriteriaGroup
-  onChange?: (rootCriteria: CriteriaGroup) => void
+  onCriteriaChange?: (rootCriteria: CriteriaGroup) => void
   viewingMeta: boolean
   onViewMeta?: (newState: boolean) => void
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   availableClassIDs?: string[]
   subregisters: RegistryViewProps["subregisters"]
+  activeCRID?: string
+  onSelectCR?: (crid: string | undefined) => void
   className?: string
 }> = function ({
   rootCriteria,
-  onChange,
+  onCriteriaChange,
+  activeCRID,
+  onSelectCR,
   viewingMeta,
   onViewMeta,
   itemClasses,
@@ -47,20 +51,18 @@ export const SearchQuery: React.FC<{
   subregisters,
   className,
 }) {
-  const [isExpanded, expand] = useState(false);
   const classIDs = availableClassIDs ?? Object.keys(itemClasses);
   return (
     <ButtonGroup css={css`flex: 1; align-items: center; overflow: hidden;`} className={className}>
       <Popover2
-          isOpen={isExpanded}
-          lazy
           minimal
           popoverClassName="filter-popover"
+          css={css`& { flex: unset !important }`} // BP3 defualt styling stretches popover trigger inside button group.
           content={
             <>
               <CriteriaTree
                 criteria={rootCriteria}
-                onChange={onChange}
+                onChange={onCriteriaChange}
                 itemClasses={itemClasses}
                 availableClassIDs={classIDs}
                 subregisters={subregisters}
@@ -71,36 +73,28 @@ export const SearchQuery: React.FC<{
               </div>
             </>}>
         <Button
-            active={isExpanded}
             title="Edit search criteria"
             icon='filter'
             alignText='left'
-            intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
-            onClick={() => expand(!isExpanded)}>
-          Filter…
+            rightIcon={rootCriteria.criteria.length > 0
+              ? <Tooltip2
+                    placement="right"
+                    minimal
+                    content={<>Showing items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}</>}>
+                  <Tag intent="success" round>on</Tag>
+                </Tooltip2>
+              : <Tag round>showing all items</Tag>}>
+          Filter
         </Button>
       </Popover2>
       {rootCriteria.criteria.length > 0
-        ? <>
-            <Button
-                disabled
-                active={isExpanded}
-                small
-                fill
-                alignText='left'
-                css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}
-                intent={rootCriteria.criteria.length > 0 ? 'warning' : undefined}
-                onClick={() => expand(!isExpanded)}>
-              Showing items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}
-            </Button>
-            <Button
-              disabled={!onChange}
-              icon="filter-remove"
-              minimal small
-              title="Clear query (show all)"
-              onClick={() => onChange!({ criteria: [], require: 'all' })} />
-          </> 
+        ? <Button
+            disabled={!onCriteriaChange}
+            icon="filter-remove"
+            title="Clear query (show all)"
+            onClick={() => onCriteriaChange!({ criteria: [], require: 'all' })} />
         : null}
+      {/*<CRMenu selected={activeCRID} onSelect={onSelectCR} />*/}
       {onViewMeta || viewingMeta
         ? <Button
             icon="settings"
@@ -108,6 +102,7 @@ export const SearchQuery: React.FC<{
             disabled={!onViewMeta}
             title="View or edit dataset metadata"
             onClick={onViewMeta ? () => onViewMeta(!viewingMeta) : undefined}
+            css={css`margin-left: 10px;`}
           />
         : null}
     </ButtonGroup>
@@ -182,12 +177,6 @@ export const RegisterItemGrid: React.FC<{
       }
     });
   }
-
-  useEffect(() => {
-    if (selectedIndexPos !== null && selectedItem === undefined) {
-      selectItemByPosition(selectedIndexPos);
-    }
-  }, [selectedIndexPos, selectedItem]);
 
   const extraData: RegisterItemGridData = {
     useObjectPathFromFilteredIndex,
