@@ -56,9 +56,6 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const classIDs = availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : []);
   const subregisterIDs = availableSubregisterIDs ?? ((itemRef?.subregisterID ?? '') !== '' ? [itemRef!.subregisterID!] : []);
 
-  const defaultClassID = classIDs[0];
-  const effectiveClassID = classID || defaultClassID;
-
   const defaultSubregisterID: string | undefined = subregisterIDs[0];
   const effectiveSubregisterID: string | undefined = defaultSubregisterID;
 
@@ -111,14 +108,13 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
           : null}
       </ButtonGroup>
 
-      {onChange && (classID || defaultClassID)
+      {onChange
         ? <RelatedItemSelectionDialog
             isOpen={selectDialogState}
             onClose={() => setSelectDialogState(false)}
             onChange={onChange}
             onClear={onClear}
             selectedItem={itemRef}
-            selectedClassID={effectiveClassID}
             selectedSubregisterID={effectiveSubregisterID}
             availableClassIDs={classIDs}
             availableSubregisterIDs={subregisterIDs}
@@ -137,7 +133,6 @@ const RelatedItemSelectionDialog: React.FC<{
   onChange: (itemRef: InternalItemReference) => void
   onClear?: () => void
   selectedItem?: InternalItemReference
-  selectedClassID: string
   selectedSubregisterID?: string
   availableClassIDs: string[]
   availableSubregisterIDs: string[]
@@ -145,17 +140,12 @@ const RelatedItemSelectionDialog: React.FC<{
   getRelatedItemClassConfiguration: GenericRelatedItemViewProps["getRelatedItemClassConfiguration"]
 }> = function ({
   isOpen, onClose, onChange, onClear,
-  selectedItem, selectedClassID, selectedSubregisterID,
-  availableClassIDs, availableSubregisterIDs,
+  selectedItem, selectedSubregisterID,
+  availableClassIDs,
   useRegisterItemData, getRelatedItemClassConfiguration,
 }) {
   const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
   const { itemClasses, subregisters } = useContext(BrowserCtx);
-  // const itemClassPath: string = selectedSubregisterID
-  //   ? `/subregisters/${selectedSubregisterID}/${selectedClassID}/`
-  //   : `/${selectedClassID}/`;
-
-  // const queryExpression: string = `return objPath.indexOf("${itemClassPath}") === 0`;
 
   return (
     <Dialog
@@ -166,7 +156,7 @@ const RelatedItemSelectionDialog: React.FC<{
       <RegisterItemGrid
         style={{ height: '90vh', width: '90vw' }}
         selectedItem={selectedItem}
-        selectedSubregisterID={selectedSubregisterID}
+        hasSubregisters={selectedSubregisterID !== undefined ? true : undefined}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
         onSelectItem={(itemRef) => itemRef ? onChange(itemRef) : onClear ? onClear() : void 0}
         onOpenItem={(itemRef) => { onChange(itemRef); onClose(); }}

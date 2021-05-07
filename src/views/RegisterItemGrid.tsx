@@ -116,7 +116,7 @@ export const RegisterItemGrid: React.FC<{
   onOpenItem: (itemRef: InternalItemReference) => void;
   onTransformFilterCriteria?: (transformer: CriteriaTransformer) => void
   queryExpression: string; // Should return just the expressions, no “return” statement etc.
-  selectedSubregisterID?: string;
+  hasSubregisters?: true;
   toolbar: JSX.Element;
   sidebarOverride?: JSX.Element;
 
@@ -131,7 +131,7 @@ export const RegisterItemGrid: React.FC<{
   onOpenItem,
   onTransformFilterCriteria,
   queryExpression,
-  selectedSubregisterID,
+  hasSubregisters,
   toolbar,
   sidebarOverride,
   useRegisterItemData,
@@ -171,7 +171,7 @@ export const RegisterItemGrid: React.FC<{
 
   function selectItemByPosition(pos: string) {
     getObjectPathFromFilteredIndex({ indexID, position: parseInt(pos, 10) }).then(({ objectPath }) => {
-      const itemRef = itemPathToItemRef(selectedSubregisterID !== undefined, objectPath);
+      const itemRef = itemPathToItemRef(hasSubregisters ?? false, objectPath);
       if (itemRef && selectedItem?.itemID !== itemRef.itemID) {
         onSelectItem(itemRef);
       }
@@ -182,7 +182,7 @@ export const RegisterItemGrid: React.FC<{
     useObjectPathFromFilteredIndex,
     selectedItemID: selectedItem?.itemID,
     indexID,
-    hasSubregisters: selectedSubregisterID !== undefined,
+    hasSubregisters: hasSubregisters ?? false,
     useRegisterItemData,
     getRelatedClassConfig,
   };
@@ -207,7 +207,7 @@ export const RegisterItemGrid: React.FC<{
           }
         },
         openItem: async (itemRef) => onOpenItem(itemPathToItemRef(
-          selectedSubregisterID !== undefined,
+          hasSubregisters ?? false,
           (await getObjectPathFromFilteredIndex({ indexID, position: parseInt(itemRef, 10) })).objectPath)),
         cellWidth: CELL_W_PX,
         cellHeight: CELL_H_PX,
