@@ -136,7 +136,7 @@ export const ItemDetails: React.FC<{
 
   const itemActionMenu = itemData && ((actions ?? []).length > 0)
     ? (
-      <ButtonGroup>
+      <ButtonGroup css={css`margin-left: 10px;`}>
         <OverflowList
           items={actions}
           visibleItemRenderer={(action, idx) =>
