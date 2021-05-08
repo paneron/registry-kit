@@ -90,22 +90,21 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
       </ButtonGroup>
 
       <ButtonGroup>
-        {itemID === ''
-          ? onCreateNew
-            ? <Button intent="primary" onClick={handleCreateNew} icon="add">Auto-create</Button>
-            : null
-          : <>
-              <Button
-                icon={item === null && itemID !== '' ? 'error' : 'locate'}
-                disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
-                onClick={() => browserCtx.jumpToItem?.(classID, itemID, subregisterID)} />
-              {onClear
-                ? <Button onClick={onClear} icon="cross" />
-                : null}
-            </>}
         {onChange
           ? <Button disabled={classIDs.length < 1} onClick={() => setSelectDialogState(true)} icon="edit" />
-          : null}
+          : itemID === ''
+            ? onCreateNew
+              ? <Button intent="primary" onClick={handleCreateNew} icon="add">Auto-create</Button>
+              : null
+            : <>
+                <Button
+                  icon={item === null && itemID !== '' ? 'error' : 'locate'}
+                  disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
+                  onClick={() => browserCtx.jumpToItem?.(classID, itemID, subregisterID)} />
+                {onClear
+                  ? <Button onClick={onClear} icon="cross" />
+                  : null}
+              </>}
       </ButtonGroup>
 
       {onChange
