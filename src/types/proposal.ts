@@ -44,14 +44,14 @@ interface BaseProposal {
   type: typeof PROPOSAL_TYPES[number]
 }
 
-interface Addition extends BaseProposal {
+export interface Addition extends BaseProposal {
   type: 'addition'
-  payload: Payload
+  payload: Payload // New item data.
 }
 
-interface Clarification extends BaseProposal {
+export interface Clarification extends BaseProposal {
   type: 'clarification'
-  payload: Payload
+  payload: Payload // Updated item data.
 }
 
 export const AMENDMENT_TYPES = [
@@ -62,13 +62,13 @@ interface BaseAmendment extends BaseProposal {
   type: 'amendment'
   amendmentType: typeof AMENDMENT_TYPES[number]
 }
-interface Retirement extends BaseAmendment {
+export interface Retirement extends BaseAmendment {
   amendmentType: 'retirement'
 }
-interface Supersession extends BaseAmendment {
+export interface Supersession extends BaseAmendment {
   amendmentType: 'supersession'
   supersedingItemID: string
 }
-type Amendment = Supersession | Retirement
+export type Amendment = Supersession | Retirement
 
 export type ChangeProposal = Amendment | Clarification | Addition
