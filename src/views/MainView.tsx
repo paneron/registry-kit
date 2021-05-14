@@ -6,7 +6,7 @@ import { Navbar } from '@blueprintjs/core';
 import { css, jsx } from '@emotion/core';
 
 
-export const MainView: React.FC<{
+const MainView: React.FC<{
   actions?: JSX.Element
   wrapperClassName?: string
   style?: React.CSSProperties
@@ -31,3 +31,6 @@ export const MainView: React.FC<{
     </div>
   );
 };
+
+
+export default MainView;
