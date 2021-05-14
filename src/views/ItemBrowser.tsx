@@ -16,6 +16,7 @@ import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ItemAction,
+  Register,
   RegisterItem,
   RegisterItemDataHook,
   RegistryViewProps,
@@ -29,6 +30,9 @@ import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
+import { RegisterInformation } from './RegisterInformation';
+import { REGISTER_METADATA_FILENAME } from '../common';
+import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 
 
 const toaster = Toaster.create({ position: 'bottom' });
@@ -149,7 +153,7 @@ export const RegisterItemBrowser: React.FC<
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
-  // TODO: Duplicated in Paneron host, move out?
+  // TODO: Duplicated in Paneron host, move to extension kit?
   const [_operationKey, setOperationKey] = useState<string | undefined>(undefined);
   const isBusy = _operationKey !== undefined;
   function performOperation<P extends any[], R>(gerund: string, func: (...opts: P) => Promise<R>) {
@@ -179,19 +183,31 @@ export const RegisterItemBrowser: React.FC<
         } else {
           errMsg = e.message;
         }
-        toaster.dismiss(opKey);
         toaster.show({
           message: `Problem ${gerund}. The error said: “${errMsg}”`,
           intent: 'danger',
           icon: 'error',
           timeout: 0,
           onDismiss: () => {
-            setOperationKey(undefined);
+            if (_operationKey === opKey) {
+              setOperationKey(undefined);
+            }
           },
         });
+        toaster.dismiss(opKey);
         throw e;
       }
     }
+  }
+
+  const changeObjects = performOperation('changing objects', updateObjects!);
+
+  /* This function will prompt the user for justification. */
+  async function makeSelfApprovedCR(opts: { changeset: ObjectChangeset }) {
+    if (!updateObjects) {
+      return;
+    }
+    const op = performOperation("changing items", updateObjects)({ objectChangeset: changeset });
   }
 
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
@@ -223,14 +239,12 @@ export const RegisterItemBrowser: React.FC<
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
-  // NOTE: Calls to these functions are guarded by checks
-  // that updateObjects & makeRandomID are specified.
   async function handleClarifyItem(
       oldValue: RegisterItem<any>,
       newValue: RegisterItem<any>,
       commitMessage: string) {
-    if (!selectedItemRef) {
-      throw new Error("Unable to clarify item: item is not selected");
+    if (!selectedItemRef || !updateObjects) {
+      throw new Error("Unable to clarify item: item is not selected or dataset is read-only");
     }
     const objectPath = itemRefToItemPath(selectedItemRef);
     await updateObjects!({
@@ -239,6 +253,25 @@ export const RegisterItemBrowser: React.FC<
         [objectPath]: {
           oldValue,
           newValue,
+        },
+      },
+    });
+  }
+
+  async function handleEditRegisterInfo(
+    oldValue: Register | null,
+    newValue: Register,
+    justification: string | undefined,
+  ) {
+    if (!updateObjects) {
+      throw new Error("Unable to edit register metadata: dataset is read-only");
+    }
+    await updateObjects({
+      commitMessage: justification ?? "Edit register metadata",
+      objectChangeset: {
+        [REGISTER_METADATA_FILENAME]: {
+          oldValue: oldValue ? oldValue : null,
+          newValue: newValue,
         },
       },
     });
@@ -329,7 +362,7 @@ export const RegisterItemBrowser: React.FC<
             blocks={[{
               key: 'basics',
               title: "Basics",
-              content: <>TBD</>,
+              content: <RegisterInformation onSave={handleEditRegisterInfo} />,
             }]}
           />
         : undefined}
@@ -353,8 +386,12 @@ export const RegisterItemBrowser: React.FC<
     view = <ItemDetails
       itemRef={selectedItemRef}
       itemActions={itemActions}
-      onClose={!isBusy ? () => dispatch({ type: 'exit-item' }) : undefined}
-      onChange={!isBusy && updateObjects ? performOperation('saving item changes', handleClarifyItem) : undefined}
+      onClose={!isBusy
+        ? () => dispatch({ type: 'exit-item' })
+        : undefined}
+      onChange={!isBusy && updateObjects
+        ? performOperation('saving item changes', handleClarifyItem)
+        : undefined}
     />;
   } else {
     // If item view is requested, but item or class ID is missing,
