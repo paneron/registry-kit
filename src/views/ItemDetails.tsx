@@ -16,22 +16,28 @@ import PropertyView from '@riboseinc/paneron-extension-kit/widgets/Sidebar/Prope
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 
 import {
+  Clarification,
   InternalItemReference,
   ItemAction,
   RegisterItem,
+  Retirement,
+  Supersession,
 } from '../types';
 
 import { BrowserCtx } from './BrowserCtx';
 import ItemSummary from './sidebar-blocks/ItemSummary';
 import { Popover2 } from '@blueprintjs/popover2';
 import ItemClass from './sidebar-blocks/ItemClass';
+import GenericRelatedItemView from './GenericRelatedItemView';
+import { itemRefToItemPath } from './itemPathUtils';
+import SelfApprovedCR from './change-request/SelfApprovedCR';
 
 
 export const ItemDetails: React.FC<{
   itemRef: InternalItemReference
   itemActions?: ItemAction[]
   onClose?: () => void
-  onChange?: (oldData: RegisterItem<any>, newData: RegisterItem<any>, commitMessage: string) => Promise<void>
+  onChange?: (opts: { justification: string, controlBodyNotes?: string }) => Promise<void>
   className?: string
   style?: React.CSSProperties
 }> = function ({ itemRef, onClose, onChange, itemActions, className, style }) {
@@ -39,6 +45,8 @@ export const ItemDetails: React.FC<{
 
   const { itemID, classID, subregisterID } = itemRef;
   const [editedItemData, setEditedItemData] = useState<RegisterItem<any>["data"] | null>(null);
+  const [selfApprovedProposal, setSelfApprovedProposal] = useState<Clarification | Supersession | Retirement | null>(null);
+  const [amendmentPromptState, setAmendmentPromptState] = useState(false):
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
@@ -65,6 +73,13 @@ export const ItemDetails: React.FC<{
           disabled: !onChange || !itemData || editedItemData !== null,
           onClick: () => setEditedItemData(JSON.parse(JSON.stringify(itemData!.data))),
           text: "Clarify",
+        }),
+      });
+      actions.push({
+        getButtonProps: () => ({
+          disabled: !onChange || !itemData || editedItemData !== null || amendmentPromptState,
+          onClick: () => setAmendmentPromptState(true),
+          text: "Amend",
         }),
       });
     } else {
@@ -166,16 +181,63 @@ export const ItemDetails: React.FC<{
       )
     : undefined;
 
+  let changePopoverContents: JSX.Element | null;
+  if (amendmentPromptState === true && onChange) {
+    changePopoverContents = <>
+      <Button
+          onClick={() => {
+            const proposal: Retirement = {
+              type: 'amendment',
+              amendmentType: 'retirement',
+            };
+            setSelfApprovedProposal(proposal);
+          }}>
+        Retire
+      </Button>
+      &nbsp;
+      or select a superseding item:
+      &nbsp;
+      <GenericRelatedItemView
+        onChange={(ref) => {
+          const proposal: Supersession = {
+            type: 'amendment',
+            amendmentType: 'supersession',
+            supersedingItemID: itemRefToItemPath(ref),
+          };
+          setSelfApprovedProposal(proposal);
+        }}
+        useRegisterItemData={useRegisterItemData}
+        getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+      />
+    </>;
+  } else if (selfApprovedProposal !== null && onChange) {
+    changePopoverContents = <SelfApprovedCR
+      onConfirm={onChange}
+      onCancel={() => setSelfApprovedProposal(null)}
+      sponsor={sponsor}
+      proposals={{
+        [itemPath]: selfApprovedProposal,
+      }}
+    />;
+  } else {
+    changePopoverContents = null;
+  }
+
   const toolbar = (
     <>
-      <ControlGroup>
-        <Button
-          disabled={!onClose || editedItemData !== null}
-          icon="arrow-left"
-          title="Close item"
-          onClick={onClose} />
-        {itemActionMenu}
-      </ControlGroup>
+      <Popover2
+          isOpen={changePopoverContents !== null}
+          hasBackdrop
+          content={changePopoverContents ?? undefined}>
+        <ControlGroup>
+          <Button
+            disabled={!onClose || editedItemData !== null}
+            icon="arrow-left"
+            title="Close item"
+            onClick={onClose} />
+          {itemActionMenu}
+        </ControlGroup>
+      </Popover2>
     </>
   );
 
