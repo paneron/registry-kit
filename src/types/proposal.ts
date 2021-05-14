@@ -17,7 +17,13 @@ export const DISPOSITION_OPTIONS = [
 export interface ChangeRequest {
   // Supplied by sponsor
   justification: string // Justification for proposal
-  proposals: { [itemIDWithClass: string]: ChangeProposal }
+
+  proposals: {
+    [itemPath: string]: ChangeProposal
+    // item paths must start with a slash
+    // and will be treated relative to dataset root.
+    // Since it is a registry, they’ll look like [/subregisterID]/classID/itemID.yaml
+  }
 
   // Enforced by the system
   id: string
