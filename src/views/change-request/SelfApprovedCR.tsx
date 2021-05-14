@@ -27,7 +27,7 @@ SelfApprovedCRData {
 interface SelfApprovedCRProps {
   proposals: SelfApprovedCRData['proposals']
   sponsor: SelfApprovedCRData['sponsor']
-  onConfirm: (cr: Pick<SelfApprovedCRData, 'justification' | 'controlBodyNotes'>) => void
+  onConfirm: (cr: Pick<ChangeRequest, 'justification' | 'controlBodyNotes'>) => void
   onCancel: () => void
 }
 
