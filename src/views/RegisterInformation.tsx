@@ -1,5 +1,7 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 
+import React from 'react';
 import { jsx, css } from '@emotion/core';
 import update, { Spec } from 'immutability-helper';
 
@@ -8,7 +10,6 @@ import { useState } from 'react';
 import { Button, ControlGroup, FormGroup, HTMLSelect, HTMLTable, InputGroup, TextArea } from '@blueprintjs/core';
 
 import { Locale, Register, RegisterStakeholder, STAKEHOLDER_ROLES } from '../types';
-import { MainView } from './MainView';
 
 
 export const RegisterInformation: React.FC<{
@@ -18,7 +19,9 @@ export const RegisterInformation: React.FC<{
 
   const [editedValue, setEditedValue] = useState<Partial<Register> | null>(null);
 
-  const _r = editedValue || register;
+  const _r = editedValue ?? register;
+
+  const hasChanged = JSON.stringify(editedValue) !== JSON.stringify(register);
 
   function handleSave() {
     if (!onSave) { return; }
@@ -26,15 +29,17 @@ export const RegisterInformation: React.FC<{
     onSave(editedValue, register);
   }
 
-  const saveAction = onSave
-    ? <Button intent="success" onClick={handleSave}>Save</Button>
-    : undefined;
+  const saveAction = onSave && hasChanged
+    ? <Button small outlined fill intent="success" onClick={handleSave}>Save</Button>
+    : null;
 
-  return (
-    <MainView actions={saveAction}>
-      <RegisterForm value={_r || {}} onChange={onSave ? setEditedValue : undefined} />
-    </MainView>
-  );
+  return <>
+    <RegisterForm
+      value={_r ?? {}}
+      onChange={onSave ? setEditedValue : undefined}
+    />
+    {saveAction}
+  </>;
 };
 
 
