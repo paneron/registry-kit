@@ -13,8 +13,8 @@ import { jsx, css } from '@emotion/core';
 import {
   Button, ButtonGroup, Callout, Classes,
   Colors,
-  FormGroup, H4, HTMLSelect, IconName, InputGroup, IOptionProps,
-  ITreeNode, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
+  FormGroup, H4, HTMLSelect, IconName, InputGroup, OptionProps,
+  TreeNode, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -36,7 +36,7 @@ const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
 }
 
 
-export const CHANGE_REQUEST_OPTIONS: Record<string, IOptionProps> = {
+export const CHANGE_REQUEST_OPTIONS: Record<string, OptionProps> = {
   new: { value: 'new', label: "New change request…" },
 } as const;
 
@@ -415,13 +415,13 @@ function ({
     onSelect,
     selectedItem, enableControlBodyInput, enableManagerNotes }) {
 
-  function handleSelect(node: ITreeNode) {
+  function handleSelect(node: TreeNode) {
     onSelect(node.id as string);
   }
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
-  const nodes: ITreeNode[] = [{
+  const nodes: TreeNode[] = [{
     id: 'justification',
     label: "Justification",
     isSelected: selectedItem === 'justification',
