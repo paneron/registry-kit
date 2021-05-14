@@ -46,7 +46,7 @@ export const ItemDetails: React.FC<{
   const { itemID, classID, subregisterID } = itemRef;
   const [editedItemData, setEditedItemData] = useState<RegisterItem<any>["data"] | null>(null);
   const [selfApprovedProposal, setSelfApprovedProposal] = useState<Clarification | Supersession | Retirement | null>(null);
-  const [amendmentPromptState, setAmendmentPromptState] = useState(false):
+  const [amendmentPromptState, setAmendmentPromptState] = useState(false);
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
