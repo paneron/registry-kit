@@ -30,14 +30,14 @@ import { Popover2 } from '@blueprintjs/popover2';
 import ItemClass from './sidebar-blocks/ItemClass';
 import GenericRelatedItemView from './GenericRelatedItemView';
 import { itemRefToItemPath } from './itemPathUtils';
-import SelfApprovedCR from './change-request/SelfApprovedCR';
+import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 
 
 export const ItemDetails: React.FC<{
   itemRef: InternalItemReference
   itemActions?: ItemAction[]
   onClose?: () => void
-  onChange?: (opts: { justification: string, controlBodyNotes?: string }) => Promise<void>
+  onChange?: (opts: SelfApprovedCRData) => Promise<void>
   className?: string
   style?: React.CSSProperties
 }> = function ({ itemRef, onClose, onChange, itemActions, className, style }) {
@@ -49,7 +49,7 @@ export const ItemDetails: React.FC<{
   const [amendmentPromptState, setAmendmentPromptState] = useState(false);
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
-  const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
+  const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
 
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
@@ -70,14 +70,14 @@ export const ItemDetails: React.FC<{
     if (editedItemData === null) {
       actions.push({
         getButtonProps: () => ({
-          disabled: !onChange || !itemData || editedItemData !== null,
+          disabled: !onChange || !itemData || editedItemData !== null || !stakeholder,
           onClick: () => setEditedItemData(JSON.parse(JSON.stringify(itemData!.data))),
           text: "Clarify",
         }),
       });
       actions.push({
         getButtonProps: () => ({
-          disabled: !onChange || !itemData || editedItemData !== null || amendmentPromptState,
+          disabled: !onChange || !itemData || editedItemData !== null || amendmentPromptState || !stakeholder,
           onClick: () => setAmendmentPromptState(true),
           text: "Amend",
         }),
@@ -105,7 +105,12 @@ export const ItemDetails: React.FC<{
       throw new Error("Can’t handle change: missing functions");
     }
     console.debug("Clarifying item", itemData.data, editedItemData);
-    await onChange!(itemData, { ...itemData, data: editedItemData }, "Clarify item");
+    setSelfApprovedProposal
+    const proposal: Clarification = {
+      type: 'clarification',
+      payload: editedItemData,
+    };
+    setSelfApprovedProposal(proposal);
     setEditedItemData(null);
   }
 
@@ -182,7 +187,7 @@ export const ItemDetails: React.FC<{
     : undefined;
 
   let changePopoverContents: JSX.Element | null;
-  if (amendmentPromptState === true && onChange) {
+  if (amendmentPromptState === true && onChange && stakeholder) {
     changePopoverContents = <>
       <Button
           onClick={() => {
@@ -210,11 +215,11 @@ export const ItemDetails: React.FC<{
         getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
       />
     </>;
-  } else if (selfApprovedProposal !== null && onChange) {
+  } else if (selfApprovedProposal !== null && onChange && stakeholder) {
     changePopoverContents = <SelfApprovedCR
-      onConfirm={onChange}
+      onConfirm={(opts) => { onChange(opts); setEditedItemData(null); }}
       onCancel={() => setSelfApprovedProposal(null)}
-      sponsor={sponsor}
+      sponsor={stakeholder}
       proposals={{
         [itemPath]: selfApprovedProposal,
       }}

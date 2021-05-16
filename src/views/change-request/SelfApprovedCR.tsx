@@ -10,7 +10,7 @@ import Proposals from './Proposals';
 import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 
 
-type SelfApprovedCRData =
+export type SelfApprovedCRData =
   Pick<ChangeRequest, 'proposals' | 'justification' | 'controlBodyNotes' | 'sponsor'>;
 
 
@@ -27,7 +27,7 @@ SelfApprovedCRData {
 interface SelfApprovedCRProps {
   proposals: SelfApprovedCRData['proposals']
   sponsor: SelfApprovedCRData['sponsor']
-  onConfirm: (cr: Pick<ChangeRequest, 'justification' | 'controlBodyNotes'>) => void
+  onConfirm: (cr: SelfApprovedCRData) => void
   onCancel: () => void
 }
 
@@ -48,6 +48,8 @@ function ({ proposals, sponsor, onConfirm, onCancel }) {
       onConfirm({
         justification: cr.justification,
         controlBodyNotes: cr.controlBodyNotes,
+        proposals,
+        sponsor,
       });
     }
   }

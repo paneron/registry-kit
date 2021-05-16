@@ -15,10 +15,11 @@ import {
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
+  ChangeRequest,
   ItemAction,
-  Register,
-  RegisterItem,
+  //Register,
   RegisterItemDataHook,
+  RegisterStakeholder,
   RegistryViewProps,
 } from '../types';
 import { _getRelatedClass } from './util';
@@ -30,9 +31,11 @@ import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
-import { RegisterInformation } from './RegisterInformation';
-import { REGISTER_METADATA_FILENAME } from '../common';
+//import { RegisterInformation } from './RegisterInformation';
+//import { REGISTER_METADATA_FILENAME } from '../common';
 import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
+import { SelfApprovedCRData } from './change-request/SelfApprovedCR';
+import { proposalsToObjectChangeset } from './change-request/objectChangeset';
 
 
 const toaster = Toaster.create({ position: 'bottom' });
@@ -91,8 +94,22 @@ export const RegisterItemBrowser: React.FC<
 
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { usePersistentDatasetStateReducer, updateObjects } = ctx;
+  const { usePersistentDatasetStateReducer, updateObjects, makeRandomID } = ctx;
   const [viewingMeta, setViewingMeta] = useState(false);
+
+  const stakeholder: RegisterStakeholder = {
+    role: 'submitter',
+    gitServerUsername: 'demouser',
+    name: 'demo user',
+    parties: [{
+      name: 'Ribose inc.',
+      contacts: [{
+        label: 'email',
+        value: 'open.source@ribose.com',
+      }],
+    }],
+  };
+
   const [ state, dispatch ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     (prevState, action) => {
       switch (action.type) {
@@ -200,15 +217,15 @@ export const RegisterItemBrowser: React.FC<
     }
   }
 
-  const changeObjects = performOperation('changing objects', updateObjects!);
+  //const changeObjects = performOperation('changing objects', updateObjects!);
 
   /* This function will prompt the user for justification. */
-  async function makeSelfApprovedCR(opts: { changeset: ObjectChangeset }) {
-    if (!updateObjects) {
-      return;
-    }
-    const op = performOperation("changing items", updateObjects)({ objectChangeset: changeset });
-  }
+  // async function makeSelfApprovedCR(opts: { changeset: ObjectChangeset }) {
+  //   if (!updateObjects) {
+  //     return;
+  //   }
+  //   const op = performOperation("changing items", updateObjects)({ objectChangeset: changeset });
+  // }
 
   const itemClasses = availableClassIDs ?? Object.keys(itemClassConfiguration);
 
@@ -239,43 +256,73 @@ export const RegisterItemBrowser: React.FC<
 
   const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
-  async function handleClarifyItem(
-      oldValue: RegisterItem<any>,
-      newValue: RegisterItem<any>,
-      commitMessage: string) {
-    if (!selectedItemRef || !updateObjects) {
-      throw new Error("Unable to clarify item: item is not selected or dataset is read-only");
+  //async function handleClarifyItem(
+  //    oldValue: RegisterItem<any>,
+  //    newValue: RegisterItem<any>,
+  //    commitMessage: string) {
+  //  if (!selectedItemRef || !updateObjects) {
+  //    throw new Error("Unable to clarify item: item is not selected or dataset is read-only");
+  //  }
+  //  const objectPath = itemRefToItemPath(selectedItemRef);
+  //  await updateObjects!({
+  //    commitMessage,
+  //    objectChangeset: {
+  //      [objectPath]: {
+  //        oldValue,
+  //        newValue,
+  //      },
+  //    },
+  //  });
+  //}
+
+  async function handleSaveAndApprove(cr: SelfApprovedCRData) {
+    if (!updateObjects || !makeRandomID) {
+      throw new Error("Unable to save and approve: dataset is read-only");
     }
-    const objectPath = itemRefToItemPath(selectedItemRef);
-    await updateObjects!({
-      commitMessage,
-      objectChangeset: {
-        [objectPath]: {
-          oldValue,
-          newValue,
-        },
+    const id = await makeRandomID();
+    const crObjectPath = `change-requests/${id}.yaml`;
+    const commitMessage: string = `save and approve: ${cr.justification}`;
+    const now = new Date();
+    const fullCR: ChangeRequest = {
+      ...cr,
+      id,
+      timeStarted: now,
+      timeProposed: now,
+      timeDisposed: now,
+      status: 'final',
+      disposition: 'accepted',
+    };
+    const objectChangeset: ObjectChangeset = {
+      [crObjectPath]: {
+        oldValue: null,
+        newValue: fullCR,
       },
+      ...proposalsToObjectChangeset(cr.proposals),
+    };
+    await updateObjects({
+      commitMessage,
+      objectChangeset,
     });
   }
 
-  async function handleEditRegisterInfo(
-    oldValue: Register | null,
-    newValue: Register,
-    justification: string | undefined,
-  ) {
-    if (!updateObjects) {
-      throw new Error("Unable to edit register metadata: dataset is read-only");
-    }
-    await updateObjects({
-      commitMessage: justification ?? "Edit register metadata",
-      objectChangeset: {
-        [REGISTER_METADATA_FILENAME]: {
-          oldValue: oldValue ? oldValue : null,
-          newValue: newValue,
-        },
-      },
-    });
-  }
+  //async function handleEditRegisterInfo(
+  //  oldValue: Register | null,
+  //  newValue: Register,
+  //  justification: string | undefined,
+  //) {
+  //  if (!updateObjects) {
+  //    throw new Error("Unable to edit register metadata: dataset is read-only");
+  //  }
+  //  await updateObjects({
+  //    commitMessage: justification ?? "Edit register metadata",
+  //    objectChangeset: {
+  //      [REGISTER_METADATA_FILENAME]: {
+  //        oldValue: oldValue ? oldValue : null,
+  //        newValue: newValue,
+  //      },
+  //    },
+  //  });
+  //}
 
   // async function handleAddItem(
   //     classID: string,
@@ -362,7 +409,7 @@ export const RegisterItemBrowser: React.FC<
             blocks={[{
               key: 'basics',
               title: "Basics",
-              content: <RegisterInformation onSave={handleEditRegisterInfo} />,
+              content: <></>//<RegisterInformation onSave={handleEditRegisterInfo} />,
             }]}
           />
         : undefined}
@@ -390,7 +437,7 @@ export const RegisterItemBrowser: React.FC<
         ? () => dispatch({ type: 'exit-item' })
         : undefined}
       onChange={!isBusy && updateObjects
-        ? performOperation('saving item changes', handleClarifyItem)
+        ? performOperation('saving & approving changes', handleSaveAndApprove)
         : undefined}
     />;
   } else {
@@ -406,6 +453,7 @@ export const RegisterItemBrowser: React.FC<
           jumpToItem,
           itemClasses: itemClassConfiguration,
           subregisters,
+          stakeholder,
           useRegisterItemData,
           getRelatedItemClassConfiguration: getRelatedClass,
         }}>
