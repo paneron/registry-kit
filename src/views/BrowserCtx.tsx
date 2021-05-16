@@ -2,12 +2,13 @@
 
 import { jsx } from '@emotion/core';
 import { createContext } from 'react';
-import { ItemClassConfigurationSet, RegisterItemDataHook, RelatedItemClassConfiguration, Subregisters } from '../types';
+import { ItemClassConfigurationSet, RegisterItemDataHook, RegisterStakeholder, RelatedItemClassConfiguration, Subregisters } from '../types';
 
 
 export type BrowserCtx = {
   itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
+  stakeholder?: RegisterStakeholder // If current user is not a stakeholder, this is undefined.
   useRegisterItemData: RegisterItemDataHook
   jumpToItem?: (classID: string, itemID: string, subregisterID?: string) => void;
   getRelatedItemClassConfiguration: (clsID: string) => RelatedItemClassConfiguration
@@ -15,6 +16,7 @@ export type BrowserCtx = {
 
 export const BrowserCtx = createContext<BrowserCtx>({
   itemClasses: {},
+  stakeholder: undefined,
   useRegisterItemData: () => ({
     value: {},
     _reqCounter: -1,
