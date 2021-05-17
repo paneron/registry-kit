@@ -235,7 +235,11 @@ export const ItemDetails: React.FC<{
   } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null) {
     changePopoverContents = <SelfApprovedCR
       css={css`width: 80vw; height: 80vh;`}
-      onConfirm={(opts) => { onChange(opts, { [itemPath]: itemData }); setEditedItemData(null); }}
+      onConfirm={async (opts) => {
+        await onChange(opts, { [itemPath]: itemData });
+        setSelfApprovedProposal(null);
+        setEditedItemData(null);
+      }}
       onCancel={() => setSelfApprovedProposal(null)}
       sponsor={stakeholder}
       proposals={{
