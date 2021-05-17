@@ -37,7 +37,7 @@ export const ItemDetails: React.FC<{
   itemRef: InternalItemReference
   itemActions?: ItemAction[]
   onClose?: () => void
-  onChange?: (opts: SelfApprovedCRData) => Promise<void>
+  onChange?: (opts: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) => Promise<void>
   className?: string
   style?: React.CSSProperties
 }> = function ({ itemRef, onClose, onChange, itemActions, className, style }) {
@@ -86,7 +86,7 @@ export const ItemDetails: React.FC<{
       actions.push({
         getButtonProps: () => ({
           disabled: !isEdited,
-          onClick: handleChange,
+          onClick: handleClarify,
           intent: isEdited ? 'primary' : undefined,
           text: "Save",
         })
@@ -100,18 +100,27 @@ export const ItemDetails: React.FC<{
     }
   }
 
-  async function handleChange() {
+  function handleAddProposal(proposal: Clarification | Supersession | Retirement) {
+    if (!onChange) {
+      throw new Error("Can’t add proposal: missing change handler (possibly read-only dataset)");
+    }
+    if (!itemData) {
+      throw new Error("Can’t add proposal: missing original item data");
+    }
+    if (proposal.type === 'clarification' && (!editedItemData || !isEdited)) {
+      throw new Error("Can’t add clarification proposal: missing edited item data");
+    }
+    setSelfApprovedProposal(proposal);
+  }
+
+  async function handleClarify() {
     if (!isEdited || !itemData || !onChange || !editedItemData) {
       throw new Error("Can’t handle change: missing functions");
     }
-    console.debug("Clarifying item", itemData.data, editedItemData);
-    setSelfApprovedProposal
-    const proposal: Clarification = {
+    handleAddProposal({
       type: 'clarification',
       payload: editedItemData,
-    };
-    setSelfApprovedProposal(proposal);
-    setEditedItemData(null);
+    });
   }
 
   if (!itemClass) {
@@ -187,35 +196,47 @@ export const ItemDetails: React.FC<{
   let changePopoverContents: JSX.Element | null;
   if (amendmentPromptState === true && onChange && stakeholder) {
     changePopoverContents = <>
+      <div css={css`display: flex; flex-flow: row nowrap; align-items: center; white-space: nowrap; width: 80vw;`}>
+        <Button
+            css={css`flex-shrink: 0;`}
+            onClick={() => {
+              setAmendmentPromptState(false);
+              handleAddProposal({
+                type: 'amendment',
+                amendmentType: 'retirement',
+              });
+            }}>
+          Retire
+        </Button>
+        &nbsp;
+        or select a superseding item:
+        &nbsp;
+        <GenericRelatedItemView
+          onChange={(ref) => {
+            setAmendmentPromptState(false);
+            handleAddProposal({
+              type: 'amendment',
+              amendmentType: 'supersession',
+              supersedingItemID: itemRefToItemPath(ref),
+            });
+          }}
+          availableClassIDs={[itemRef.classID]}
+          useRegisterItemData={useRegisterItemData}
+          getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+        />
+      </div>
       <Button
           onClick={() => {
-            const proposal: Retirement = {
-              type: 'amendment',
-              amendmentType: 'retirement',
-            };
-            setSelfApprovedProposal(proposal);
+            setAmendmentPromptState(false);
+            setSelfApprovedProposal(null);
           }}>
-        Retire
+        Cancel
       </Button>
-      &nbsp;
-      or select a superseding item:
-      &nbsp;
-      <GenericRelatedItemView
-        onChange={(ref) => {
-          const proposal: Supersession = {
-            type: 'amendment',
-            amendmentType: 'supersession',
-            supersedingItemID: itemRefToItemPath(ref),
-          };
-          setSelfApprovedProposal(proposal);
-        }}
-        useRegisterItemData={useRegisterItemData}
-        getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
-      />
     </>;
-  } else if (selfApprovedProposal !== null && onChange && stakeholder) {
+  } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null) {
     changePopoverContents = <SelfApprovedCR
-      onConfirm={(opts) => { onChange(opts); setEditedItemData(null); }}
+      css={css`width: 80vw; height: 80vh;`}
+      onConfirm={(opts) => { onChange(opts, { [itemPath]: itemData }); setEditedItemData(null); }}
       onCancel={() => setSelfApprovedProposal(null)}
       sponsor={stakeholder}
       proposals={{
@@ -231,7 +252,11 @@ export const ItemDetails: React.FC<{
       <Popover2
           isOpen={changePopoverContents !== null}
           hasBackdrop
-          content={changePopoverContents ?? undefined}>
+          position="bottom"
+          minimal
+          content={changePopoverContents
+            ? <div css={css`padding: 10px;`}>{changePopoverContents}</div>
+            : undefined}>
         <ControlGroup>
           <Button
             disabled={!onClose || editedItemData !== null}
