@@ -62,7 +62,7 @@ type RegisterItemSource = PaneronRegisterItemSource | ExternalSource
 
 export interface RegisterItem<P extends Payload> {
   id: string // UUID
-  status: string
+  status: ItemStatus
   dateAccepted: Date
   data: P // Register item data, may include additional human identifiers
   source?: RegisterItemSource
