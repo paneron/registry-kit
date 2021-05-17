@@ -166,7 +166,7 @@ const RelatedItemSelectionDialog: React.FC<{
         style={{ padding: '0', width: 'unset' }}>
       <RegisterItemGrid
         style={{ height: '90vh', width: '90vw' }}
-        selectedItem={selectedItem}
+        selectedItem={selectedItem ?? undefined /* NOTE: for some reason it can be null; this is wrong */}
         hasSubregisters={selectedSubregisterID !== undefined ? true : undefined}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
         onSelectItem={(itemRef) => itemRef ? onChange(itemRef) : onClear ? onClear() : void 0}
