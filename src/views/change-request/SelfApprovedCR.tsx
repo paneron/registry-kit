@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useState } from 'react';
-import { jsx } from '@emotion/core';
+import { jsx, css } from '@emotion/core';
 import { Button, ButtonGroup, FormGroup } from '@blueprintjs/core';
 import { ChangeRequest } from '../../types';
 import Justification from './Justification';
@@ -29,6 +29,7 @@ interface SelfApprovedCRProps {
   sponsor: SelfApprovedCRData['sponsor']
   onConfirm: (cr: SelfApprovedCRData) => void
   onCancel: () => void
+  className?: string
 }
 
 /* A form for creating a self-approved change request
@@ -39,7 +40,7 @@ interface SelfApprovedCRProps {
    - it should contain either one changed item,
      or same edit applied to multiple items in a batch. */
 const SelfApprovedCR: React.FC<SelfApprovedCRProps> =
-function ({ proposals, sponsor, onConfirm, onCancel }) {
+function ({ proposals, sponsor, onConfirm, onCancel, className }) {
   const [cr, updateCR] = useState<SelfApprovedCRData>(
     makeTemplate({ proposals, sponsor }));
 
@@ -57,8 +58,14 @@ function ({ proposals, sponsor, onConfirm, onCancel }) {
   const canConfirm = cr.justification.trim() !== '';
 
   return (
-    <>
-      <Proposals proposals={proposals} />
+    <div
+        css={css`
+          display: flex; flex-flow: column nowrap;
+          /* workaround */
+          span.bp3-popover-target { display: unset; }
+        `}
+        className={className}>
+      <Proposals proposals={proposals} css={css`flex: 1;`} />
       <Justification
         justification={cr.justification}
         onChange={justification => updateCR(cr => ({ ...cr, justification }))}
@@ -77,7 +84,7 @@ function ({ proposals, sponsor, onConfirm, onCancel }) {
           Cancel
         </Button>
       </ButtonGroup>
-    </>
+    </div>
   );
 };
 
