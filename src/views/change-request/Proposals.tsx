@@ -2,7 +2,8 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext, useEffect, useState } from 'react';
-import { jsx } from '@emotion/core';
+import { jsx, css } from '@emotion/core';
+import styled from '@emotion/styled';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { MenuItem, NonIdealState } from '@blueprintjs/core';
 import { ItemRenderer, Select } from '@blueprintjs/select';
@@ -17,7 +18,7 @@ import {
 } from '../../types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
-import InlineDiff from '../InlineDiff';
+import StructuredDiff from '../diffing/StructuredDiff';
 
 
 interface ChangeProposalItem {
@@ -33,7 +34,8 @@ const ChangeProposalSelect = Select.ofType<ChangeProposalItem>();
 const Proposals: React.FC<{
   proposals: ChangeRequest['proposals']
   onChange?: (newProposals: ChangeRequest['proposals']) => void
-}> = function ({ proposals, onChange }) {
+  className?: string
+}> = function ({ proposals, onChange, className }) {
   const [selectedProposal, selectProposal] = useState<string | null>(null);
   const { subregisters } = useContext(BrowserCtx);
 
@@ -44,8 +46,12 @@ const Proposals: React.FC<{
     }
   }, [JSON.stringify(proposals)]);
 
+  const selectedItemRef = selectedProposal
+    ? itemPathToItemRef(subregisters !== undefined, selectedProposal)
+    : null;
+
   return (
-    <>
+    <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
       {Object.keys(proposals).length > 0
         ? <ChangeProposalSelect
             items={
@@ -59,31 +65,36 @@ const Proposals: React.FC<{
             onItemSelect={(item) => selectProposal(item.itemPath)}
           />
         : null}
-      {selectedProposal
-        ? <Proposal
-            itemRef={itemPathToItemRef(subregisters !== undefined, selectedProposal)}
-            proposal={proposals[selectedProposal]}
-          />
+      {selectedProposal && selectedItemRef
+        ? <>
+            <div css={css`margin-bottom: 10px;`}>
+              <ProposalSummary
+                itemRef={selectedItemRef}
+                proposal={proposals[selectedProposal]}
+              />
+            </div>
+            <div css={css`position: relative; flex: 1;`}>
+              <ProposalDetail
+                itemRef={selectedItemRef}
+                proposal={proposals[selectedProposal]}
+              />
+            </div>
+          </>
         : <NonIdealState description="No proposal to show." />}
-    </>
+    </div>
   );
 };
 
 
 const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
 (item, { handleClick, modifiers, query }) => {
-  const View: React.FC<ProposalProps<any>> =
-    item.proposal.type === 'amendment'
-      ? PROPOSAL_VIEWS[item.proposal.amendmentType].summary
-      : PROPOSAL_VIEWS[item.proposal.type].summary;
-
   return (
     <MenuItem
       active={modifiers.active}
       disabled={modifiers.disabled}
       key={item.itemPath}
       onClick={handleClick}
-      text={<View proposal={item.proposal} itemRef={item.itemRef} />} />
+      text={<ProposalSummary proposal={item.proposal} itemRef={item.itemRef} />} />
   );
 }
 
@@ -93,7 +104,16 @@ interface ProposalProps<P extends ChangeProposal> {
   itemRef: InternalItemReference
   onChange?: (newProposal: P) => void
 }
-export const Proposal: React.FC<ProposalProps<ChangeProposal>> =
+export const ProposalDetail: React.FC<ProposalProps<ChangeProposal>> =
+function ({ proposal, itemRef, onChange }) {
+  const View: React.FC<ProposalProps<any>> =
+    proposal.type === 'amendment'
+      ? PROPOSAL_VIEWS[proposal.amendmentType].detail
+      : PROPOSAL_VIEWS[proposal.type].detail;
+
+  return <View itemRef={itemRef} proposal={proposal} />;
+};
+export const ProposalSummary: React.FC<ProposalProps<ChangeProposal>> =
 function ({ proposal, itemRef, onChange }) {
   const View: React.FC<ProposalProps<any>> =
     proposal.type === 'amendment'
@@ -113,7 +133,8 @@ interface ProposalViewConfig<P extends ChangeProposal> {
 }
 
 
-const SimpleProposalDetailView: React.FC<ProposalProps<any>> =
+// TODO: De-duplicate these or otherwise refactor  given time.
+const SimpleProposalDetailView: React.FC<ProposalProps<Addition>> =
 function ({ proposal, itemRef, onChange }) {
   const {
     useRegisterItemData,
@@ -128,26 +149,43 @@ function ({ proposal, itemRef, onChange }) {
     itemData={proposal.payload}
   />;
 };
+const SimpleItemDetailView: React.FC<ProposalProps<Retirement>> =
+function ({ itemRef, onChange }) {
+  const {
+    useRegisterItemData,
+    getRelatedItemClassConfiguration,
+    itemClasses,
+  } = useContext(BrowserCtx);
+  const { classID } = itemRef;
+  const itemPath = itemRefToItemPath(itemRef);
+  const originalItemResp = useRegisterItemData({
+    itemPaths: [itemPath]
+  });
+  const originalItem = originalItemResp.value[itemPath];
+  if (!originalItem?.data) {
+    return <NonIdealState title="Original item data could not be retrieved" />;
+  }
+  const DetailView = itemClasses[classID].views.detailView ?? itemClasses[classID].views.editView;
+  return <DetailView
+    useRegisterItemData={useRegisterItemData}
+    getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+    itemData={originalItem.data}
+  />;
+};
 
 
 const clarification: ProposalViewConfig<Clarification> = {
   detail: ({ proposal, itemRef, onChange }) => {
-    const {
-      useRegisterItemData,
-      itemClasses,
-    } = useContext(BrowserCtx);
-    const { classID } = itemRef;
+    const { useRegisterItemData } = useContext(BrowserCtx);
     const itemPath = itemRefToItemPath(itemRef);
     const originalItemResp = useRegisterItemData({
       itemPaths: [itemPath]
     });
     const originalItem = originalItemResp.value[itemPath];
-    if (!originalItem) {
+    if (!originalItem?.data) {
       return <NonIdealState title="Original item data could not be retrieved" />;
     }
-    const DetailView = itemClasses[classID].views.detailView ?? itemClasses[classID].views.editView;
-    return <InlineDiff
-      DetailView={DetailView}
+    return <MaximizedStructuredDiff
       item1={originalItem.data}
       item2={proposal.payload}
     />;
@@ -189,7 +227,7 @@ const addition: ProposalViewConfig<Addition> = {
 
 
 const retirement: ProposalViewConfig<Retirement> = {
-  detail: SimpleProposalDetailView,
+  detail: SimpleItemDetailView,
   summary: ({ proposal, itemRef }) => {
     const {
       useRegisterItemData,
@@ -202,8 +240,8 @@ const retirement: ProposalViewConfig<Retirement> = {
       itemPaths: [itemPath]
     });
     const originalItem = originalItemResp.value[itemPath];
-    if (!originalItem) {
-      return <>(item view not available)</>;
+    if (!originalItem?.data) {
+      return <>(item data is not available)</>;
     }
     const ListItemView = itemClasses[classID].views.listItemView;
     return <>Retirement of <ListItemView
@@ -217,11 +255,7 @@ const retirement: ProposalViewConfig<Retirement> = {
 
 const supersession: ProposalViewConfig<Supersession> = {
   detail: ({ proposal, itemRef }) => {
-    const {
-      useRegisterItemData,
-      itemClasses,
-    } = useContext(BrowserCtx);
-    const { classID } = itemRef;
+    const { useRegisterItemData } = useContext(BrowserCtx);
     const originalItemPath = itemRefToItemPath(itemRef);
     const supersedingItemPath = itemRefToItemPath({
       classID: itemRef.classID,
@@ -232,16 +266,14 @@ const supersession: ProposalViewConfig<Supersession> = {
       itemPaths: [originalItemPath, supersedingItemPath],
     });
     const originalItem = itemDataResp.value[originalItemPath];
-    if (!originalItem) {
+    if (!originalItem?.data) {
       return <NonIdealState title="Original item data could not be retrieved" />;
     }
     const supersedingItem = itemDataResp.value[supersedingItemPath];
-    if (!supersedingItem) {
-      return <NonIdealState title="Original item data could not be retrieved" />;
+    if (!supersedingItem?.data) {
+      return <NonIdealState title="Superseding item data could not be retrieved" />;
     }
-    const DetailView = itemClasses[classID].views.detailView ?? itemClasses[classID].views.editView;
-    return <InlineDiff
-      DetailView={DetailView}
+    return <MaximizedStructuredDiff
       item1={originalItem.data}
       item2={supersedingItem.data}
     />;
@@ -269,6 +301,11 @@ const supersession: ProposalViewConfig<Supersession> = {
       getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} /></>;
   },
 }
+
+
+const MaximizedStructuredDiff = styled(StructuredDiff)`
+  position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+`;
 
 
 const PROPOSAL_VIEWS: { [type in PROPOSAL_TYPE_ID]: ProposalViewConfig<any> } = {
