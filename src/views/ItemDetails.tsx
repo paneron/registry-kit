@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
 
@@ -51,6 +51,11 @@ export const ItemDetails: React.FC<{
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
+
+  useEffect(() => {
+    setSelfApprovedProposal(null);
+    setAmendmentPromptState(false);
+  }, [JSON.stringify(itemRef)]);
 
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
