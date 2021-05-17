@@ -202,7 +202,7 @@ export const ItemDetails: React.FC<{
   let changePopoverContents: JSX.Element | null;
   if (amendmentPromptState === true && onChange && stakeholder) {
     changePopoverContents = <>
-      <div css={css`display: flex; flex-flow: column nowrap; white-space: nowrap;`}>
+      <div css={css`display: flex; flex-flow: column nowrap; white-space: nowrap; margin-bottom: 10px;`}>
         <Button
             css={css`flex-shrink: 0;`}
             onClick={() => {
