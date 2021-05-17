@@ -68,13 +68,12 @@ function ({ proposals, sponsor, onConfirm, onCancel }) {
       </FormGroup>
       <ButtonGroup>
         <Button
-            outlined
-            intent="primary"
+            intent={canConfirm ? "primary" : undefined}
             disabled={!canConfirm}
             onClick={handleConfirm}>
           Save and approve
         </Button>
-        <Button outlined onClick={() => onCancel()}>
+        <Button onClick={() => onCancel()}>
           Cancel
         </Button>
       </ButtonGroup>
