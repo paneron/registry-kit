@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { MenuItem, NonIdealState } from '@blueprintjs/core';
+import { Classes, MenuItem, NonIdealState } from '@blueprintjs/core';
 import { ItemRenderer, Select } from '@blueprintjs/select';
 import {
   Addition,
@@ -167,6 +167,8 @@ function ({ itemRef, onChange }) {
   }
   const DetailView = itemClasses[classID].views.detailView ?? itemClasses[classID].views.editView;
   return <DetailView
+    css={css`background: white; border-radius: 5px; margin: 0 -30px;`}
+    className={Classes.ELEVATION_2}
     useRegisterItemData={useRegisterItemData}
     getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
     itemData={originalItem.data}
@@ -304,7 +306,7 @@ const supersession: ProposalViewConfig<Supersession> = {
 
 
 const MaximizedStructuredDiff = styled(StructuredDiff)`
-  position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+  position: absolute; top: 0; left: 0; bottom: 10px; right: 0;
 `;
 
 

@@ -12,7 +12,7 @@ const Justification: React.FC<{
 }> = function ({ justification, onChange }) {
   return (
     <FormGroup
-        label="Justification"
+        label="Justification:"
         labelInfo="(required)"
         helperText="For an immediately approved change request, justification would typically be short."
         intent={justification.trim() === '' ? 'danger' : undefined}>

@@ -65,7 +65,7 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
           span.bp3-popover-target { display: unset; }
         `}
         className={className}>
-      <Proposals proposals={proposals} css={css`flex: 1;`} />
+      <Proposals proposals={proposals} css={css`flex: 1; margin-bottom: 20px;`} />
       <Justification
         justification={cr.justification}
         onChange={justification => updateCR(cr => ({ ...cr, justification }))}

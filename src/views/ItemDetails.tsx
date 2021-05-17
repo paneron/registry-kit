@@ -7,6 +7,7 @@ import styled from '@emotion/styled';
 
 import {
   Button, ButtonGroup, /*Callout,*/ Classes, ControlGroup,
+  Dialog,
   InputGroup, Menu, MenuItem, NonIdealState, OverflowList
 } from '@blueprintjs/core';
 
@@ -167,6 +168,7 @@ export const ItemDetails: React.FC<{
     ? <ButtonGroup css={css`margin-left: 10px;`}>
         <OverflowList
           items={actions}
+          className="bp3-button-group"
           visibleItemRenderer={(action, idx) =>
             <Button key={idx} {...action.getButtonProps(itemData, itemClass)} />
           }
@@ -196,7 +198,7 @@ export const ItemDetails: React.FC<{
   let changePopoverContents: JSX.Element | null;
   if (amendmentPromptState === true && onChange && stakeholder) {
     changePopoverContents = <>
-      <div css={css`display: flex; flex-flow: row nowrap; align-items: center; white-space: nowrap; width: 80vw;`}>
+      <div css={css`display: flex; flex-flow: column nowrap; white-space: nowrap;`}>
         <Button
             css={css`flex-shrink: 0;`}
             onClick={() => {
@@ -208,16 +210,16 @@ export const ItemDetails: React.FC<{
             }}>
           Retire
         </Button>
-        &nbsp;
-        or select a superseding item:
-        &nbsp;
+
+        <div css={css`margin: 10px 0;`}>…or select a superseding item:</div>
+
         <GenericRelatedItemView
           onChange={(ref) => {
             setAmendmentPromptState(false);
             handleAddProposal({
               type: 'amendment',
               amendmentType: 'supersession',
-              supersedingItemID: itemRefToItemPath(ref),
+              supersedingItemID: ref.itemID,
             });
           }}
           availableClassIDs={[itemRef.classID]}
@@ -225,13 +227,6 @@ export const ItemDetails: React.FC<{
           getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
         />
       </div>
-      <Button
-          onClick={() => {
-            setAmendmentPromptState(false);
-            setSelfApprovedProposal(null);
-          }}>
-        Cancel
-      </Button>
     </>;
   } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null) {
     changePopoverContents = <SelfApprovedCR
@@ -248,25 +243,24 @@ export const ItemDetails: React.FC<{
   }
 
   const toolbar = (
-    <>
-      <Popover2
+    <ControlGroup>
+      <Button
+        disabled={!onClose || editedItemData !== null}
+        icon="arrow-left"
+        title="Close item"
+        onClick={onClose} />
+      {itemActionMenu}
+      <Dialog
           isOpen={changePopoverContents !== null}
-          hasBackdrop
-          position="bottom"
-          minimal
-          content={changePopoverContents
-            ? <div css={css`padding: 10px;`}>{changePopoverContents}</div>
-            : undefined}>
-        <ControlGroup>
-          <Button
-            disabled={!onClose || editedItemData !== null}
-            icon="arrow-left"
-            title="Close item"
-            onClick={onClose} />
-          {itemActionMenu}
-        </ControlGroup>
-      </Popover2>
-    </>
+          style={{ width: 'unset', padding: 0 }}
+          canEscapeKeyClose
+          canOutsideClickClose
+          hasBackdrop>
+        {changePopoverContents
+          ? <div css={css`padding: 20px;`}>{changePopoverContents}</div>
+          : undefined}
+      </Dialog>
+    </ControlGroup>
   );
 
   const sidebar = <Sidebar 
@@ -323,7 +317,7 @@ export const ItemDetails: React.FC<{
         className={className}
         sidebar={sidebar}
         toolbar={toolbar}>
-      <ItemDetailsWrapperDiv css={css`flex: 1;`}>
+      <ItemDetailsWrapperDiv css={css`flex: 1;`} className={Classes.ELEVATION_1}>
         {details}
       </ItemDetailsWrapperDiv>
     </Workspace>
