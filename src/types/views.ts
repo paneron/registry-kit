@@ -105,9 +105,12 @@ export type ItemEditView<P> = React.FC<RegistryItemViewProps<P> & {
   onChange?: (newData: P) => void
   onCreateRelatedItem?: (classID: string, subregisterID?: string) => Promise<InternalItemReference>
 }>;
-export type ItemDetailView<P> = React.FC<RegistryItemViewProps<P> & {
+
+export interface ItemDetailViewProps<P> extends RegistryItemViewProps<P> {
   useRegisterItemData: RegisterItemDataHook
-}>;
+}
+
+export type ItemDetailView<P> = React.FC<ItemDetailViewProps<P>>;
 
 export interface ItemListViewProps<P> extends RegistryItemViewProps<P> {
   itemID: string
