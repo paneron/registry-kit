@@ -75,7 +75,7 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
       </FormGroup>
       <ButtonGroup>
         <Button
-            intent={canConfirm ? "primary" : undefined}
+            intent={canConfirm ? "success" : undefined}
             disabled={!canConfirm}
             onClick={handleConfirm}>
           Save and approve
