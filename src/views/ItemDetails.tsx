@@ -30,7 +30,6 @@ import ItemSummary from './sidebar-blocks/ItemSummary';
 import { Popover2 } from '@blueprintjs/popover2';
 import ItemClass from './sidebar-blocks/ItemClass';
 import GenericRelatedItemView from './GenericRelatedItemView';
-import { itemRefToItemPath } from './itemPathUtils';
 import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 
 
