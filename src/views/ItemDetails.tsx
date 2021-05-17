@@ -231,6 +231,8 @@ export const ItemDetails: React.FC<{
           getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
         />
       </div>
+
+      <Button onClick={() => setAmendmentPromptState(false)}>Cancel</Button>
     </>;
   } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null) {
     changePopoverContents = <SelfApprovedCR
