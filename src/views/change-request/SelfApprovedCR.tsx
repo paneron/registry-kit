@@ -63,7 +63,7 @@ function ({ proposals, sponsor, onConfirm, onCancel }) {
         justification={cr.justification}
         onChange={justification => updateCR(cr => ({ ...cr, justification }))}
       />
-      <FormGroup inline label="Sponsor:">
+      <FormGroup label="Sponsor:">
         <RegisterStakeholderListItem stakeholder={sponsor} isCurrentUser />
       </FormGroup>
       <ButtonGroup>
