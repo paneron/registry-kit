@@ -65,7 +65,7 @@ const Proposals: React.FC<{
             onItemSelect={(item) => selectProposal(item.itemPath)}
           />
         : null}
-      {selectedProposal && selectedItemRef
+      {selectedProposal && selectedItemRef && proposals[selectedProposal]
         ? <>
             <div css={css`margin-bottom: 10px;`}>
               <ProposalSummary
