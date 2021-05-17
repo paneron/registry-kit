@@ -17,6 +17,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeRequest,
   ItemAction,
+  RegisterItem,
   //Register,
   RegisterItemDataHook,
   RegisterStakeholder,
@@ -46,8 +47,6 @@ interface Query {
 }
 type Action =
   | { type: 'update-query'; payload: { query: Query; }; }
-  | { type: 'enter-cr'; payload: { crid: string; }; }
-  | { type: 'exit-cr' }
   | { type: 'select-item'; payload: { itemPath: string | undefined; }; }
   | { type: 'open-item'; payload: { itemPath: string; }; }
   //| { type: 'select-class', payload: { classID: string | undefined } }
@@ -59,7 +58,6 @@ type Action =
 interface BaseState {
   view: 'item' | 'grid';
   selectedItemPath: string | undefined;
-  selectedCRID: string | undefined;
   query: Query;
 }
 interface ItemState extends BaseState {
@@ -144,23 +142,12 @@ export const RegisterItemBrowser: React.FC<
             ...prevState,
             view: 'grid',
           };
-        case 'enter-cr':
-          return {
-            ...prevState,
-            selectedCRID: action.payload.crid,
-          };
-        case 'exit-cr':
-          return {
-            ...prevState,
-            selectedCRID: undefined,
-          };
         default:
           throw new Error("Unexpected register item browser state");
       }
     }, {
       view: 'grid',
       selectedItemPath: undefined,
-      selectedCRID: undefined,
       query: { criteria: makeBlankCriteria() },
     }, null, 'item-browser');
 
@@ -275,7 +262,7 @@ export const RegisterItemBrowser: React.FC<
   //  });
   //}
 
-  async function handleSaveAndApprove(cr: SelfApprovedCRData) {
+  async function handleSaveAndApprove(cr: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) {
     if (!updateObjects || !makeRandomID) {
       throw new Error("Unable to save and approve: dataset is read-only");
     }
@@ -297,7 +284,7 @@ export const RegisterItemBrowser: React.FC<
         oldValue: null,
         newValue: fullCR,
       },
-      ...proposalsToObjectChangeset(cr.proposals),
+      ...(await proposalsToObjectChangeset(cr.proposals, originalItemData, makeRandomID)),
     };
     await updateObjects({
       commitMessage,
@@ -421,10 +408,6 @@ export const RegisterItemBrowser: React.FC<
         itemClasses={itemClassConfiguration}
         availableClassIDs={availableClassIDs}
         subregisters={subregisters}
-        activeCRID={state.selectedCRID}
-        onSelectCR={(crid) => crid
-          ? dispatch({ type: 'enter-cr', payload: { crid } })
-          : dispatch({ type: 'exit-cr' })}
       />}
       getRelatedClassConfig={getRelatedClass}
       useRegisterItemData={useRegisterItemData}

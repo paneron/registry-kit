@@ -36,14 +36,10 @@ export const SearchQuery: React.FC<{
   itemClasses: RegistryViewProps["itemClassConfiguration"]
   availableClassIDs?: string[]
   subregisters: RegistryViewProps["subregisters"]
-  activeCRID?: string
-  onSelectCR?: (crid: string | undefined) => void
   className?: string
 }> = function ({
   rootCriteria,
   onCriteriaChange,
-  activeCRID,
-  onSelectCR,
   viewingMeta,
   onViewMeta,
   itemClasses,
@@ -140,7 +136,6 @@ export const RegisterItemGrid: React.FC<{
   className,
 }) {
   const ctx = useContext(DatasetContext);
-  //const { useObjectPaths } = useContext(DatasetContext);
   const {
     useFilteredIndex,
     useIndexDescription,
