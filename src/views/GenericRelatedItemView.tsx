@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/core';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
 import { Button, ButtonGroup, ControlGroup, Dialog } from '@blueprintjs/core';
 import { BrowserCtx as BrowserCtxSpec } from './BrowserCtx';
@@ -10,6 +10,7 @@ import { BrowserCtx } from './BrowserCtx';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup } from './FilterCriteria/models';
+import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
@@ -144,6 +145,17 @@ const RelatedItemSelectionDialog: React.FC<{
   useRegisterItemData, getRelatedItemClassConfiguration,
 }) {
   const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
+  useEffect(() => {
+    if (availableClassIDs.length > 0) {
+      setFilterCriteria({
+        require: 'any',
+        criteria: availableClassIDs.map(classID => ({
+          key: 'item-class',
+          query: CRITERIA_CONFIGURATION['item-class'].toQuery({ classID }, { itemClasses, subregisters }),
+        })),
+      });
+    }
+  }, [availableClassIDs]);
   const { itemClasses, subregisters } = useContext(BrowserCtx);
 
   return (
