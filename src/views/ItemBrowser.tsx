@@ -74,7 +74,7 @@ type State = ItemState | GridState;
 
 
 export const RegisterItemBrowser: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters' | 'keyExpression'> & {
   availableClassIDs?: string[]
   useRegisterItemData: RegisterItemDataHook
   itemActions?: ItemAction[]
@@ -84,6 +84,7 @@ export const RegisterItemBrowser: React.FC<
   availableClassIDs,
   subregisters,
   itemClassConfiguration,
+  keyExpression,
   useRegisterItemData,
   itemActions,
   className,
@@ -447,6 +448,7 @@ export const RegisterItemBrowser: React.FC<
     <BrowserCtx.Provider
         value={{
           jumpToItem,
+          keyExpression,
           itemClasses: itemClassConfiguration,
           subregisters,
           stakeholder,

@@ -15,6 +15,7 @@ export interface ExtensionContext {
 
 export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
   itemClassConfiguration: Items
+  keyExpression?: string
 }
 
 export type Subregisters<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> = {

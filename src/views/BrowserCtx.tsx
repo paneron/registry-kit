@@ -9,6 +9,11 @@ export type BrowserCtx = {
   itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
   stakeholder?: RegisterStakeholder // If current user is not a stakeholder, this is undefined.
+
+  keyExpression?: string
+  // Common “key expression” (used for sorting) across the register.
+  // Should contain the expression itself, no “return” statement.
+
   useRegisterItemData: RegisterItemDataHook
   jumpToItem?: (classID: string, itemID: string, subregisterID?: string) => void;
   getRelatedItemClassConfiguration: (clsID: string) => RelatedItemClassConfiguration

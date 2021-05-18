@@ -37,7 +37,7 @@ export { GenericRelatedItemView };
 //};
 
 
-export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters }) {
+export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassConfiguration, subregisters, keyExpression }) {
 
   const {
     useObjectData,
@@ -143,6 +143,7 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       itemClassConfiguration={itemClassConfiguration}
       subregisters={subregisters}
       useRegisterItemData={useRegisterItemData}
+      keyExpression={keyExpression}
     />;
   }
 
