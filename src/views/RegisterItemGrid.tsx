@@ -337,7 +337,7 @@ function ({ isSelected, onSelect, onOpen, extraData, itemRef, padding }) {
             subregisterID={subregisterID}
             itemData={itemPayload}
             itemID={registerItemData?.id ?? 'N/A'} />
-        : <>{stringItemDescription}</>;
+        : <span css={css`opacity: .4`}>{stringItemDescription}</span>;
     } catch (e) {
       itemView = <>{stringItemDescription}</>;
       _itemID = undefined;
