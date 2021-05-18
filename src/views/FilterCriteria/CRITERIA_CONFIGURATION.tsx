@@ -12,7 +12,7 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
   'item-class': {
     label: "item class is",
     icon: 'property',
-    toQuery: ({ classID }, { subregisters }) => `objPath.indexOf("/${classID}/") === ${subregisters ? SUBREGISTER_PATH_PREFIX.length : 0}`,
+    toQuery: ({ classID }, { subregisters }) => `objPath.indexOf("/${classID}/") >= ${subregisters ? SUBREGISTER_PATH_PREFIX.length - 1 : 0}`,
     fromQuery: (query) => ({
       classID: query.split('/')[1],
     }),

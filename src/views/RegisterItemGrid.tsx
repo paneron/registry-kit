@@ -146,7 +146,7 @@ export const RegisterItemGrid: React.FC<{
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
-  const normalizedQueryExp = `return (objPath.startsWith("/subregisters/") || objPath.split("/").length >= 3) && ${queryExpression.trim()}`;
+  const normalizedQueryExp = `return (objPath.startsWith("/subregisters/") || (objPath.split("/").length >= 3 && !objPath.startsWith("/change-requests/"))) && ${queryExpression.trim()}`;
   const indexReq = useFilteredIndex({ queryExpression: normalizedQueryExp });
   const indexID: string = indexReq.value.indexID ?? '';
 

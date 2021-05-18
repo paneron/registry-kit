@@ -3,7 +3,7 @@ import { InternalItemReference } from '../types';
 
 export function itemRefToItemPath({ subregisterID, classID, itemID }: InternalItemReference): string {
   if (subregisterID) {
-    return `/${subregisterID}/${classID}/${itemID}.yaml`;
+    return `/subregisters/${subregisterID}/${classID}/${itemID}.yaml`;
   } else {
     return `/${classID}/${itemID}.yaml`;
   }
@@ -11,25 +11,25 @@ export function itemRefToItemPath({ subregisterID, classID, itemID }: InternalIt
 
 export function itemPathToItemRefLike(hasSubregisters: boolean, itemPath: string):
 { itemID?: string; classID?: string; subregisterID?: string; } {
-  const pathNormalized = itemPath
+  const pathNormalized = itemPath.trim()
     ? stripLeadingSlash(itemPath)
     : undefined;
   const pathParts = pathNormalized?.split('/') ?? [];
 
   const subregisterID: string | undefined = hasSubregisters && pathParts.length >= 1
-    ? pathParts[0]
+    ? pathParts[1]
     : undefined;
 
   const classID: string | undefined = hasSubregisters
-    ? pathParts.length >= 2
-      ? pathParts[1]
+    ? pathParts.length >= 3
+      ? pathParts[2]
       : undefined
     : pathParts.length >= 1
       ? pathParts[0]
       : undefined;
 
   const itemID: string | undefined =
-    (hasSubregisters && pathParts.length === 3) ||
+    (hasSubregisters && pathParts.length === 4) ||
     (!hasSubregisters && pathParts.length === 2)
       ? pathParts[pathParts.length - 1].split('.')[0]
       : undefined;

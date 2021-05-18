@@ -235,7 +235,7 @@ export const RegisterItemBrowser: React.FC<
     }
 
     const itemPath: string = subregisterID
-      ? `/${subregisterID}/${classID}/${itemID}.yaml`
+      ? `/subregisters/${subregisterID}/${classID}/${itemID}.yaml`
       : `/${classID}/${itemID}.yaml`;
 
     dispatch({ type: 'select-item', payload: { itemPath } });
@@ -371,6 +371,7 @@ export const RegisterItemBrowser: React.FC<
     view = <RegisterItemGrid
       selectedItem={viewingMeta ? undefined : selectedItemRef}
       queryExpression={queryExpression} // TODO: Should pass actual structured criteria here probably.
+      hasSubregisters={subregisters !== undefined ? true : undefined}
       onTransformFilterCriteria={(transformer) => dispatch({
         type: 'update-query',
         payload: { query: { criteria: transformer(state.query.criteria) } },
