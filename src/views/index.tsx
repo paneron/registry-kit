@@ -127,20 +127,9 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
 
   let mainViewEl: JSX.Element;
 
-  /*if (registerInfoOpen) {
-    mainViewEl = <RegisterInformation
-      register={registerInfo}
-      onSave={(!isBusy && updateObjects !== undefined)
-        ? handleSaveRegisterInfo
-        : undefined}
-    />;
-
-  } else */ if (selectedCRID) {
+  if (selectedCRID) {
     mainViewEl = <ChangeRequestView
       id={selectedCRID}
-      itemClassConfiguration={itemClassConfiguration}
-      useRegisterItemData={useRegisterItemData}
-
       onDelete={(!isBusy && updateObjects !== undefined)
         ? (crID, oldValue) => handleSaveCR(crID, null, oldValue)
         : undefined}
