@@ -14,6 +14,9 @@ import {
 
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
+import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
+import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import {
   ChangeRequest,
   ItemAction,
@@ -27,14 +30,11 @@ import { _getRelatedClass } from './util';
 import { BrowserCtx } from './BrowserCtx';
 import ItemDetails from './ItemDetails';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
-import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
-import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 //import { RegisterInformation } from './RegisterInformation';
 //import { REGISTER_METADATA_FILENAME } from '../common';
-import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { proposalsToObjectChangeset } from './change-request/objectChangeset';
 
