@@ -55,10 +55,11 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   }
 
   const classIDs = availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : []);
-  const subregisterIDs = availableSubregisterIDs ?? ((itemRef?.subregisterID ?? '') !== '' ? [itemRef!.subregisterID!] : []);
-
-  const defaultSubregisterID: string | undefined = subregisterIDs[0];
-  const effectiveSubregisterID: string | undefined = defaultSubregisterID;
+  const subregisterIDs = availableSubregisterIDs !== undefined
+    ? availableSubregisterIDs
+    : (itemRef?.subregisterID ?? '') !== ''
+    ? [itemRef!.subregisterID!]
+    : undefined;
 
   //log.debug("Rendering generic related item view: got item", item);
   return (
@@ -115,7 +116,6 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             onChange={onChange}
             onClear={onClear}
             selectedItem={itemRef}
-            selectedSubregisterID={effectiveSubregisterID}
             availableClassIDs={classIDs}
             availableSubregisterIDs={subregisterIDs}
             useRegisterItemData={useRegisterItemData}
@@ -133,29 +133,46 @@ const RelatedItemSelectionDialog: React.FC<{
   onChange: (itemRef: InternalItemReference) => void
   onClear?: () => void
   selectedItem?: InternalItemReference
-  selectedSubregisterID?: string
   availableClassIDs: string[]
-  availableSubregisterIDs: string[]
+  availableSubregisterIDs?: string[]
   useRegisterItemData: GenericRelatedItemViewProps["useRegisterItemData"]
   getRelatedItemClassConfiguration: GenericRelatedItemViewProps["getRelatedItemClassConfiguration"]
 }> = function ({
   isOpen, onClose, onChange, onClear,
-  selectedItem, selectedSubregisterID,
+  selectedItem,
+  availableSubregisterIDs,
   availableClassIDs,
-  useRegisterItemData, getRelatedItemClassConfiguration,
+  useRegisterItemData,
+  getRelatedItemClassConfiguration,
 }) {
   const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
+
   useEffect(() => {
+    const baseCriteria: CriteriaGroup[] = [];
     if (availableClassIDs.length > 0) {
-      setFilterCriteria({
+      baseCriteria.push({
         require: 'any',
         criteria: availableClassIDs.map(classID => ({
           key: 'item-class',
           query: CRITERIA_CONFIGURATION['item-class'].toQuery({ classID }, { itemClasses, subregisters }),
+          })),
+      });
+    }
+    if (availableSubregisterIDs && availableSubregisterIDs.length > 0) {
+      baseCriteria.push({
+        require: 'any',
+        criteria: availableSubregisterIDs.map(subregisterID => ({
+          key: 'subregister',
+          query: CRITERIA_CONFIGURATION['subregister'].toQuery({ subregisterID }, { itemClasses, subregisters }),
         })),
       });
     }
-  }, [availableClassIDs]);
+    setFilterCriteria({
+      require: 'all',
+      criteria: baseCriteria,
+    });
+  }, [JSON.stringify(availableClassIDs), JSON.stringify(availableSubregisterIDs)]);
+
   const { itemClasses, subregisters } = useContext(BrowserCtx);
 
   return (
@@ -167,7 +184,7 @@ const RelatedItemSelectionDialog: React.FC<{
       <RegisterItemGrid
         style={{ height: '90vh', width: '90vw' }}
         selectedItem={selectedItem ?? undefined /* NOTE: for some reason it can be null; this is wrong */}
-        hasSubregisters={selectedSubregisterID !== undefined ? true : undefined}
+        hasSubregisters={availableSubregisterIDs !== undefined ? true : undefined}
         queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
         onSelectItem={(itemRef) => itemRef ? onChange(itemRef) : onClear ? onClear() : void 0}
         onOpenItem={(itemRef) => { onChange(itemRef); onClose(); }}

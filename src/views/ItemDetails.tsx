@@ -50,7 +50,7 @@ export const ItemDetails: React.FC<{
   const [amendmentPromptState, setAmendmentPromptState] = useState(false);
 
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
-  const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
+  const { useRegisterItemData, itemClasses, subregisters, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
 
   useEffect(() => {
     setSelfApprovedProposal(null);
@@ -248,6 +248,11 @@ export const ItemDetails: React.FC<{
             });
           }}
           availableClassIDs={[itemRef.classID]}
+          availableSubregisterIDs={subregisters !== undefined
+            ? itemRef.subregisterID && subregisters[itemRef.subregisterID]
+              ? [itemRef.subregisterID]
+              : Object.keys(subregisters)
+            : undefined}
           useRegisterItemData={useRegisterItemData}
           getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
         />
