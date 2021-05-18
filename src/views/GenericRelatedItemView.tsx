@@ -5,7 +5,6 @@ import { jsx, css } from '@emotion/core';
 import React, { useContext, useEffect, useState } from 'react';
 import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
 import { Button, ButtonGroup, ControlGroup, Dialog } from '@blueprintjs/core';
-import { BrowserCtx as BrowserCtxSpec } from './BrowserCtx';
 import { BrowserCtx } from './BrowserCtx';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
@@ -28,7 +27,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const [selectDialogState, setSelectDialogState] = useState(false);
 
   //log.debug("Rendering generic related item view", itemRef);
-  const browserCtx: BrowserCtxSpec = useContext(BrowserCtx);
+  const { jumpToItem } = useContext(BrowserCtx);
 
   const itemResult = useRegisterItemData({ itemPaths: [itemPath] });
   const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
@@ -101,8 +100,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             : <>
                 <Button
                   icon={item === null && itemID !== '' ? 'error' : 'locate'}
-                  disabled={item === null || !browserCtx.jumpToItem || !classConfigured || itemResult.isUpdating}
-                  onClick={() => browserCtx.jumpToItem?.(classID, itemID, subregisterID)} />
+                  disabled={item === null || !jumpToItem || !classConfigured || itemResult.isUpdating}
+                  onClick={() => jumpToItem?.(classID, itemID, subregisterID)} />
                 {onClear
                   ? <Button onClick={onClear} icon="cross" />
                   : null}
