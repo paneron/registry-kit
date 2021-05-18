@@ -1,5 +1,6 @@
 import { Payload } from './item';
 import { RegisterStakeholder } from './stakeholder';
+import { Citation } from './util';
 
 
 export const DECISION_STATUSES = [
@@ -47,7 +48,9 @@ export const PROPOSAL_TYPES = [
 
 interface BaseProposal {
   //itemID: RegisterItemID
+  disposition?: 'accepted' | 'notAccepted'
   type: typeof PROPOSAL_TYPES[number]
+  sources?: Citation[]
 }
 
 export interface Addition extends BaseProposal {
@@ -73,7 +76,7 @@ export interface Retirement extends BaseAmendment {
 }
 export interface Supersession extends BaseAmendment {
   amendmentType: 'supersession'
-  supersedingItemID: string
+  supersedingItemIDs: string[]
 }
 export type Amendment = Supersession | Retirement
 

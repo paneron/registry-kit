@@ -31,6 +31,7 @@ import { Popover2 } from '@blueprintjs/popover2';
 import ItemClass from './sidebar-blocks/ItemClass';
 import GenericRelatedItemView from './GenericRelatedItemView';
 import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
+import { itemRefToItemPath } from './itemPathUtils';
 
 
 export const ItemDetails: React.FC<{
@@ -61,10 +62,30 @@ export const ItemDetails: React.FC<{
   const itemClass = itemClasses[classID];
 
   //const itemPath = `${itemClass.meta.id}/${itemID}`;
-  const _itemPath = `/${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}.yaml`;
-  const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : _itemPath;
-  const itemResponse = useRegisterItemData({ itemPaths: [itemPath] });
+  const _itemPath = `${itemClass?.meta?.id ?? 'NONEXISTENT_CLASS'}/${itemID}.yaml`;
+  const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : `/${_itemPath}`;
+  const itemRequest = {
+    itemPaths: [itemPath],
+  };
+  const supersedingItemPaths: string[] = [];
+  if (selfApprovedProposal?.type === 'amendment' && selfApprovedProposal.amendmentType === 'supersession') {
+    supersedingItemPaths.concat(selfApprovedProposal.supersedingItemIDs.map(itemID => itemRefToItemPath({
+      subregisterID: itemRef.subregisterID,
+      classID: itemRef.classID,
+      itemID,
+    })));
+    itemRequest.itemPaths.concat(supersedingItemPaths);
+  }
+  const itemResponse = useRegisterItemData(itemRequest);
   const itemData = itemResponse.value[itemPath];
+  const supersedingItemData: Record<string, RegisterItem<any>> = {};
+
+  for (const supersedingItemPath of supersedingItemPaths) {
+    const _d = itemResponse.value[supersedingItemPath];
+    if (_d) {
+      supersedingItemData[supersedingItemPath] = _d;
+    }
+  }
 
   const isEdited = onChange && itemData && editedItemData && JSON.stringify(editedItemData) !== JSON.stringify(itemData.data);
 
@@ -223,7 +244,7 @@ export const ItemDetails: React.FC<{
             handleAddProposal({
               type: 'amendment',
               amendmentType: 'supersession',
-              supersedingItemID: ref.itemID,
+              supersedingItemIDs: [ref.itemID],
             });
           }}
           availableClassIDs={[itemRef.classID]}
@@ -238,7 +259,7 @@ export const ItemDetails: React.FC<{
     changePopoverContents = <SelfApprovedCR
       css={css`width: 80vw; height: 80vh;`}
       onConfirm={async (opts) => {
-        await onChange(opts, { [itemPath]: itemData });
+        await onChange(opts, { [itemPath]: itemData, ...supersedingItemData });
         setSelfApprovedProposal(null);
         setEditedItemData(null);
       }}

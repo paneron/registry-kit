@@ -262,7 +262,7 @@ export const RegisterItemBrowser: React.FC<
   //  });
   //}
 
-  async function handleSaveAndApprove(cr: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) {
+  async function handleSaveAndApprove(cr: SelfApprovedCRData, itemData: Record<string, RegisterItem<any>>) {
     if (!updateObjects || !makeRandomID) {
       throw new Error("Unable to save and approve: dataset is read-only");
     }
@@ -279,12 +279,24 @@ export const RegisterItemBrowser: React.FC<
       status: 'final',
       disposition: 'accepted',
     };
+
+    for (const itemPath of Object.keys(fullCR.proposals)) {
+      fullCR.proposals[itemPath].disposition = 'accepted';
+    }
+
+    const itemChangeset = await proposalsToObjectChangeset(
+      id,
+      subregisters !== undefined,
+      cr.proposals,
+      itemData,
+      makeRandomID);
+
     const objectChangeset: ObjectChangeset = {
       [crObjectPath]: {
         oldValue: null,
         newValue: fullCR,
       },
-      ...(await proposalsToObjectChangeset(cr.proposals, originalItemData, makeRandomID)),
+      ...itemChangeset,
     };
     await updateObjects({
       commitMessage,

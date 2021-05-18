@@ -1,61 +1,113 @@
-import { Change } from '@riboseinc/paneron-extension-kit/types/changes';
-import { ObjectChangeset, ObjectDataset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { Addition, ChangeProposal, ChangeRequest, Clarification, RegisterItem, Retirement, Supersession } from '../../types';
+import { Change, Changeset } from '@riboseinc/paneron-extension-kit/types/changes';
+import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
+import {
+  InternalItemReference,
+  RegisterItem,
+  ChangeRequest,
+  ChangeProposal,
+  Addition,
+  Amendment,
+  Clarification,
+  Supersession,
+} from '../../types';
+import { itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
 
 
 export async function proposalsToObjectChangeset(
+  crID: string,
+  hasSubregisters: boolean,
   proposals: ChangeRequest["proposals"],
-  itemData: ObjectDataset,
+  itemData: Record<string, RegisterItem<any>>,
   makeUUID: () => Promise<string>,
 ): Promise<ObjectChangeset> {
   const cs: ObjectChangeset = {};
 
   for (const [itemPath, proposal] of Object.entries(proposals)) {
-    const originalItem = (itemData[itemPath] ?? null) as RegisterItem<any> | null;
+    //const originalItem: RegisterItem<any> | undefined = (itemData[itemPath] ?? undefined);
+    const itemRef = itemPathToItemRef(hasSubregisters, itemPath);
+    const opts = { makeUUID }
 
-    let proposalOpts: ApplyProposalOpts<any>;
-
-    if (proposal.type === 'clarification' || proposal.type === 'amendment') {
-      if (originalItem === null) {
+    if (proposal.type !== 'addition') {
+      if (itemData[itemPath] === undefined) {
         console.error("Unable to convert proposals to object changeset: original item data is missing", itemPath);
         throw new Error("Unable to convert proposals to object changeset: original item data is missing");
       }
-      proposalOpts = {
-        originalItem,
-        makeUUID,
-      };
+      if (proposal.type === 'amendment' && proposal.amendmentType === 'supersession') {
+        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
+      } else {
+        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
+      }
     } else {
-      proposalOpts = {
-        originalItem: undefined,
-        makeUUID,
-      } as ApplyProposalOpts<Addition>;
+      Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
     }
-
-    const change: Change<RegisterItem<any>> = {
-      oldValue: originalItem,
-      newValue: await applyProposal(proposal, proposalOpts),
-    };
-
-    cs[itemPath] = change;
   }
 
   return cs;
 }
 
 
-interface ApplyProposalOpts<P extends ChangeProposal> {
+interface ApplyProposalOpts {
   makeUUID: () => Promise<string>
-  originalItem: P extends Clarification | Retirement | Supersession
-    ? RegisterItem<any>
-    : never
 }
 
-
-async function applyProposal<P extends ChangeProposal>
-(proposal: P, opts: ApplyProposalOpts<P>): Promise<RegisterItem<any>> {
+// TODO: Refactor out the business logic of proposal approval.
+/* Core logic of approving a proposal.
+   Takes a proposal and extra options (depending on proposal type).
+   Returns a register item.
+*/
+async function proposalToObjectChangeset(
+  crID: string,
+  proposal: ChangeProposal,
+  itemRef: InternalItemReference,
+  itemPath: string,
+  itemData: Record<string, RegisterItem<any>>,
+  opts: ApplyProposalOpts,
+): Promise<Changeset<Change<RegisterItem<any>>>> {
   let newItem: RegisterItem<any>;
+  const changeset: Changeset<Change<RegisterItem<any>>> = {};
+
+  const origItem = itemData[itemPath] ?? null;
+
   if (proposal.type !== 'addition') {
-    newItem = { ...opts.originalItem };
+    if (origItem === null) {
+      throw new Error("proposalToObjectChangeset() requires originalItem for non-additions");
+    }
+    newItem = { ...origItem };
+
+    if (proposal.type === 'clarification') {
+      const clarification = proposal as Clarification;
+      newItem.data = clarification.payload;
+    }
+    if (proposal.type === 'amendment') {
+      const amendment = proposal as Amendment;
+      newItem.amendedInCR = crID;
+
+      if (amendment.amendmentType === 'retirement') {
+        newItem.status = 'retired';
+
+      } else if (amendment.amendmentType === 'supersession') {
+        const supersession = proposal as Supersession;
+        newItem.status = 'superseded';
+        newItem.supersededBy = supersession.supersedingItemIDs.map(itemID => ({
+          itemID,
+          classID: itemRef.classID,
+          subregisterID: itemRef.subregisterID,
+        }));
+
+        for (const supersedingItemPath of newItem.supersededBy.map(itemRefToItemPath)) {
+          const supersedingItemData = itemData[supersedingItemPath];
+          if (supersedingItemData) {
+            changeset[supersedingItemPath] = {
+              oldValue: supersedingItemData,
+              newValue: {
+                ...supersedingItemData,
+                supersedes: [ ...(supersedingItemData.supersedes ?? []), itemRef ],
+              },
+            };
+          }
+        }
+      }
+    }
   } else {
     const addition = proposal as Addition;
     newItem = {
@@ -65,5 +117,11 @@ async function applyProposal<P extends ChangeProposal>
       dateAccepted: new Date(),
     };
   }
-  return newItem;
+
+  changeset[itemPath] = {
+    oldValue: origItem,
+    newValue: newItem,
+  };
+
+  return changeset;
 }

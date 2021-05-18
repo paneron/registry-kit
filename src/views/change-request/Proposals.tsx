@@ -257,28 +257,34 @@ const retirement: ProposalViewConfig<Retirement> = {
 
 const supersession: ProposalViewConfig<Supersession> = {
   detail: ({ proposal, itemRef }) => {
-    const { useRegisterItemData } = useContext(BrowserCtx);
+    const { useRegisterItemData, itemClasses, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
     const originalItemPath = itemRefToItemPath(itemRef);
-    const supersedingItemPath = itemRefToItemPath({
+    const supersedingItemRefs = proposal.supersedingItemIDs.map(itemID => ({
       classID: itemRef.classID,
       subregisterID: itemRef.subregisterID,
-      itemID: proposal.supersedingItemID,
-    });
+      itemID,
+    }));
+    const supersedingItemPaths = supersedingItemRefs.map(itemRefToItemPath);
     const itemDataResp = useRegisterItemData({
-      itemPaths: [originalItemPath, supersedingItemPath],
+      itemPaths: [originalItemPath, ...supersedingItemPaths],
     });
     const originalItem = itemDataResp.value[originalItemPath];
     if (!originalItem?.data) {
       return <NonIdealState title="Original item data could not be retrieved" />;
     }
-    const supersedingItem = itemDataResp.value[supersedingItemPath];
-    if (!supersedingItem?.data) {
-      return <NonIdealState title="Superseding item data could not be retrieved" />;
-    }
-    return <MaximizedStructuredDiff
-      item1={originalItem.data}
-      item2={supersedingItem.data}
-    />;
+    const ListItemView = itemClasses[itemRef.classID].views.listItemView;
+    return <>
+      <p>Superseding items:</p>
+      {supersedingItemRefs.map(itemRef =>
+        <ListItemView
+          key={itemRef.itemID}
+          itemID={itemRef.itemID}
+          itemData={itemDataResp.value[itemRefToItemPath(itemRef)]?.data}
+          useRegisterItemData={useRegisterItemData}
+          getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+        />
+      )}
+    </>;
   },
   summary: ({ proposal, itemRef }) => {
     const {
