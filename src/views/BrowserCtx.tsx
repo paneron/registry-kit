@@ -16,7 +16,6 @@ export type BrowserCtx = {
 
 export const BrowserCtx = createContext<BrowserCtx>({
   itemClasses: {},
-  stakeholder: undefined,
   useRegisterItemData: () => ({
     value: {},
     _reqCounter: -1,
