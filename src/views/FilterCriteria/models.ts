@@ -28,6 +28,7 @@ export type CompositionOperator = typeof COMPOSITION_OPERATORS[number];
 
 const CRITERIA_KEYS = [
   'item-class',
+  'subregister',
   'custom',
   'raw-substring',
 ] as const;

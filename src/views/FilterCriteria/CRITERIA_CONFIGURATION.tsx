@@ -46,6 +46,46 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
     },
   } as CriterionConfiguration<{ classID?: string; }>,
 
+  'subregister': {
+    label: "is in subregister",
+    icon: 'folder-open',
+    isEnabled: ({ subregisters }) => subregisters !== undefined,
+    toQuery: ({ subregisterID }, { subregisters }) => subregisters !== undefined && subregisterID?.trim()
+      ? `objPath.indexOf("/subregisters/${subregisterID}/") === 0`
+      : 'true',
+    fromQuery: (query) => ({
+      subregisterID: query.split('/')[2],
+    }),
+    toSummary: ({ subregisterID }, { subregisters }) => {
+      if (subregisters && subregisterID) {
+        return subregisters[subregisterID].title;
+      } else {
+        return "(N/A)";
+      }
+    },
+    widget: ({ data, onChange, subregisters, className, style }) => {
+      const subregisterChoices: OptionProps[] = [
+        ...Object.entries(subregisters ?? {}).
+          map(([subregisterID, subregisterInfo]) => {
+            return { value: subregisterID, label: subregisterInfo.title };
+          }),
+        { value: '', label: "(not selected)" },
+      ];
+      return (
+        <HTMLSelect
+          className={className}
+          style={style}
+          fill
+          options={subregisterChoices}
+          value={data.subregisterID ?? ''}
+          disabled={!onChange}
+          onChange={onChange
+            ? (evt) => onChange!({ subregisterID: evt.currentTarget.value })
+            : undefined} />
+      );
+    },
+  } as CriterionConfiguration<{ subregisterID?: string; }>,
+
   'raw-substring': {
     label: "raw data contains",
     icon: 'search-text',
