@@ -51,12 +51,12 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
     icon: 'search-text',
     toQuery: ({ substring }) =>
       substring?.trim()
-        ? `JSON.stringify(obj.data).toLowerCase().indexOf(${substring}) >= 0`
+        ? `JSON.stringify(obj.data).toLowerCase().indexOf("${substring.replace(/"/g, "\\\"")}") >= 0`
         : `true`,
     fromQuery: (query) => ({
-      substring: query.
-        split('JSON.stringify(obj.data).toLowerCase().indexOf(')[1]?.
-        split(') >= 0')[0] ?? '',
+      substring: (query.
+        split('JSON.stringify(obj.data).toLowerCase().indexOf("')[1]?.
+        split('") >= 0')[0] ?? '').replace(/\\"/g, '"'),
     }),
     toSummary: ({ substring }) => {
       if (substring) {
