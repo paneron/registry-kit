@@ -50,7 +50,7 @@ export function itemPathToItemRef(hasSubregisters: boolean, itemPath: string): I
   if (maybeRef.classID && maybeRef.itemID) {
     return maybeRef as InternalItemReference;
   } else {
-    console.error("Internal item reference cannot be constructed from given item path", itemPath, hasSubregisters);
+    console.error("Internal item reference cannot be constructed from given item path, got", maybeRef, itemPath, hasSubregisters);
     throw new Error("Internal item reference cannot be constructed from given item path");
   }
 }
