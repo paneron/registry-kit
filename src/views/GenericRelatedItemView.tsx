@@ -144,6 +144,8 @@ const RelatedItemSelectionDialog: React.FC<{
   useRegisterItemData,
   getRelatedItemClassConfiguration,
 }) {
+  const { itemClasses, subregisters } = useContext(BrowserCtx);
+
   const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
 
   useEffect(() => {
@@ -171,8 +173,6 @@ const RelatedItemSelectionDialog: React.FC<{
       criteria: baseCriteria,
     });
   }, [JSON.stringify(availableClassIDs), JSON.stringify(availableSubregisterIDs)]);
-
-  const { itemClasses, subregisters } = useContext(BrowserCtx);
 
   return (
     <Dialog
