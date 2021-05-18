@@ -62,7 +62,7 @@ export const SearchQuery: React.FC<{
                 itemClasses={itemClasses}
                 availableClassIDs={classIDs}
                 subregisters={subregisters}
-                css={css`width: 100vw;`}
+                css={css`width: 100vw; max-height: 50vh; overflow-y: auto;`}
               />
               <div css={css`margin-top: 5px; padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
                 Computed query: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
