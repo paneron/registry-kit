@@ -48,6 +48,7 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
   validatePayload?: (item: P) => Promise<boolean>
   sanitizePayload?: (item: P) => Promise<P>
   itemSorter?: (a: P, b: P) => number
+  keyExpression?: string
 
   views: {
     listItemView: ItemListView<P>
