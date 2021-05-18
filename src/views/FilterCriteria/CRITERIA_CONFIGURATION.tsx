@@ -46,6 +46,36 @@ export const CRITERIA_CONFIGURATION: CriteriaConfiguration = {
     },
   } as CriterionConfiguration<{ classID?: string; }>,
 
+  'raw-substring': {
+    label: "raw data contains",
+    icon: 'search-text',
+    toQuery: ({ substring }) =>
+      substring?.trim()
+        ? `JSON.stringify(obj.data).toLowerCase().indexOf(${substring}) >= 0`
+        : `true`,
+    fromQuery: (query) => ({
+      substring: query.
+        split('JSON.stringify(obj.data).toLowerCase().indexOf(')[1]?.
+        split(') >= 0')[0] ?? '',
+    }),
+    toSummary: ({ substring }) => {
+      if (substring) {
+        return substring.length > 20 ? `${substring.slice(0, 20)}…` : substring;
+      } else {
+        return 'N/A';
+      }
+    },
+    widget: ({ data, onChange, className, style }) => {
+      return <InputGroup
+        className={className}
+        style={style}
+        value={data.substring ?? ''}
+        disabled={!onChange}
+        onChange={evt => onChange!({ substring: evt.currentTarget.value })}
+      />;
+    },
+  } as CriterionConfiguration<{ substring?: string }>,
+
   'custom': {
     label: "condition is met",
     icon: 'code',

@@ -28,6 +28,7 @@ export type CompositionOperator = typeof COMPOSITION_OPERATORS[number];
 const CRITERIA_KEYS = [
   'item-class',
   'custom',
+  'raw-substring',
 ] as const;
 type CriterionKey = typeof CRITERIA_KEYS[number];
 
