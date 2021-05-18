@@ -7,6 +7,7 @@ export interface CriterionConfiguration<T extends Record<string, any>> {
   icon?: IconName
   label: string;
   widget: CriteriaWidget<T>;
+  isEnabled?: (opts: CommonOpts) => boolean
   toSummary: (data: T, opts: CommonOpts) => string | JSX.Element;
   toQuery: (data: T, opts: CommonOpts) => string;
   fromQuery: (query: string, opts: CommonOpts) => T;
