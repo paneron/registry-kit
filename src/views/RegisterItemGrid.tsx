@@ -135,14 +135,13 @@ export const RegisterItemGrid: React.FC<{
   style,
   className,
 }) {
-  const ctx = useContext(DatasetContext);
   const {
     useFilteredIndex,
     useIndexDescription,
     useObjectPathFromFilteredIndex,
     getObjectPathFromFilteredIndex,
     getFilteredIndexPosition,
-  } = ctx;
+  } = useContext(DatasetContext);
 
   const [selectedIndexPos, selectIndexPos] = useState<string | null>(null);
 
