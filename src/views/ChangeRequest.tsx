@@ -1,39 +1,27 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import log from 'electron-log';
-
 import yaml from 'js-yaml';
-import update from 'immutability-helper';
 
 import React, { useContext, useState } from 'react';
 
 import { jsx, css } from '@emotion/core';
+import styled from '@emotion/styled';
 
 import {
-  Button, ButtonGroup, Callout, Classes,
-  Colors,
-  FormGroup, H4, HTMLSelect, IconName, InputGroup, OptionProps,
-  TreeNodeInfo, Menu, NonIdealState, Spinner, Tag, TextArea, Tree
+  Button, ButtonGroup,
+  FormGroup, OptionProps,
+  NonIdealState, Spinner, TextArea,
+  TreeNodeInfo, Tree,
 } from '@blueprintjs/core';
 
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
+
 import {
-  ChangeProposal, ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
-  ItemClassConfiguration, ItemDetailView, ItemEditView, Payload, PROPOSAL_TYPES,
-  RegisterItem,
-  RegisterItemDataHook,
-  RegistryViewProps, RelatedItemClassConfiguration
+  ChangeRequest, DECISION_STATUSES, DISPOSITION_OPTIONS,
 } from '../types';
-import { MainView } from './MainView';
 import { _getRelatedClass } from './util';
-
-
-const PROPOSAL_ICON: Record<typeof PROPOSAL_TYPES[number], IconName> = {
-  addition: 'add',
-  clarification: 'edit',
-  amendment: 'remove',
-};
 
 
 export const CHANGE_REQUEST_OPTIONS: Record<string, OptionProps> = {
@@ -41,18 +29,13 @@ export const CHANGE_REQUEST_OPTIONS: Record<string, OptionProps> = {
 } as const;
 
 
-export const ChangeRequestView: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
+export const ChangeRequestView: React.FC<{
   id: string
-  useRegisterItemData: RegisterItemDataHook
   onSave?: (crID: string, newValue: ChangeRequest, oldValue: ChangeRequest) => Promise<void>
   onDelete?: (crID: string, oldValue: ChangeRequest) => Promise<void>
-}> = function ({
-    itemClassConfiguration, id,
-    useRegisterItemData,
-    onSave, onDelete }) {
+}> = function ({ id, onSave, onDelete }) {
 
-  const { useObjectData, makeRandomID, updateObjects } = useContext(DatasetContext);
+  const { useObjectData, updateObjects } = useContext(DatasetContext);
 
   const [selectedItem, selectItem] = useState<string>('justification');
 
@@ -64,13 +47,8 @@ export const ChangeRequestView: React.FC<
       ? yaml.load(dataAsString as string)
       : undefined;
 
-  const itemPaths = Object.keys((maybeCR as ChangeRequest)?.proposals || {});
-
   //log.debug("Item data request", itemDataRequest);
   //const itemData = useObjectData(itemDataRequest).value;
-
-  const itemData: Record<string, RegisterItem<any> | null> =
-    useRegisterItemData({ itemPaths }).value;
 
   const [edited, updateEdited] = useState<ChangeRequest | null>(null);
 
@@ -115,92 +93,92 @@ export const ChangeRequestView: React.FC<
       onSave(originalCR.id, { ...cr, status: newStatus, disposition: newDisposition, ...extraProps }, originalCR);
     }
 
-    async function handleAddProposal(id: string, defaults: Record<string, any>) {
-      updateEdited(update(cr, { proposals: {
-        [id]: { $set: { type: 'addition', payload: defaults } },
-      } }))
-    }
+    // async function handleAddProposal(id: string, defaults: Record<string, any>) {
+    //   updateEdited(update(cr, { proposals: {
+    //     [id]: { $set: { type: 'addition', payload: defaults } },
+    //   } }))
+    // }
 
-    async function handleAcceptProposal(itemID: string, clsID: string, proposal: ChangeProposal) {
-      if (!updateObjects) {
-        return;
-      }
+    // async function handleAcceptProposal(itemID: string, clsID: string, proposal: ChangeProposal) {
+    //   if (!updateObjects) {
+    //     return;
+    //   }
 
-      const itemPath = `${clsID}/${itemID}`;
-      const itemFilePath = `${itemPath}.yaml`;
+    //   const itemPath = `${clsID}/${itemID}`;
+    //   const itemFilePath = `${itemPath}.yaml`;
 
-      const existingItem = itemData[itemPath];
+    //   const existingItem = itemData[itemPath];
 
-      if (proposal.type === 'addition') {
-        if (existingItem) {
-          log.error("Cannot accept proposed addition: item already exists", clsID, itemID);
-          throw new Error("Cannot accept proposed addition: item already exists");
-        }
-        const newItem: RegisterItem<any> = {
-          id: itemID,
-          status: 'valid',
-          dateAccepted: new Date(),
-          data: proposal.payload,
-        };
-        await updateObjects({
-          commitMessage: `CR: Accepted addition of ${clsID}/${itemID} (per CR ${id})`,
-          objectChangeset: {
-            [itemFilePath]: {
-              newValue: newItem,
-              oldValue: null,
-            },
-          },
-        }, );
+    //   if (proposal.type === 'addition') {
+    //     if (existingItem) {
+    //       log.error("Cannot accept proposed addition: item already exists", clsID, itemID);
+    //       throw new Error("Cannot accept proposed addition: item already exists");
+    //     }
+    //     const newItem: RegisterItem<any> = {
+    //       id: itemID,
+    //       status: 'valid',
+    //       dateAccepted: new Date(),
+    //       data: proposal.payload,
+    //     };
+    //     await updateObjects({
+    //       commitMessage: `CR: Accepted addition of ${clsID}/${itemID} (per CR ${id})`,
+    //       objectChangeset: {
+    //         [itemFilePath]: {
+    //           newValue: newItem,
+    //           oldValue: null,
+    //         },
+    //       },
+    //     }, );
 
-      } else if (proposal.type === 'clarification') {
-        if (!existingItem) {
-          log.error("Cannot accept proposed clarification: item does not exist", clsID, itemID);
-          throw new Error("Cannot accept proposed clarification: item does not exist");
-        }
-        const clarifiedItem: RegisterItem<any> = {
-          ...existingItem,
-          data: proposal.payload,
-        };
-        await updateObjects({
-          commitMessage: `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`,
-          objectChangeset: {
-            [itemPath]: {
-              newValue: clarifiedItem,
-              oldValue: existingItem,
-            },
-          },
-        }, );
+    //   } else if (proposal.type === 'clarification') {
+    //     if (!existingItem) {
+    //       log.error("Cannot accept proposed clarification: item does not exist", clsID, itemID);
+    //       throw new Error("Cannot accept proposed clarification: item does not exist");
+    //     }
+    //     const clarifiedItem: RegisterItem<any> = {
+    //       ...existingItem,
+    //       data: proposal.payload,
+    //     };
+    //     await updateObjects({
+    //       commitMessage: `CR: Accepted clarification of ${clsID}/${itemID} (per CR ${id})`,
+    //       objectChangeset: {
+    //         [itemPath]: {
+    //           newValue: clarifiedItem,
+    //           oldValue: existingItem,
+    //         },
+    //       },
+    //     }, );
 
-      } else if (proposal.type === 'amendment') {
-        if (!existingItem) {
-          log.error("Cannot accept proposed amendment: item does not exist", clsID, itemID);
-          throw new Error("Cannot accept proposed amendment: item does not exist");
-        }
-        if (existingItem.status !== 'valid') {
-          log.error("Cannot accept proposed amendment: item is not valid", clsID, itemID);
-          throw new Error("Cannot accept proposed amendment: item is not valid");
-        }
-        const amendedItem = {
-          ...existingItem,
-          status: proposal.amendmentType === 'retirement' ? 'retired' : 'superseded',
-        };
-        if (proposal.amendmentType === 'supersession') {
-          if (cr.proposals[`${clsID}/${proposal.supersedingItemID}`]?.type !== 'addition') {
-            log.error("Cannot accept proposed amendment: superseding item is not specified or cannot be found", clsID, itemID);
-            throw new Error("Cannot accept proposed amendment: superseding item is not specified or cannot be found");
-          }
-        }
-        await updateObjects({
-          commitMessage: `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`,
-          objectChangeset: {
-            [itemPath]: {
-              newValue: amendedItem,
-              oldValue: existingItem,
-            },
-          },
-        }, );
-      }
-    }
+    //   } else if (proposal.type === 'amendment') {
+    //     if (!existingItem) {
+    //       log.error("Cannot accept proposed amendment: item does not exist", clsID, itemID);
+    //       throw new Error("Cannot accept proposed amendment: item does not exist");
+    //     }
+    //     if (existingItem.status !== 'valid') {
+    //       log.error("Cannot accept proposed amendment: item is not valid", clsID, itemID);
+    //       throw new Error("Cannot accept proposed amendment: item is not valid");
+    //     }
+    //     const amendedItem = {
+    //       ...existingItem,
+    //       status: proposal.amendmentType === 'retirement' ? 'retired' : 'superseded',
+    //     };
+    //     if (proposal.amendmentType === 'supersession') {
+    //       if (cr.proposals[`${clsID}/${proposal.supersedingItemID}`]?.type !== 'addition') {
+    //         log.error("Cannot accept proposed amendment: superseding item is not specified or cannot be found", clsID, itemID);
+    //         throw new Error("Cannot accept proposed amendment: superseding item is not specified or cannot be found");
+    //       }
+    //     }
+    //     await updateObjects({
+    //       commitMessage: `CR: Accepted amendment of ${clsID}/${itemID} (per CR ${id})`,
+    //       objectChangeset: {
+    //         [itemPath]: {
+    //           newValue: amendedItem,
+    //           oldValue: existingItem,
+    //         },
+    //       },
+    //     }, );
+    //   }
+    // }
 
     const tentativelyAccepted = cr.status === 'tentative' && cr.disposition === 'accepted';
     const tentativelyNotAccepted = cr.status === 'tentative' && cr.disposition === 'notAccepted';
@@ -283,81 +261,6 @@ export const ChangeRequestView: React.FC<
           ? (registerManagerNotes) => updateEdited({ ...cr, registerManagerNotes })
           : undefined}
       />;
-    } else if (selectedItem === 'proposals') {
-      detailView = <NonIdealState
-        description={
-          updateObjects
-          ? <>
-              <Callout style={{ textAlign: 'left', marginBottom: '1rem' }} title="Managing your proposals" intent="primary">
-                <p>
-                  Select a proposed change on the left to&nbsp;view or&nbsp;edit&nbsp;it.
-                </p>
-                <p>
-                  To propose a change, close this CR, navigate to an item you want to change in item list, and&nbsp;click “Propose&nbsp;a&nbsp;change”.
-                </p>
-                <p>
-                  You won’t be able to edit your change request once you have submitted it.
-                </p>
-              </Callout>
-              <Menu className={Classes.ELEVATION_1} style={{ marginBottom: '1rem' }}>
-                <Menu.Divider title="New item" />
-                {Object.entries(itemClassConfiguration).map(([classID, classCfg]) =>
-                  <Menu.Item
-                    key={classID}
-                    icon="add"
-                    text={classCfg.meta.title}
-                    disabled={!makeRandomID}
-                    onClick={makeRandomID
-                      ? async () => handleAddProposal(
-                        `${classCfg.meta.id}/${await makeRandomID!()}`,
-                        classCfg.defaults || {})
-                      : undefined}
-                  />
-                )}
-              </Menu>
-            </>
-          : <Callout style={{ textAlign: 'left' }} title="Reviewing proposed changes" intent="primary">
-              Select a proposed change on the left to view.
-            </Callout>
-        }
-      />;
-    } else if (cr.proposals[selectedItem] && (itemData[selectedItem] || cr.proposals[selectedItem].type === 'addition')) {
-      const proposal = cr.proposals[selectedItem];
-      const classID = selectedItem.split('/')[0];
-      const classConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
-      const existingItemData = itemData[selectedItem];
-      const getRelatedClass = _getRelatedClass(itemClassConfiguration);
-      if (classConfig && (existingItemData || proposal.type === 'addition')) {
-        try {
-          detailView = <ProposalDetails
-            value={proposal}
-            classConfig={classConfig}
-            existingItemData={existingItemData || undefined}
-            getRelatedClass={getRelatedClass}
-            useRegisterItemData={useRegisterItemData}
-            onAccept={updateObjects
-              ? (itemID, clsID) => handleAcceptProposal(itemID, clsID, proposal)
-              : undefined}
-            ItemView={(updateObjects && proposal.type !== 'amendment')
-              ? classConfig.views.editView
-              : classConfig.views.detailView}
-            onChange={updateObjects
-              ? (proposal) => updateEdited(update(cr, { proposals: { [selectedItem]: { $set: proposal } } }))
-              : undefined}
-            onDelete={updateObjects
-              ? () => updateEdited(update(cr, { proposals: { $unset: [selectedItem] } }))
-              : undefined}
-          />;
-        } catch (e) {
-          detailView = <NonIdealState
-            icon="heart-broken"
-            title="Unable to load existing item data" />;
-        }
-      } else {
-        detailView = <NonIdealState
-          icon="heart-broken"
-          title="Unknown item class or missing item data!" />;
-      }
     } else {
       detailView = <NonIdealState
         icon="heart-broken"
@@ -366,29 +269,29 @@ export const ChangeRequestView: React.FC<
     }
 
     el = (
-      <MainView actions={actions}>
-        <div css={css`flex-shrink: 0; width: 30vw; display: flex; flex-flow: column nowrap; background: ${Colors.WHITE}`}>
-          <CRNavigation
-            itemClassConfiguration={itemClassConfiguration}
-            useRegisterItemData={useRegisterItemData}
-            proposals={cr.proposals}
-            itemData={itemData}
-            onSelect={selectItem}
-            selectedItem={selectedItem}
-            enableControlBodyInput={
-              updateObjects !== undefined ||
-              cr.controlBodyDecisionEvent !== undefined ||
-              cr.controlBodyNotes !== undefined}
-            enableManagerNotes={
-              updateObjects !== undefined ||
-              cr.registerManagerNotes !== undefined}
-          />
-        </div>
-
-        <div css={css`flex: 1; padding: 1rem;`} className={Classes.ELEVATION_1}>
+      <Workspace
+          css={css`flex: 1 1 auto;`}
+          toolbar={actions}>
+        <WrapperDiv css={css`flex: 1;`}>
           {detailView}
-        </div>
-      </MainView>
+          <div css={css`display: flex; flex-flow: row nowrap;`}>
+            <CRNavigation
+              onSelect={selectItem}
+              selectedItem={selectedItem}
+              enableControlBodyInput={
+                updateObjects !== undefined ||
+                cr.controlBodyDecisionEvent !== undefined ||
+                cr.controlBodyNotes !== undefined}
+              enableManagerNotes={
+                updateObjects !== undefined ||
+                cr.registerManagerNotes !== undefined}
+            />
+            <div css={css`flex: 1 1 auto`}>
+              {detailView}
+            </div>
+          </div>
+        </WrapperDiv>
+      </Workspace>
     );
 
   } else {
@@ -399,27 +302,28 @@ export const ChangeRequestView: React.FC<
 };
 
 
-const CRNavigation: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration'> & {
-  useRegisterItemData: RegisterItemDataHook
-  proposals: ChangeRequest["proposals"]
+export const WrapperDiv = styled.div`
+  overflow-y: auto;
+  position: relative;
+`;
+
+
+const CRNavigation: React.FC<{
   enableControlBodyInput: boolean
   enableManagerNotes: boolean
-  itemData: Record<string, RegisterItem<any> | null>
   selectedItem: string
   onSelect: (item: string) => void
 }> =
 function ({
-    itemData, proposals, itemClassConfiguration,
-    useRegisterItemData,
-    onSelect,
-    selectedItem, enableControlBodyInput, enableManagerNotes }) {
+  onSelect,
+  selectedItem,
+  enableControlBodyInput,
+  enableManagerNotes,
+}) {
 
   function handleSelect(node: TreeNodeInfo) {
     onSelect(node.id as string);
   }
-
-  const getRelatedClass = _getRelatedClass(itemClassConfiguration);
 
   const nodes: TreeNodeInfo[] = [{
     id: 'justification',
@@ -435,54 +339,6 @@ function ({
     disabled: !enableManagerNotes,
     label: "Manager notes",
     isSelected: selectedItem === 'manager',
-  }, {
-    id: 'proposals',
-    label: "Proposals",
-    isExpanded: true,
-    isSelected: selectedItem === 'proposals',
-    hasCaret: Object.keys(proposals).length > 0,
-    childNodes: [ ...Object.entries(proposals).map(([itemIDWithClass, proposal]) => {
-      const [classID, itemID] = itemIDWithClass.split('/');
-      const clsConfig = Object.values(itemClassConfiguration).find(cls => cls.meta.id === classID);
-      const View = clsConfig?.views.listItemView;
-      const data = itemData[itemIDWithClass]?.data || undefined;
-
-      let label: JSX.Element;
-
-      if (!View) {
-        label = <span>{itemIDWithClass}</span>;
-      } else if (proposal.type === 'addition') {
-        label = <View
-          itemID={itemID}
-          css={css`white-space: nowrap;`}
-          getRelatedItemClassConfiguration={getRelatedClass}
-          useRegisterItemData={useRegisterItemData}
-          itemData={proposal.payload} />;
-      } else if (data !== undefined) {
-        label = <View
-          itemID={itemID}
-          css={css`white-space: nowrap;`}
-          useRegisterItemData={useRegisterItemData}
-          getRelatedItemClassConfiguration={getRelatedClass}
-          itemData={data} />;
-      } else {
-        label = <span>Unable to read item</span>;
-      }
-
-      return {
-        isSelected: selectedItem === itemIDWithClass,
-        id: itemIDWithClass,
-        icon: PROPOSAL_ICON[proposal.type] as IconName,
-        secondaryLabel: <Tag
-            minimal css={css`white-space: nowrap;`}
-            title={clsConfig?.meta.title}>
-          {Object.entries(itemClassConfiguration).
-            find(([_, cfg]) => cfg.meta.id === classID)?.[0] ||
-            clsConfig?.meta.title}
-        </Tag>,
-        label,
-      };
-    })],
   }];
 
   return (
@@ -549,115 +405,115 @@ const CRManagerNotes: React.FC<{
 };
 
 
-const ProposalDetails: React.FC<{
-  value: ChangeProposal
-  classConfig: ItemClassConfiguration<any>
-
-  getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
-  useRegisterItemData: RegisterItemDataHook
-
-  existingItemData?: Payload
-  ItemView?: ItemEditView<any> | ItemDetailView<any>
-
-  onAccept?: (itemID: string, clsID: string) => void
-  onChange?: (val: ChangeProposal) => void
-  onDelete?: () => void
-}> = function ({
-    value, onChange, ItemView,
-    existingItemData, classConfig, getRelatedClass,
-    useRegisterItemData }) {
-  let itemView: JSX.Element;
-  let proposalProperties: JSX.Element | null;
-
-  if (value.type === 'amendment') {
-    proposalProperties = (
-      <FormGroup inline label="Supersede with:">
-        <InputGroup
-          value={value.amendmentType === 'supersession' ? value.supersedingItemID : ''}
-          disabled={!onChange}
-          placeholder="Item ID"
-          onChange={onChange
-            ? (evt: React.FormEvent<HTMLInputElement>) => {
-                if (!onChange) { return; }
-                const itemID = evt.currentTarget.value;
-                if (itemID.trim() === '') {
-                  const newVal = update(value, { $unset: ['supersedingItemID'] });
-                  onChange({ ...newVal, amendmentType: 'retirement' });
-                } else {
-                  onChange({ ...value, amendmentType: 'supersession', supersedingItemID: itemID });
-                }
-              }
-            : undefined}/>
-      </FormGroup>
-    );
-  } else {
-    proposalProperties = null;
-  }
-
-  const itemData: Payload | undefined = value.type === 'addition' ? value.payload : existingItemData;
-
-  if (itemData === undefined) {
-    itemView = <NonIdealState icon="heart-broken" title="Unable to display this item" />;
-  } else if (onChange && value.type !== 'amendment') {
-    const View = ItemView as ItemEditView<any>;
-    itemView = <View
-      itemData={itemData}
-      getRelatedItemClassConfiguration={getRelatedClass}
-      useRegisterItemData={useRegisterItemData}
-      onChange={onChange
-        ? (payload) => onChange ? onChange({ ...value, payload }) : void 0
-        : undefined} />;
-  } else {
-    const View = ItemView as ItemDetailView<any>;
-    itemView = <View
-      useRegisterItemData={useRegisterItemData}
-      getRelatedItemClassConfiguration={getRelatedClass}
-      itemData={itemData} />;
-  }
-
-  const canChangeProposalType = value.type !== 'addition';
-
-  function handleTypeChange(type: string) {
-    const pt = type as typeof PROPOSAL_TYPES[number];
-
-    if (PROPOSAL_TYPES.indexOf(pt) < 0) { return; }
-    if (!onChange || !canChangeProposalType || pt === 'addition' || existingItemData === undefined) { return; }
-
-    if (pt === 'amendment') {
-      onChange(update(value, {
-        type: { $set: pt },
-        amendmentType: { $set: 'retirement' },
-        $unset: ['payload'],
-      }));
-    } else {
-      onChange(update(value, {
-        type: { $set: pt },
-        payload: existingItemData,
-      }));
-    }
-  }
-
-  return (
-    <div css={css`flex: 1; display: flex; flex-flow: column nowrap;`}>
-      <div css={css`flex-shrink: 0; display: flex; flex-flow: row nowrap; align-items: center; margin-bottom: 1rem;`}>
-        <HTMLSelect
-          options={PROPOSAL_TYPES.map(pt => ({ value: pt, label: pt }))}
-          iconProps={{ icon: PROPOSAL_ICON[value.type] }}
-          value={value.type}
-          disabled={!onChange || !canChangeProposalType || existingItemData === undefined}
-          onChange={(onChange && canChangeProposalType && existingItemData !== undefined)
-            ? (evt) => handleTypeChange(evt.currentTarget.value)
-            : undefined} />
-        &ensp;
-        of a
-        &ensp;
-        <H4 css={css`margin: 0;`}>{classConfig.meta.title}</H4>
-        {proposalProperties}
-      </div>
-
-      <div css={css`flex: 1; overflow-y: auto;`}>
-        {itemView}
-      </div>
-    </div>
-  );
-};
+// const ProposalDetails: React.FC<{
+//   value: ChangeProposal
+//   classConfig: ItemClassConfiguration<any>
+// 
+//   getRelatedClass: (clsID: string) => RelatedItemClassConfiguration
+//   useRegisterItemData: RegisterItemDataHook
+// 
+//   existingItemData?: Payload
+//   ItemView?: ItemEditView<any> | ItemDetailView<any>
+// 
+//   onAccept?: (itemID: string, clsID: string) => void
+//   onChange?: (val: ChangeProposal) => void
+//   onDelete?: () => void
+// }> = function ({
+//     value, onChange, ItemView,
+//     existingItemData, classConfig, getRelatedClass,
+//     useRegisterItemData }) {
+//   let itemView: JSX.Element;
+//   let proposalProperties: JSX.Element | null;
+// 
+//   if (value.type === 'amendment') {
+//     proposalProperties = (
+//       <FormGroup inline label="Supersede with:">
+//         <InputGroup
+//           value={value.amendmentType === 'supersession' ? value.supersedingItemID : ''}
+//           disabled={!onChange}
+//           placeholder="Item ID"
+//           onChange={onChange
+//             ? (evt: React.FormEvent<HTMLInputElement>) => {
+//                 if (!onChange) { return; }
+//                 const itemID = evt.currentTarget.value;
+//                 if (itemID.trim() === '') {
+//                   const newVal = update(value, { $unset: ['supersedingItemID'] });
+//                   onChange({ ...newVal, amendmentType: 'retirement' });
+//                 } else {
+//                   onChange({ ...value, amendmentType: 'supersession', supersedingItemID: itemID });
+//                 }
+//               }
+//             : undefined}/>
+//       </FormGroup>
+//     );
+//   } else {
+//     proposalProperties = null;
+//   }
+// 
+//   const itemData: Payload | undefined = value.type === 'addition' ? value.payload : existingItemData;
+// 
+//   if (itemData === undefined) {
+//     itemView = <NonIdealState icon="heart-broken" title="Unable to display this item" />;
+//   } else if (onChange && value.type !== 'amendment') {
+//     const View = ItemView as ItemEditView<any>;
+//     itemView = <View
+//       itemData={itemData}
+//       getRelatedItemClassConfiguration={getRelatedClass}
+//       useRegisterItemData={useRegisterItemData}
+//       onChange={onChange
+//         ? (payload) => onChange ? onChange({ ...value, payload }) : void 0
+//         : undefined} />;
+//   } else {
+//     const View = ItemView as ItemDetailView<any>;
+//     itemView = <View
+//       useRegisterItemData={useRegisterItemData}
+//       getRelatedItemClassConfiguration={getRelatedClass}
+//       itemData={itemData} />;
+//   }
+// 
+//   const canChangeProposalType = value.type !== 'addition';
+// 
+//   function handleTypeChange(type: string) {
+//     const pt = type as typeof PROPOSAL_TYPES[number];
+// 
+//     if (PROPOSAL_TYPES.indexOf(pt) < 0) { return; }
+//     if (!onChange || !canChangeProposalType || pt === 'addition' || existingItemData === undefined) { return; }
+// 
+//     if (pt === 'amendment') {
+//       onChange(update(value, {
+//         type: { $set: pt },
+//         amendmentType: { $set: 'retirement' },
+//         $unset: ['payload'],
+//       }));
+//     } else {
+//       onChange(update(value, {
+//         type: { $set: pt },
+//         payload: existingItemData,
+//       }));
+//     }
+//   }
+// 
+//   return (
+//     <div css={css`flex: 1; display: flex; flex-flow: column nowrap;`}>
+//       <div css={css`flex-shrink: 0; display: flex; flex-flow: row nowrap; align-items: center; margin-bottom: 1rem;`}>
+//         <HTMLSelect
+//           options={PROPOSAL_TYPES.map(pt => ({ value: pt, label: pt }))}
+//           iconProps={{ icon: PROPOSAL_ICON[value.type] }}
+//           value={value.type}
+//           disabled={!onChange || !canChangeProposalType || existingItemData === undefined}
+//           onChange={(onChange && canChangeProposalType && existingItemData !== undefined)
+//             ? (evt) => handleTypeChange(evt.currentTarget.value)
+//             : undefined} />
+//         &ensp;
+//         of a
+//         &ensp;
+//         <H4 css={css`margin: 0;`}>{classConfig.meta.title}</H4>
+//         {proposalProperties}
+//       </div>
+// 
+//       <div css={css`flex: 1; overflow-y: auto;`}>
+//         {itemView}
+//       </div>
+//     </div>
+//   );
+// };
