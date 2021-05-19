@@ -9,6 +9,7 @@ import {
   Amendment,
   Clarification,
   Supersession,
+  ItemClassConfiguration,
 } from '../../types';
 import { itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
 
@@ -125,3 +126,18 @@ async function proposalToObjectChangeset(
 
   return changeset;
 }
+
+
+export async function makeAdditionProposal<P extends Record<string, any> = any>
+(idMaker: () => Promise<string>, itemClass: ItemClassConfiguration<P>, data?: P, subregisterID?: string):
+Promise<[itemRef: InternalItemReference, proposal: Addition]> {
+  const itemRef = {
+    classID: itemClass.meta.id,
+    subregisterID,
+    itemID: await idMaker(),
+  };
+  return [itemRef, {
+    type: 'addition',
+    payload: data ?? itemClass.defaults ?? {},
+  }];
+};
