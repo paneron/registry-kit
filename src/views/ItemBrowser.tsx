@@ -289,8 +289,7 @@ export const RegisterItemBrowser: React.FC<
       id,
       subregisters !== undefined,
       cr.proposals,
-      itemData,
-      makeRandomID);
+      itemData);
 
     const objectChangeset: ObjectChangeset = {
       [crObjectPath]: {
@@ -299,6 +298,7 @@ export const RegisterItemBrowser: React.FC<
       },
       ...itemChangeset,
     };
+
     await updateObjects({
       commitMessage,
       objectChangeset,

@@ -17,6 +17,7 @@ import PropertyView from '@riboseinc/paneron-extension-kit/widgets/Sidebar/Prope
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 
 import {
+  ChangeProposal,
   Clarification,
   InternalItemReference,
   ItemAction,
@@ -32,6 +33,7 @@ import ItemClass from './sidebar-blocks/ItemClass';
 import GenericRelatedItemView from './GenericRelatedItemView';
 import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { itemRefToItemPath } from './itemPathUtils';
+import { makeAdditionProposal } from './change-request/objectChangeset';
 
 
 export const ItemDetails: React.FC<{
@@ -48,15 +50,17 @@ export const ItemDetails: React.FC<{
 
   const { itemID, classID, subregisterID } = itemRef;
   const [editedItemData, setEditedItemData] = useState<RegisterItem<any>["data"] | null>(null);
-  const [selfApprovedProposal, setSelfApprovedProposal] = useState<Clarification | Supersession | Retirement | null>(null);
+  const [selfApprovedProposal, setSelfApprovedProposal] = useState<ChangeProposal | null>(null);
   const [amendmentPromptState, setAmendmentPromptState] = useState(false);
+  const [newRelatedItemRef, setNewRelatedItemRef] = useState<InternalItemReference | null>(null);
 
-  const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
+  const { usePersistentDatasetStateReducer, makeRandomID } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, subregisters, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
 
   useEffect(() => {
     setSelfApprovedProposal(null);
     setAmendmentPromptState(false);
+    setNewRelatedItemRef(null);
   }, [JSON.stringify(itemRef)]);
 
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
@@ -166,6 +170,20 @@ export const ItemDetails: React.FC<{
       details = (
         <EditView
           getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+          onCreateRelatedItem={async (classID, subregisterID) => {
+            if (!makeRandomID) {
+              throw new Error("Unable to create related item: random ID maker function is not available");
+            }
+            const [itemRef, proposal] = await makeAdditionProposal(
+              makeRandomID,
+              itemClasses[classID],
+              undefined,
+              subregisterID,
+            );
+            setSelfApprovedProposal(proposal);
+            setNewRelatedItemRef(itemRef);
+            return itemRef;
+          }}
           subregisterID={subregisterID}
           useRegisterItemData={useRegisterItemData}
           itemData={editedItemData}
@@ -262,19 +280,24 @@ export const ItemDetails: React.FC<{
 
       <Button onClick={() => setAmendmentPromptState(false)}>Cancel</Button>
     </>;
-  } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null) {
+  } else if (selfApprovedProposal !== null && onChange && stakeholder && itemData !== null && (selfApprovedProposal.type !== 'addition' || newRelatedItemRef !== null)) {
     changePopoverContents = <SelfApprovedCR
-      css={css`width: 80vw; height: 80vh;`}
+      sponsor={stakeholder}
+      proposals={{
+        [selfApprovedProposal.type === 'addition' ? itemRefToItemPath(newRelatedItemRef!) : itemPath]:
+          selfApprovedProposal,
+      }}
       onConfirm={async (opts) => {
         await onChange(opts, { [itemPath]: itemData, ...supersedingItemData });
         setSelfApprovedProposal(null);
         setEditedItemData(null);
+        setNewRelatedItemRef(null);
       }}
-      onCancel={() => setSelfApprovedProposal(null)}
-      sponsor={stakeholder}
-      proposals={{
-        [itemPath]: selfApprovedProposal,
+      onCancel={() => {
+        setSelfApprovedProposal(null);
+        setNewRelatedItemRef(null);
       }}
+      css={css`width: 80vw; height: 80vh;`}
     />;
   } else {
     changePopoverContents = null;

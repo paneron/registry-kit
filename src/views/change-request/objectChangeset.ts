@@ -19,14 +19,12 @@ export async function proposalsToObjectChangeset(
   hasSubregisters: boolean,
   proposals: ChangeRequest["proposals"],
   itemData: Record<string, RegisterItem<any>>,
-  makeUUID: () => Promise<string>,
 ): Promise<ObjectChangeset> {
   const cs: ObjectChangeset = {};
 
   for (const [itemPath, proposal] of Object.entries(proposals)) {
     //const originalItem: RegisterItem<any> | undefined = (itemData[itemPath] ?? undefined);
     const itemRef = itemPathToItemRef(hasSubregisters, itemPath);
-    const opts = { makeUUID }
 
     if (proposal.type !== 'addition') {
       if (itemData[itemPath] === undefined) {
@@ -34,21 +32,16 @@ export async function proposalsToObjectChangeset(
         throw new Error("Unable to convert proposals to object changeset: original item data is missing");
       }
       if (proposal.type === 'amendment' && proposal.amendmentType === 'supersession') {
-        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
+        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData));
       } else {
-        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
+        Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData));
       }
     } else {
-      Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData, opts));
+      Object.assign(cs, await proposalToObjectChangeset(crID, proposal, itemRef, itemPath, itemData));
     }
   }
 
   return cs;
-}
-
-
-interface ApplyProposalOpts {
-  makeUUID: () => Promise<string>
 }
 
 // TODO: Refactor out the business logic of proposal approval.
@@ -62,7 +55,6 @@ async function proposalToObjectChangeset(
   itemRef: InternalItemReference,
   itemPath: string,
   itemData: Record<string, RegisterItem<any>>,
-  opts: ApplyProposalOpts,
 ): Promise<Changeset<Change<RegisterItem<any>>>> {
   let newItem: RegisterItem<any>;
   const changeset: Changeset<Change<RegisterItem<any>>> = {};
@@ -112,7 +104,7 @@ async function proposalToObjectChangeset(
   } else {
     const addition = proposal as Addition;
     newItem = {
-      id: await opts.makeUUID(),
+      id: itemRef.itemID,
       data: addition.payload,
       status: 'valid',
       dateAccepted: new Date(),
