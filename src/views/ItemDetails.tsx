@@ -38,7 +38,9 @@ export const ItemDetails: React.FC<{
   itemRef: InternalItemReference
   itemActions?: ItemAction[]
   onClose?: () => void
-  onChange?: (opts: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) => Promise<void>
+  onChange?:
+    (opts: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) =>
+      Promise<void>
   className?: string
   style?: React.CSSProperties
 }> = function ({ itemRef, onClose, onChange, itemActions, className, style }) {
