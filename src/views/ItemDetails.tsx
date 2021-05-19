@@ -159,7 +159,7 @@ export const ItemDetails: React.FC<{
     details = <div className={Classes.SKELETON}>Loading…</div>;
 
   } else if (itemData) {
-    if (editedItemData !== null) {
+    if (editedItemData !== null && onChange) {
       const EditView = itemClass.views.editView;
       details = (
         <EditView
