@@ -290,8 +290,10 @@ export const ItemDetails: React.FC<{
       onConfirm={async (opts) => {
         await onChange(opts, { [itemPath]: itemData, ...supersedingItemData });
         setSelfApprovedProposal(null);
-        setEditedItemData(null);
-        setNewRelatedItemRef(null);
+        if (selfApprovedProposal.type !== 'addition') {
+          setEditedItemData(null);
+          setNewRelatedItemRef(null);
+        }
       }}
       onCancel={() => {
         setSelfApprovedProposal(null);
