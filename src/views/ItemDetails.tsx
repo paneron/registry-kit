@@ -12,6 +12,7 @@ import {
   Dialog,
   InputGroup, Menu, MenuItem, NonIdealState, OverflowList
 } from '@blueprintjs/core';
+import { Popover2 } from '@blueprintjs/popover2';
 
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
@@ -30,7 +31,6 @@ import {
 
 import { BrowserCtx } from './BrowserCtx';
 import ItemSummary from './sidebar-blocks/ItemSummary';
-import { Popover2 } from '@blueprintjs/popover2';
 import ItemClass from './sidebar-blocks/ItemClass';
 import GenericRelatedItemView from './GenericRelatedItemView';
 import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
