@@ -1,6 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import styled from '@emotion/styled';
@@ -326,6 +328,20 @@ export const ItemDetails: React.FC<{
     </ControlGroup>
   );
 
+  let dateAccepted: string;
+  if (itemData?.dateAccepted) {
+    try {
+      dateAccepted = format(
+        parseISO(itemData!.dateAccepted as unknown as string),
+        'yyyy-MM-dd');
+    } catch (e) {
+      dateAccepted = '(read error)';
+      console.error("Failed to format date", itemData?.dateAccepted, e);
+    }
+  } else {
+    dateAccepted = 'N/A';
+  }
+
   const sidebar = <Sidebar 
     stateKey='opened-register-item'
     css={css`width: 280px; z-index: 1;`}
@@ -359,7 +375,7 @@ export const ItemDetails: React.FC<{
         <PropertyView label="Accepted">
           <InputGroup
             disabled
-            value={itemData?.dateAccepted?.toLocaleDateString?.() ?? 'N/A'} />
+            value={dateAccepted} />
         </PropertyView>
       </>,
     }, {
