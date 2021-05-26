@@ -68,13 +68,19 @@ export const RegistryView: React.FC<RegistryViewProps> = function ({ itemClassCo
       objectPaths: opts.itemPaths,
     }) as ValueHook<{ data: Record<string, RegisterItem<any> | null> }>;
 
-    //const parsedData = Object.entries(data.value).
-    //filter(([ path, data ]) => data !== null && data.encoding === 'utf-8').
-    //map(([ path, data ]) => {
-    //  const item: RegisterItem<any> = yaml.load(data!.value as string);
-    //  return { [path.replace('.yaml', '')]: item };
-    //}).
-    //reduce((p, c) => ({ ...p, ...c }), {});
+    // Convert dates
+    // const parsedData: Record<string, RegisterItem<any> | null> = Object.entries(result.value.data).
+    // map(([ path, data ]) => {
+    //   return {
+    //     [path]: data !== null
+    //       ? {
+    //           ...data,
+    //           dateAccepted: parseISO(data!.dateAccepted as unknown as string),
+    //         }
+    //       : null,
+    //   };
+    // }).
+    // reduce((p, c) => ({ ...p, ...c }), {});
 
     return {
       ...result,
