@@ -22,6 +22,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import {
   ChangeProposal,
   Clarification,
+  ExportFormatConfiguration,
   InternalItemReference,
   ItemAction,
   RegisterItem,
@@ -56,7 +57,7 @@ export const ItemDetails: React.FC<{
   const [amendmentPromptState, setAmendmentPromptState] = useState(false);
   const [newRelatedItemRef, setNewRelatedItemRef] = useState<InternalItemReference | null>(null);
 
-  const { usePersistentDatasetStateReducer, makeRandomID } = useContext(DatasetContext);
+  const { usePersistentDatasetStateReducer, makeRandomID, writeFileToFilesystem, getObjectData, getBlob } = useContext(DatasetContext);
   const { useRegisterItemData, itemClasses, subregisters, getRelatedItemClassConfiguration, stakeholder } = useContext(BrowserCtx);
 
   useEffect(() => {
@@ -87,6 +88,30 @@ export const ItemDetails: React.FC<{
   const itemResponse = useRegisterItemData(itemRequest);
   const itemData = itemResponse.value[itemPath];
   const supersedingItemData: Record<string, RegisterItem<any>> = {};
+
+  async function handleExport(bufferData: Uint8Array) {
+    if (!writeFileToFilesystem) {
+      throw new Error("Unable to export: filesystem write function unavailable");
+    }
+
+    await writeFileToFilesystem({
+      dialogOpts: {
+        prompt: "Choose location to export to",
+        filters: [{ name: 'All files', extensions: ['*'] }],
+      },
+      bufferData,
+    });
+  }
+  async function getExportedData(formatConfig?: ExportFormatConfiguration<any>): Promise<Uint8Array> {
+    if (!itemData || !getBlob) {
+      throw new Error("Unable to export item: item data not available");
+    }
+    if (formatConfig) {
+      return await formatConfig.exportItem(itemData, { getObjectData, getBlob });
+    } else {
+      return await getBlob(JSON.stringify(itemData));
+    }
+  }
 
   for (const supersedingItemPath of supersedingItemPaths) {
     const _d = itemResponse.value[supersedingItemPath];
@@ -384,6 +409,19 @@ export const ItemDetails: React.FC<{
       content: <>
         (Coming soon.)
       </>,
+    }, {
+      key: 'export',
+      title: "Export",
+      content: <ButtonGroup vertical fill>
+        <Button outlined onClick={async () => await handleExport(await getExportedData())}>
+          Export in native JSON
+        </Button>
+        {(itemClass.exportFormats ?? []).map((exportFormat, idx) =>
+          <Button key={idx} outlined onClick={async () => await handleExport(await getExportedData(exportFormat))}>
+            Export in {exportFormat.label}
+          </Button>
+        )}
+      </ButtonGroup>,
     }]}
   />;
 

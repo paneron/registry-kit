@@ -1,7 +1,7 @@
 
 import type React from 'react';
 import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
-import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ObjectDatasetRequest, ObjectDatasetResponse, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 
 
@@ -34,6 +34,17 @@ export type ItemClassConfigurationSet = {
 
 
 
+export interface ExportFormatConfiguration<P extends Payload> {
+  label: string
+  exportItem: (
+    itemData: RegisterItem<P>,
+    opts: {
+      getObjectData: (opts: ObjectDatasetRequest) => Promise<ObjectDatasetResponse>,
+      getBlob: (val: string) => Promise<Uint8Array>,
+    },
+  ) => Promise<Uint8Array>
+}
+
 
 export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> {
   meta: RegisterItemClass
@@ -49,6 +60,8 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
   sanitizePayload?: (item: P) => Promise<P>
   itemSorter?: (a: P, b: P) => number
   keyExpression?: string
+
+  exportFormats?: ExportFormatConfiguration<P>[]
 
   views: {
     listItemView: ItemListView<P>
