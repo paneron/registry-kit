@@ -336,7 +336,7 @@ export const ItemDetails: React.FC<{
     <ControlGroup>
       <Button
         disabled={!onClose || editedItemData !== null}
-        icon="arrow-left"
+        icon="cross"
         title="Close item"
         onClick={onClose} />
       {itemActionMenu}
