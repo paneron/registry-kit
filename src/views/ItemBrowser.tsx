@@ -110,6 +110,9 @@ export const RegisterItemBrowser: React.FC<
   };
 
   const [ state, dispatch ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
+    'item-browser',
+    undefined,
+    undefined,
     (prevState, action) => {
       switch (action.type) {
         case 'select-item':
@@ -146,11 +149,13 @@ export const RegisterItemBrowser: React.FC<
         default:
           throw new Error("Unexpected register item browser state");
       }
-    }, {
+    },
+    {
       view: 'grid',
       selectedItemPath: undefined,
       query: { criteria: makeBlankCriteria() },
-    }, null, 'item-browser');
+    },
+    null);
 
   const queryExpression = useDebounce(
     criteriaGroupToQueryExpression(state.query.criteria),
