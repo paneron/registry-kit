@@ -57,6 +57,7 @@ export const SearchQuery: React.FC<{
           content={
             <>
               <CriteriaTree
+                key="tree"
                 criteria={rootCriteria}
                 onChange={onCriteriaChange}
                 itemClasses={itemClasses}
@@ -64,7 +65,7 @@ export const SearchQuery: React.FC<{
                 subregisters={subregisters}
                 css={css`width: 100vw; max-height: 50vh; overflow-y: auto;`}
               />
-              <div css={css`margin-top: 5px; padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
+              <div key="query" css={css`margin-top: 5px; padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
                 Computed query: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
               </div>
             </>}>

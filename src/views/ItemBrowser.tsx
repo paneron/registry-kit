@@ -4,9 +4,12 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import {
+  Button,
+  ControlGroup,
   Icon,
   NonIdealState, Spinner, Toaster,
 } from '@blueprintjs/core';
+import { Popover2 } from '@blueprintjs/popover2';
 
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -15,6 +18,7 @@ import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import {
   ChangeRequest,
+  InternalItemReference,
   ItemAction,
   RegisterItem,
   //Register,
@@ -33,6 +37,8 @@ import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 //import { REGISTER_METADATA_FILENAME } from '../common';
 import { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { proposalsToObjectChangeset } from './change-request/objectChangeset';
+import NewItem from './NewItem';
+import AddItemMenu from './AddItemMenu';
 
 
 const toaster = Toaster.create({ position: 'bottom' });
@@ -91,6 +97,7 @@ export const RegisterItemBrowser: React.FC<
   //const { useObjectPaths } = useContext(DatasetContext);
   const { usePersistentDatasetStateReducer, updateObjects, makeRandomID } = ctx;
   const [viewingMeta, setViewingMeta] = useState(false);
+  const [newItemRef, setNewItemRef] = useState<InternalItemReference | null>(null);
 
   const stakeholder: RegisterStakeholder = {
     role: 'submitter',
@@ -306,6 +313,18 @@ export const RegisterItemBrowser: React.FC<
     });
   }
 
+  async function generateNewItemReference(subregisterID: string | undefined, classID: string): Promise<InternalItemReference> {
+    if (!makeRandomID) {
+      throw new Error("Cannot create new item ID (possibly this dataset is read-only)");
+    }
+    const itemID = await makeRandomID();
+    return {
+      subregisterID,
+      classID,
+      itemID,
+    };
+  }
+
   //async function handleEditRegisterInfo(
   //  oldValue: Register | null,
   //  newValue: Register,
@@ -380,8 +399,45 @@ export const RegisterItemBrowser: React.FC<
     ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
     : undefined;
 
+  const toolbar: JSX.Element = <ControlGroup>
+    <SearchQuery
+      rootCriteria={state.query.criteria}
+      onCriteriaChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
+      viewingMeta={viewingMeta}
+      onViewMeta={setViewingMeta}
+      itemClasses={itemClassConfiguration}
+      availableClassIDs={availableClassIDs}
+      subregisters={subregisters}
+    />
+    <Popover2
+        content={<AddItemMenu
+          subregisters={subregisters}
+          itemClassConfiguration={itemClassConfiguration}
+          onSelect={async (subregisterID, itemClassID) => {
+            const itemRef = await performOperation('generating new item reference', generateNewItemReference)(subregisterID, itemClassID);
+            if (itemRef) {
+              setNewItemRef(itemRef);
+            }
+          }}
+        />}>
+      <Button icon="add" title="Add new item" />
+    </Popover2>
+  </ControlGroup>
+
   let view: JSX.Element;
-  if (state.view === 'grid') {
+  if (newItemRef !== null && !isBusy && updateObjects && makeRandomID) {
+    view = <NewItem
+      itemRef={newItemRef}
+      initialPayload={itemClassConfiguration[newItemRef.classID].defaults ?? {}}
+      onClose={!isBusy
+        ? () => setNewItemRef(null)
+        : undefined}
+      onAdd={async (...args) => {
+        await performOperation('adding item', handleSaveAndApprove)(...args);
+        setNewItemRef(null);
+      }}
+    />;
+  } else if (state.view === 'grid') {
     view = <RegisterItemGrid
       selectedItem={viewingMeta ? undefined : selectedItemRef}
       queryExpression={queryExpression} // TODO: Should pass actual structured criteria here probably.
@@ -415,15 +471,7 @@ export const RegisterItemBrowser: React.FC<
             }]}
           />
         : undefined}
-      toolbar={<SearchQuery
-        rootCriteria={state.query.criteria}
-        onCriteriaChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
-        viewingMeta={viewingMeta}
-        onViewMeta={setViewingMeta}
-        itemClasses={itemClassConfiguration}
-        availableClassIDs={availableClassIDs}
-        subregisters={subregisters}
-      />}
+      toolbar={toolbar}
       getRelatedClassConfig={getRelatedClass}
       useRegisterItemData={useRegisterItemData}
     />;
