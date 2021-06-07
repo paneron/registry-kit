@@ -76,7 +76,7 @@ type State = ItemState | GridState;
 
 
 export const RegisterItemBrowser: React.FC<
-  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters' | 'keyExpression'> & {
+  Pick<RegistryViewProps, 'itemClassConfiguration' | 'subregisters' | 'keyExpression' | 'defaultSearchCriteria'> & {
   availableClassIDs?: string[]
   useRegisterItemData: RegisterItemDataHook
   itemActions?: ItemAction[]
@@ -87,6 +87,7 @@ export const RegisterItemBrowser: React.FC<
   subregisters,
   itemClassConfiguration,
   keyExpression,
+  defaultSearchCriteria,
   useRegisterItemData,
   itemActions,
   className,
@@ -156,7 +157,7 @@ export const RegisterItemBrowser: React.FC<
     {
       view: 'grid',
       selectedItemPath: undefined,
-      query: { criteria: makeBlankCriteria() },
+      query: { criteria: defaultSearchCriteria ?? makeBlankCriteria() },
     },
     null);
 
