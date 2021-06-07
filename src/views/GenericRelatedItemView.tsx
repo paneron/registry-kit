@@ -86,7 +86,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
                   useRegisterItemData={useRegisterItemData}
                   itemData={item.data}
                   getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />
-              : <span>Item not found: {itemRef?.itemID ?? 'N/A'}</span>}
+              : <span>Item not found: {itemID ?? 'N/A'}</span>}
         </Button>
       </ButtonGroup>
 
