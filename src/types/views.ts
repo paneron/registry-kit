@@ -3,6 +3,7 @@ import type React from 'react';
 import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
 import type { ObjectDatasetRequest, ObjectDatasetResponse, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
+import type { CriteriaGroup } from '../views/FilterCriteria/models';
 
 
 // Extension configuration
@@ -16,6 +17,7 @@ export interface ExtensionContext {
 export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
   itemClassConfiguration: Items
   keyExpression?: string
+  subregisters?: Subregisters<Items>
 }
 
 export type Subregisters<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> = {
@@ -76,7 +78,7 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
 export interface RegistryViewProps
 <Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>>
 extends RegisterConfiguration<Items> {
-  subregisters?: Subregisters<Items>
+  defaultSearchCriteria?: CriteriaGroup
 }
 
 export interface ItemAction {
