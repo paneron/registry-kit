@@ -394,7 +394,8 @@ export const ItemDetails: React.FC<{
         <PropertyView label="Current">
           <InputGroup
             disabled
-            intent={itemData?.status === 'valid' ? 'success' : undefined} value={itemData?.status}
+            intent={itemData?.status === 'valid' ? 'success' : undefined}
+            value={itemData?.status}
           />
         </PropertyView>
         <PropertyView label="Accepted">
