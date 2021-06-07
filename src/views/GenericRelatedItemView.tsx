@@ -69,7 +69,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
                 alignText="left"
                 title="Item class"
                 outlined disabled>
-              {cfg.title ?? "Class not specified"}
+              {cfg.title ?? "Class N/A"}
             </Button>
           : null}
         <Button
