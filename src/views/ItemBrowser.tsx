@@ -1,12 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-//import { debounce } from 'throttle-debounce';
-//import log from 'electron-log';
-
 import React, { useContext, useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/core';
-//import { FixedSizeList as List } from 'react-window';
 import {
   Icon,
   NonIdealState, Spinner, Toaster,
