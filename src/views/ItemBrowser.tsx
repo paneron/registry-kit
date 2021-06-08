@@ -197,18 +197,16 @@ export const RegisterItemBrowser: React.FC<
         } else {
           errMsg = e.message;
         }
+        toaster.dismiss(opKey);
         toaster.show({
           message: `Problem ${gerund}. The error said: “${errMsg}”`,
           intent: 'danger',
           icon: 'error',
           timeout: 0,
           onDismiss: () => {
-            if (_operationKey === opKey) {
-              setOperationKey(undefined);
-            }
+            setOperationKey(undefined);
           },
         });
-        toaster.dismiss(opKey);
         throw e;
       }
     }
