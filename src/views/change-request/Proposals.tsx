@@ -200,11 +200,11 @@ const clarification: ProposalViewConfig<Clarification> = {
     } = useContext(BrowserCtx);
     const { classID } = itemRef;
     const ListItemView = itemClasses[classID].views.listItemView;
-    return <>Clarification of <ListItemView
+    return <>Clarification of [<ListItemView
       itemID={itemRef.itemID}
       itemData={proposal.payload}
       useRegisterItemData={useRegisterItemData}
-      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} /></>;
+      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />]</>;
   },
 };
 
@@ -219,11 +219,11 @@ const addition: ProposalViewConfig<Addition> = {
     } = useContext(BrowserCtx);
     const { classID } = itemRef;
     const ListItemView = itemClasses[classID].views.listItemView;
-    return <>Addition of <ListItemView
+    return <>Addition of [<ListItemView
       itemID={itemRef.itemID}
       itemData={proposal.payload}
       useRegisterItemData={useRegisterItemData}
-      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} /></>;
+      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />]</>;
   },
 };
 
@@ -246,11 +246,11 @@ const retirement: ProposalViewConfig<Retirement> = {
       return <>(item data is not available)</>;
     }
     const ListItemView = itemClasses[classID].views.listItemView;
-    return <>Retirement of <ListItemView
+    return <>Retirement of [<ListItemView
       itemID={itemRef.itemID}
       itemData={originalItem.data}
       useRegisterItemData={useRegisterItemData}
-      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} /></>;
+      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />]</>;
   },
 };
 
