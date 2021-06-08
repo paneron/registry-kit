@@ -1,13 +1,16 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { jsx, css } from '@emotion/core';
 import { Button, ButtonGroup, FormGroup } from '@blueprintjs/core';
 import { ChangeRequest } from '../../types';
 import Justification from './Justification';
 import Proposals from './Proposals';
 import { RegisterStakeholderListItem } from '../RegisterStakeholder';
+import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import { BrowserCtx } from '../BrowserCtx';
 
 
 export type SelfApprovedCRData =
@@ -27,7 +30,7 @@ SelfApprovedCRData {
 interface SelfApprovedCRProps {
   proposals: SelfApprovedCRData['proposals']
   sponsor: SelfApprovedCRData['sponsor']
-  onConfirm: (cr: SelfApprovedCRData) => void
+  onConfirm: (cr: SelfApprovedCRData, opts?: { addForLater?: string | true }) => void
   onCancel: () => void
   className?: string
 }
@@ -44,18 +47,60 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
   const [cr, updateCR] = useState<SelfApprovedCRData>(
     makeTemplate({ proposals, sponsor }));
 
-  function handleConfirm() {
+  const { useObjectData, useFilteredIndex, useObjectPathFromFilteredIndex, useIndexDescription } = useContext(DatasetContext);
+  const { stakeholder } = useContext(BrowserCtx);
+
+  const crIndex = useFilteredIndex({
+    queryExpression: stakeholder?.gitServerUsername
+      ? `return objPath.indexOf("/change-requests/") === 0 && obj.sponsor?.gitServerUsername === "${stakeholder?.gitServerUsername}" && obj.timeDisposed === undefined && obj.status === 'pending'`
+      : 'return false',
+  });
+
+  const crIndexStatus = useIndexDescription({ indexID: crIndex.value.indexID }).value.status;
+
+  const [selectedCRPosition, selectCRPosition] = useState<number>(-1); // -1 means not adding to existing CR.
+
+  const selectedCRPath = useObjectPathFromFilteredIndex({
+    indexID: crIndex.value.indexID ?? '',
+    position: selectedCRPosition >= 0 ? selectedCRPosition : 0,
+  }).value.objectPath;
+
+  const selectedCRDataRequest = useObjectData({
+    objectPaths: selectedCRPath !== '' ? [selectedCRPath] : [],
+  }) as ValueHook<{ data: Record<string, ChangeRequest | null> }>;
+
+  const selectedCRData = selectedCRPosition >= 0 && selectedCRPath
+    ? selectedCRDataRequest.value.data[selectedCRPath]
+    : null;
+
+  // Convert dates
+  // const parsedData: Record<string, RegisterItem<any> | null> = Object.entries(result.value.data).
+  // map(([ path, data ]) => {
+  //   return {
+  //     [path]: data !== null
+  //       ? {
+  //           ...data,
+  //           dateAccepted: parseISO(data!.dateAccepted as unknown as string),
+  //         }
+  //       : null,
+  //   };
+  // }).
+  // reduce((p, c) => ({ ...p, ...c }), {});
+
+  function handleConfirm(addForLater?: string | true) {
     if (canConfirm) {
       onConfirm({
         justification: cr.justification,
         controlBodyNotes: cr.controlBodyNotes,
         proposals,
         sponsor,
+      }, {
+        addForLater,
       });
     }
   }
 
-  const canConfirm = cr.justification.trim() !== '';
+  const canConfirm = selectedCRData !== null || cr.justification.trim() !== '';
 
   return (
     <div
@@ -66,9 +111,34 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
         `}
         className={className}>
       <Proposals proposals={proposals} css={css`flex: 1; margin-bottom: 20px;`} />
+      <ButtonGroup
+          fill
+          css={css`margin-bottom: 10px;`}
+          title="Use arrows on the sides to select a change request to add these proposals to.">
+        <Button
+          icon="arrow-left"
+          disabled={selectedCRPosition < 0}
+          onClick={() => selectCRPosition(pos => pos < 0 ? pos : pos -= 1)}
+        />
+        <Button
+            disabled
+            fill
+            loading={selectedCRPosition >= 0 && selectedCRData === null}>
+          {selectedCRPosition < 0
+            ? "Don’t add to an existing pending change request"
+            : `Add to “${selectedCRData?.justification}”`}
+        </Button>
+        <Button
+          icon="arrow-right"
+          disabled={selectedCRPosition >= crIndexStatus.objectCount - 1}
+          onClick={() => selectCRPosition(pos => pos += 1)}
+        />
+      </ButtonGroup>
       <Justification
-        justification={cr.justification}
-        onChange={justification => updateCR(cr => ({ ...cr, justification }))}
+        justification={selectedCRData ? selectedCRData.justification : cr.justification}
+        onChange={selectedCRData?.justification
+          ? undefined
+          : justification => updateCR(cr => ({ ...cr, justification }))}
       />
       <FormGroup label="Sponsor:">
         <RegisterStakeholderListItem stakeholder={sponsor} isCurrentUser />
@@ -77,8 +147,13 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
         <Button
             intent={canConfirm ? "success" : undefined}
             disabled={!canConfirm}
-            onClick={handleConfirm}>
-          Save and approve
+            onClick={() => handleConfirm()}>
+          Save and approve immediately
+        </Button>
+        <Button
+            disabled={!canConfirm}
+            onClick={() => handleConfirm(selectedCRData?.id ?? true)}>
+          Save and propose later{selectedCRData ? ' as part of selected CR above' : ''}
         </Button>
         <Button onClick={() => onCancel()}>
           Cancel

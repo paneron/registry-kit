@@ -37,7 +37,7 @@ export const NewItem: React.FC<{
   onClose?: () => void
   initialPayload: any
   onAdd:
-    (opts: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>) =>
+    (cr: SelfApprovedCRData, originalItemData: Record<string, RegisterItem<any>>, opts?: { addForLater?: string | true }) =>
       Promise<void>
   className?: string
   style?: React.CSSProperties
@@ -202,8 +202,8 @@ export const NewItem: React.FC<{
         [newRelatedItemRef ? itemRefToItemPath(newRelatedItemRef!) : itemPath]:
           selfApprovedProposal,
       }}
-      onConfirm={async (opts) => {
-        await onAdd(opts, { [itemPath]: itemData, ...supersedingItemData });
+      onConfirm={async (cr, opts) => {
+        await onAdd(cr, { [itemPath]: itemData, ...supersedingItemData }, opts);
         setSelfApprovedProposal(null);
         if (selfApprovedProposal.type !== 'addition') {
           setNewRelatedItemRef(null);

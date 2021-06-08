@@ -58,3 +58,12 @@ export function itemPathToItemRef(hasSubregisters: boolean, itemPath: string): I
 function stripLeadingSlash(aPath: string): string {
   return aPath.replace(/^\//, '');
 }
+
+
+export function crIDToCRPath(crID: string): string {
+  return `/change-requests/${crID}.yaml`;
+}
+
+export function crPathToCRID(crPath: string): string {
+  return crPath.replace('/change-requests/', '').replace('.yaml', '');
+}

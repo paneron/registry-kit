@@ -8,19 +8,22 @@ import { FormGroup, InputGroup } from '@blueprintjs/core';
 
 const Justification: React.FC<{
   justification: string
-  onChange: (newVal: string) => void
+  onChange?: (newVal: string) => void
 }> = function ({ justification, onChange }) {
   return (
     <FormGroup
         label="Justification:"
         labelInfo="(required)"
         helperText="For an immediately approved change request, justification would typically be short."
-        intent={justification.trim() === '' ? 'danger' : undefined}>
+        intent={justification.trim() === '' && onChange ? 'danger' : undefined}>
       <InputGroup
         value={justification}
         required
         placeholder="Justification for this change…"
-        onChange={evt => onChange(evt.currentTarget.value)} />
+        disabled={!onChange}
+        onChange={onChange
+          ? (evt => onChange(evt.currentTarget.value))
+          : undefined} />
     </FormGroup>
   );
 };

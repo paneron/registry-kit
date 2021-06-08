@@ -30,7 +30,7 @@ import { _getRelatedClass } from './util';
 import { BrowserCtx } from './BrowserCtx';
 import ItemDetails from './ItemDetails';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
-import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
+import { crIDToCRPath, itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 //import { RegisterInformation } from './RegisterInformation';
@@ -96,7 +96,7 @@ export const RegisterItemBrowser: React.FC<
 
   const ctx = useContext(DatasetContext);
   //const { useObjectPaths } = useContext(DatasetContext);
-  const { usePersistentDatasetStateReducer, updateObjects, makeRandomID } = ctx;
+  const { usePersistentDatasetStateReducer, updateObjects, makeRandomID, getObjectData } = ctx;
   const [viewingMeta, setViewingMeta] = useState(false);
   const [newItemRef, setNewItemRef] = useState<InternalItemReference | null>(null);
 
@@ -270,46 +270,108 @@ export const RegisterItemBrowser: React.FC<
   //  });
   //}
 
-  async function handleSaveAndApprove(cr: SelfApprovedCRData, itemData: Record<string, RegisterItem<any>>) {
-    if (!updateObjects || !makeRandomID) {
+  async function handleApprove(fullCR: ChangeRequest, itemData: Record<string, RegisterItem<any>>) {
+    if (!updateObjects) {
       throw new Error("Unable to save and approve: dataset is read-only");
     }
-    const id = await makeRandomID();
-    const crObjectPath = `change-requests/${id}.yaml`;
-    const commitMessage: string = `save and approve: ${cr.justification}`;
-    const now = new Date();
-    const fullCR: ChangeRequest = {
-      ...cr,
-      id,
-      timeStarted: now,
-      timeProposed: now,
-      timeDisposed: now,
-      status: 'final',
-      disposition: 'accepted',
-    };
+
+    if (fullCR.disposition !== undefined || fullCR.status === 'final') {
+      throw new Error("Cannot approve a CR that’s already been disposed of");
+    }
 
     for (const itemPath of Object.keys(fullCR.proposals)) {
       fullCR.proposals[itemPath].disposition = 'accepted';
     }
 
     const itemChangeset = await proposalsToObjectChangeset(
-      id,
+      fullCR.id,
       subregisters !== undefined,
-      cr.proposals,
+      fullCR.proposals,
       itemData);
+
+    const commitMessage: string = `self-approve CR: ${fullCR.justification}`;
+
+    const now = new Date();
+
+    const approvedCR = {
+      ...fullCR,
+      timeDisposed: now,
+      status: 'final',
+      disposition: 'accepted',
+    }
+
+    const crObjectPath = `change-requests/${fullCR.id}.yaml`;
+    const objectChangeset: ObjectChangeset = {
+      ...itemChangeset,
+      [crObjectPath]: {
+        oldValue: fullCR,
+        newValue: approvedCR,
+      },
+    }
+
+    await updateObjects({ commitMessage, objectChangeset });
+  }
+
+  async function handleCreateCR(cr: SelfApprovedCRData, opts?: { proposeImmediately?: true }): Promise<ChangeRequest> {
+    if (!makeRandomID || !updateObjects) {
+      throw new Error("Unable to create CR: read-only dataset");
+    }
+
+    const id = await makeRandomID();
+    const now = new Date();
+    const fullCR: ChangeRequest = {
+      ...cr,
+      id,
+      timeStarted: now,
+      status: 'pending',
+    };
+
+    if (opts?.proposeImmediately === true) {
+      fullCR.timeProposed = now;
+    }
+
+    const crObjectPath = `change-requests/${fullCR.id}.yaml`;
+    const commitMessage: string = `create CR: ${fullCR.justification}`;
 
     const objectChangeset: ObjectChangeset = {
       [crObjectPath]: {
         oldValue: null,
         newValue: fullCR,
       },
-      ...itemChangeset,
     };
 
-    await updateObjects({
-      commitMessage,
-      objectChangeset,
-    });
+    await updateObjects({ commitMessage, objectChangeset });
+
+    return fullCR;
+  }
+
+  async function handleAddToCR(proposals: ChangeRequest["proposals"], crID: string) {
+    if (!updateObjects) {
+      throw new Error("Unable to add to CR: read-only dataset");
+    }
+
+    const crObjectPath = crIDToCRPath(crID);
+    const result = await getObjectData({ objectPaths: [crObjectPath] });
+    const crData = result.data[crObjectPath] as ChangeRequest | null;
+    if (!crData) {
+      throw new Error("Unable to retrieve the change request specified");
+    }
+
+    const objectChangeset: ObjectChangeset<ChangeRequest> = {
+      [crObjectPath]: {
+        oldValue: crData,
+        newValue: { ...crData, proposals: { ...crData.proposals, ...proposals } },
+      },
+    };
+
+    const commitMessage = `add more proposals to CR: ${crData.justification}`;
+
+    await updateObjects({ commitMessage, objectChangeset });
+  }
+
+  async function handleSaveAndApprove(cr: SelfApprovedCRData, itemData: Record<string, RegisterItem<any>>) {
+    const fullCR = await handleCreateCR(cr, { proposeImmediately: true });
+    await handleApprove(fullCR, itemData);
   }
 
   async function generateNewItemReference(subregisterID: string | undefined, classID: string): Promise<InternalItemReference> {
@@ -431,9 +493,16 @@ export const RegisterItemBrowser: React.FC<
       onClose={!isBusy
         ? () => setNewItemRef(null)
         : undefined}
-      onAdd={async (...args) => {
-        await performOperation('adding item', handleSaveAndApprove)(...args);
-        setNewItemRef(null);
+      onAdd={async (cr, itemData, opts) => {
+        if (opts?.addForLater) {
+          if (opts.addForLater === true) {
+            await performOperation('adding proposal to a new change request', handleCreateCR)(cr)
+          } else {
+            await performOperation('adding proposal to a change request', handleAddToCR)(cr.proposals, opts.addForLater);
+          }
+        } else {
+          await performOperation('adding & approving new item', handleSaveAndApprove)(cr, itemData);
+        }
       }}
     />;
   } else if (state.view === 'grid') {
@@ -482,7 +551,17 @@ export const RegisterItemBrowser: React.FC<
         ? () => dispatch({ type: 'exit-item' })
         : undefined}
       onChange={!isBusy && updateObjects
-        ? performOperation('saving & approving changes', handleSaveAndApprove)
+        ? async (cr, itemData, opts) => {
+            if (opts?.addForLater) {
+              if (opts.addForLater === true) {
+                await performOperation('adding proposal to a new change request', handleCreateCR)(cr)
+              } else {
+                await performOperation('adding proposal to a change request', handleAddToCR)(cr.proposals, opts.addForLater);
+              }
+            } else {
+              await performOperation('saving & approving changes', handleSaveAndApprove)(cr, itemData)
+            }
+          }
         : undefined}
     />;
   } else {
