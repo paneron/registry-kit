@@ -37,6 +37,7 @@ import GenericRelatedItemView from './GenericRelatedItemView';
 import SelfApprovedCR, { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { itemRefToItemPath } from './itemPathUtils';
 import { makeAdditionProposal } from './change-request/objectChangeset';
+import ChangeHistory from './sidebar-blocks/ChangeHistory';
 
 
 export const ItemDetails: React.FC<{
@@ -406,10 +407,8 @@ export const ItemDetails: React.FC<{
       </>,
     }, {
       key: 'history',
-      title: "Change history",
-      content: <>
-        (Coming soon.)
-      </>,
+      title: "Change request history",
+      content: <ChangeHistory itemPath={itemPath} />,
     }, {
       key: 'export',
       title: "Export",
