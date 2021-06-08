@@ -35,7 +35,7 @@ import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQuer
 import { CriteriaGroup, makeBlankCriteria } from './FilterCriteria/models';
 //import { RegisterInformation } from './RegisterInformation';
 //import { REGISTER_METADATA_FILENAME } from '../common';
-import { SelfApprovedCRData } from './change-request/SelfApprovedCR';
+import type { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { proposalsToObjectChangeset } from './change-request/objectChangeset';
 import NewItem from './NewItem';
 import AddItemMenu from './AddItemMenu';
