@@ -312,7 +312,11 @@ const supersession: ProposalViewConfig<Supersession> = {
 
 
 const MaximizedStructuredDiff = styled(StructuredDiff)`
-  position: absolute; top: 0; left: 0; bottom: 10px; right: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 10px;
+  right: 0;
 `;
 
 
