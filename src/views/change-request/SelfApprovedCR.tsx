@@ -74,7 +74,16 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
     : null;
 
   function handleConfirm(addForLater?: string | true) {
-    if (canConfirm) {
+    if (canAdd) {
+      onConfirm({
+        justification: selectedCRData?.justification ?? cr.justification,
+        controlBodyNotes: cr.controlBodyNotes,
+        proposals,
+        sponsor,
+      }, {
+        addForLater,
+      });
+    } else if (canAutoApprove) {
       onConfirm({
         justification: cr.justification,
         controlBodyNotes: cr.controlBodyNotes,
@@ -86,7 +95,8 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
     }
   }
 
-  const canConfirm = selectedCRData !== null || cr.justification.trim() !== '';
+  const canAutoApprove = cr.justification.trim() !== '';
+  const canAdd = (selectedCRPosition < 0 && cr.justification.trim() !== '') || selectedCRData !== null;
 
   return (
     <div
@@ -131,13 +141,14 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
       </FormGroup>
       <ButtonGroup>
         <Button
-            intent={canConfirm ? "success" : undefined}
-            disabled={!canConfirm}
+            intent={canAutoApprove ? "success" : undefined}
+            disabled={!canAutoApprove}
             onClick={() => handleConfirm()}>
           Save and approve immediately
         </Button>
         <Button
-            disabled={!canConfirm}
+            disabled={!canAdd}
+            intent={canAdd ? "success" : undefined}
             onClick={() => handleConfirm(selectedCRData?.id ?? true)}>
           Save and propose later{selectedCRData ? ' as part of selected CR above' : ''}
         </Button>
