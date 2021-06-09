@@ -73,20 +73,6 @@ function ({ proposals, sponsor, onConfirm, onCancel, className }) {
     ? selectedCRDataRequest.value.data[selectedCRPath]
     : null;
 
-  // Convert dates
-  // const parsedData: Record<string, RegisterItem<any> | null> = Object.entries(result.value.data).
-  // map(([ path, data ]) => {
-  //   return {
-  //     [path]: data !== null
-  //       ? {
-  //           ...data,
-  //           dateAccepted: parseISO(data!.dateAccepted as unknown as string),
-  //         }
-  //       : null,
-  //   };
-  // }).
-  // reduce((p, c) => ({ ...p, ...c }), {});
-
   function handleConfirm(addForLater?: string | true) {
     if (canConfirm) {
       onConfirm({
