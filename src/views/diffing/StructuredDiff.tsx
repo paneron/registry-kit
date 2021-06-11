@@ -1,11 +1,11 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx, css } from '@emotion/core';
-import React, { useEffect, useRef, useState } from 'react';
 import { diff, formatters } from 'jsondiffpatch';
-import { RegisterItem } from '../../types/item';
+import { jsx, css } from '@emotion/react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Switch } from '@blueprintjs/core';
+import { RegisterItem } from '../../types/item';
 
 
 const StructuredDiff: React.FC<{

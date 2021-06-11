@@ -125,7 +125,7 @@ Here are the modules you can import:
 * "@blueprintjs/datetime"
 * "@blueprintjs/icons"
 * "@blueprintjs/select"
-* "@emotion/core"
+* "@emotion/react"
 * "@riboseinc/paneron-extension-kit"
 * "@riboseinc/paneron-registry-kit"
 * "electron-log"

@@ -3,7 +3,7 @@
 import log from 'electron-log';
 
 import React, { useContext, useState } from 'react';
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import { NonIdealState } from '@blueprintjs/core';
 
 import { ValueHook } from '@riboseinc/paneron-extension-kit/types';

@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 // import React, { useMemo, useState, useEffect, useContext } from 'react';
-// import { jsx, css } from '@emotion/core';
+// import { jsx, css } from '@emotion/react';
 // import { MenuItem } from '@blueprintjs/core';
 // import { ItemRenderer, Select } from '@blueprintjs/select';
 // import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';

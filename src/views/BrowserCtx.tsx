@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import { createContext } from 'react';
 import { ItemClassConfigurationSet, RegisterItemDataHook, RegisterStakeholder, RelatedItemClassConfiguration, Subregisters } from '../types';
 

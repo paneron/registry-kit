@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext, useState } from 'react';
-import { jsx, css } from '@emotion/core';
+import { jsx, css } from '@emotion/react';
 import { Button, ButtonGroup, FormGroup } from '@blueprintjs/core';
 import { ChangeRequest } from '../../types';
 import Justification from './Justification';

@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { jsx, css } from '@emotion/core';
+import { jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
 
 import {

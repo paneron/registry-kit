@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext } from 'react';
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import PropertyView from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
 import { Button } from '@blueprintjs/core';
 import { BrowserCtx } from '../BrowserCtx';

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import React, { useRef, useEffect } from 'react';
 import { Colors } from '@blueprintjs/core'
 import { annotate } from 'rough-notation';

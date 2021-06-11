@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext } from 'react';
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import { InternalItemReference, RegisterItem } from '../../types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemRefToItemPath } from '../itemPathUtils';

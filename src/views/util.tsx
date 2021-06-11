@@ -1,10 +1,9 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { css, jsx } from '@emotion/core';
-
 //import log from 'electron-log';
 import React from 'react';
+import { css, jsx } from '@emotion/react';
 import { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 import { FormGroup, FormGroupProps } from '@blueprintjs/core';
 export { GenericRelatedItemView } from './GenericRelatedItemView';

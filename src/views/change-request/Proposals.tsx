@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext, useEffect, useState } from 'react';
-import { jsx, css } from '@emotion/core';
+import { jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { Classes, MenuItem, NonIdealState } from '@blueprintjs/core';

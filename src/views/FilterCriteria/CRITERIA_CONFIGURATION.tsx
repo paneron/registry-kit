@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import { HTMLSelect, OptionProps, InputGroup } from '@blueprintjs/core';
 import { CriteriaConfiguration, CriterionConfiguration } from './models';
 import { SUBREGISTER_PATH_PREFIX } from './index';

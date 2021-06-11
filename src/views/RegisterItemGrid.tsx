@@ -3,7 +3,7 @@
 
 import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
-import { jsx, css } from '@emotion/core';
+import { jsx, css } from '@emotion/react';
 import { Button, ButtonGroup, Classes, Colors, Tag } from '@blueprintjs/core';
 import { Popover2, Tooltip2 } from '@blueprintjs/popover2';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';

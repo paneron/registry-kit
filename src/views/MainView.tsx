@@ -1,9 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
+import { css, jsx } from '@emotion/react';
 import { Navbar } from '@blueprintjs/core';
-
-import { css, jsx } from '@emotion/core';
 
 
 const MainView: React.FC<{

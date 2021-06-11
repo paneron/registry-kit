@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React from 'react';
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import { RegisterStakeholder } from '../types';
 import { Icon, Tag } from '@blueprintjs/core';
 
