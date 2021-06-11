@@ -4,8 +4,8 @@
 //import log from 'electron-log';
 import React from 'react';
 import { css, jsx } from '@emotion/react';
-import { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 import { FormGroup, FormGroupProps } from '@blueprintjs/core';
+import { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 export { GenericRelatedItemView } from './GenericRelatedItemView';
 
 

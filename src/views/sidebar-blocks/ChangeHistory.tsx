@@ -5,6 +5,7 @@ import React, { useContext, useState } from 'react';
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import { ChangeRequest } from '../../types';
 
 
 const ChangeHistory: React.FC<{ itemPath: string, selectedCRID?: string, onSelectCR?: (crID: string) => void }> =

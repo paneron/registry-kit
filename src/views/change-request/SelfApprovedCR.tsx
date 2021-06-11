@@ -4,13 +4,13 @@
 import React, { useContext, useState } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, ButtonGroup, FormGroup } from '@blueprintjs/core';
-import { ChangeRequest } from '../../types';
-import Justification from './Justification';
-import Proposals from './Proposals';
-import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import { ChangeRequest } from '../../types';
+import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 import { BrowserCtx } from '../BrowserCtx';
+import Justification from './Justification';
+import Proposals from './Proposals';
 
 
 export type SelfApprovedCRData =

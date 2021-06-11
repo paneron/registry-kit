@@ -3,8 +3,8 @@
 
 import React, { useContext } from 'react';
 import { jsx } from '@emotion/react';
-import PropertyView from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
 import { Button } from '@blueprintjs/core';
+import PropertyView from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
 import { BrowserCtx } from '../BrowserCtx';
 
 

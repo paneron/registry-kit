@@ -3,8 +3,8 @@
 
 import React from 'react';
 import { jsx } from '@emotion/react';
-import { RegisterStakeholder } from '../types';
 import { Icon, Tag } from '@blueprintjs/core';
+import { RegisterStakeholder } from '../types';
 
 
 export const RegisterStakeholderListItem: React.FC<{
