@@ -126,6 +126,7 @@ Here are the modules you can import:
 * "@blueprintjs/icons"
 * "@blueprintjs/select"
 * "@emotion/react"
+* "@emotion/styled"
 * "@riboseinc/paneron-extension-kit"
 * "@riboseinc/paneron-registry-kit"
 * "electron-log"
@@ -146,7 +147,7 @@ Taking the above example, here is how it could be written using Emotion:
 --
 /** @jsx jsx */
 
-import { css, jsx } from '@emotion/core';
+import { css, jsx } from '@emotion/react';
 
 const MyRepositoryView: React.FC<RepositoryViewProps> = function (props) {
   const [value, setValue] = props.React.useState(null);
@@ -166,7 +167,7 @@ keep the React import and add `@jsxFrag` pragma:
 
 import React from 'react';
 
-import { css, jsx } from '@emotion/core';
+import { css, jsx } from '@emotion/react';
 
 const MyRepositoryView: React.FC<RepositoryViewProps> = function (props) {
   const [value, setValue] = props.React.useState(null);
