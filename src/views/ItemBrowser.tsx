@@ -371,7 +371,16 @@ export const RegisterItemBrowser: React.FC<
 
   async function handleSaveAndApprove(cr: SelfApprovedCRData, itemData: Record<string, RegisterItem<any>>) {
     const fullCR = await handleCreateCR(cr, { proposeImmediately: true });
-    await handleApprove(fullCR, itemData);
+    return await new Promise<void>((resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          await handleApprove(fullCR, itemData);
+        } catch (e) {
+          reject(e);
+        }
+        resolve();
+      }, 3000);
+    });
   }
 
   async function generateNewItemReference(subregisterID: string | undefined, classID: string): Promise<InternalItemReference> {
