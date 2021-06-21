@@ -82,7 +82,9 @@ extends RegisterConfiguration<Items> {
 }
 
 export interface ItemAction {
-  getButtonProps: (item: RegisterItem<any>, itemClass: ItemClassConfiguration<any>, subregisterID?: string) => ButtonProps | MenuItemProps
+  getButtonProps:
+    (item: RegisterItem<any>, itemClass: ItemClassConfiguration<any>, subregisterID?: string) =>
+      ButtonProps | MenuItemProps
 }
 
 export type RegistryView = React.FC<RegistryViewProps>
