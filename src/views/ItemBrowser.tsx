@@ -495,7 +495,7 @@ export const RegisterItemBrowser: React.FC<
   </ControlGroup>
 
   let view: JSX.Element;
-  if (newItemRef !== null && !isBusy && updateObjects && makeRandomID) {
+  if (newItemRef !== null) {
     view = <NewItem
       itemRef={newItemRef}
       initialPayload={itemClassConfiguration[newItemRef.classID].defaults ?? {}}
@@ -512,7 +512,6 @@ export const RegisterItemBrowser: React.FC<
         } else {
           await performOperation('adding & approving new item', handleSaveAndApprove)(cr, itemData);
         }
-        setNewItemRef(null);
       }}
     />;
   } else if (state.view === 'grid') {
