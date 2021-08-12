@@ -204,10 +204,13 @@ export const NewItem: React.FC<{
       }}
       onConfirm={async (cr, opts) => {
         await onAdd(cr, { [itemPath]: itemData, ...supersedingItemData }, opts);
-        setSelfApprovedProposal(null);
-        if (selfApprovedProposal.type !== 'addition') {
-          setNewRelatedItemRef(null);
+        // Close new item view, unless addition was for a related item
+        if (!newRelatedItemRef) {
+          onClose?.();
         }
+        // Unset related item ref and self-approved proposal
+        setSelfApprovedProposal(null);
+        setNewRelatedItemRef(null);
       }}
       onCancel={() => {
         setSelfApprovedProposal(null);
