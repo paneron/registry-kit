@@ -66,10 +66,10 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
 
   const hasItem = item !== null && classConfigured;
   const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
-  const canJump = item !== null && jumpToItem && classConfigured && !itemResult.isUpdating;
   const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
   const canChangeRelatedItem = classIDs.length >= 1 && onChange && !itemResult.isUpdating;
   const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
+  const canJump = item !== null && jumpToItem && classConfigured && !canClear && !onChange && !itemResult.isUpdating;
 
   let itemView: JSX.Element | null;
   let itemButtons: ButtonProps[] = [];
@@ -80,9 +80,6 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
       useRegisterItemData={useRegisterItemData}
       itemData={item?.data}
       getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />;
-    if (canClear) {
-      itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
-    }
   } else {
     if (canAutoCreateRelatedItem) {
       itemButtons.push({
@@ -103,30 +100,37 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     itemButtons.push({
       onClick: () => setSelectDialogState(true),
       icon: 'edit',
-      text: 'Specify…',
+      text: 'Specify',
+      intent: 'primary',
       disabled: classIDs.length < 1,
     });
   }
 
+  if (canClear) {
+    itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
+  }
+
   //log.debug("Rendering generic related item view: got item", item);
   return (
-    <ButtonGroup fill className={className}>
+    <ButtonGroup
+        fill className={className}
+        css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
       {classID
         ? <Button
               alignText="left"
-              title="Item class"
+              css={css`width: 180px;`}
+              title={`Item class: ${cfg.title ?? "N/A"}`}
               outlined disabled>
             {cfg.title ?? "Class N/A"}
           </Button>
         : null}
       <Button
           alignText="left"
-          fill outlined
+          fill={hasItem} outlined
           disabled={!canJump}
           onClick={jump}
           loading={itemResult.isUpdating}
-          title={cfg.title}
-          css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
+          title={cfg.title}>
         {itemView}
       </Button>
       {itemButtons.map(props => <Button {...props} outlined />)}
