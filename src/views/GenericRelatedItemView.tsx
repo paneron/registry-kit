@@ -4,7 +4,7 @@
 import { jsx, css } from '@emotion/react';
 import React, { useContext, useEffect, useState } from 'react';
 import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
-import { Button, ButtonGroup, ControlGroup, Dialog } from '@blueprintjs/core';
+import { Button, ButtonGroup, ButtonProps, Dialog } from '@blueprintjs/core';
 import { BrowserCtx } from './BrowserCtx';
 import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
@@ -60,54 +60,76 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     ? [itemRef!.subregisterID!]
     : undefined;
 
+  function jump() {
+    jumpToItem?.(classID, itemID, subregisterID);
+  }
+
+  const hasItem = item !== null && classConfigured;
+  const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
+  const canJump = item !== null && jumpToItem && classConfigured && !itemResult.isUpdating;
+  const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
+  const canChangeRelatedItem = classIDs.length >= 1 && onChange && !itemResult.isUpdating;
+  const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
+
+  let itemView: JSX.Element | null;
+  let itemButtons: ButtonProps[] = [];
+
+  if (hasItem) {
+    itemView = <Item
+      itemID={itemID}
+      useRegisterItemData={useRegisterItemData}
+      itemData={item?.data}
+      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />;
+    if (canClear) {
+      itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
+    }
+  } else {
+    if (canAutoCreateRelatedItem) {
+      itemButtons.push({
+        onClick: handleCreateNew,
+        icon: 'add',
+        text: 'Auto create',
+        intent: 'primary',
+      });
+    }
+    if (itemIsMissing) {
+      itemView = <span>Item not found: {itemID ?? 'N/A'}</span>;
+    } else {
+      itemView = <span>Item not specified</span>;
+    }
+  }
+
+  if (canChangeRelatedItem) {
+    itemButtons.push({
+      onClick: () => setSelectDialogState(true),
+      icon: 'edit',
+      text: 'Specify…',
+      disabled: classIDs.length < 1,
+    });
+  }
+
   //log.debug("Rendering generic related item view: got item", item);
   return (
-    <ControlGroup fill className={className} vertical>
-      <ButtonGroup>
-        {classID
-          ? <Button
-                alignText="left"
-                title="Item class"
-                outlined disabled>
-              {cfg.title ?? "Class N/A"}
-            </Button>
-          : null}
-        <Button
-            alignText="left"
-            fill outlined disabled
-            loading={itemResult.isUpdating}
-            title={cfg.title}
-            css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
-          {itemID === ''
-            ? <span>Item not specified</span>
-            : item !== null && !itemResult.isUpdating
-              ? <Item
-                  itemID={itemID}
-                  useRegisterItemData={useRegisterItemData}
-                  itemData={item.data}
-                  getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />
-              : <span>Item not found: {itemID ?? 'N/A'}</span>}
-        </Button>
-      </ButtonGroup>
-
-      <ButtonGroup>
-        {onChange
-          ? <Button disabled={classIDs.length < 1} onClick={() => setSelectDialogState(true)} icon="edit" />
-          : null}
-        {itemID === ''
-          ? onCreateNew
-            ? <Button intent="primary" onClick={handleCreateNew} icon="add">Auto-create</Button>
-            : null
-          : <>
-              <Button
-                icon={item === null && itemID !== '' ? 'error' : 'locate'}
-                disabled={item === null || !jumpToItem || !classConfigured || itemResult.isUpdating}
-                onClick={() => jumpToItem?.(classID, itemID, subregisterID)} />
-              {onClear
-                ? <Button onClick={onClear} icon="cross" />
-                : null}
-            </>}
-      </ButtonGroup>
+    <ButtonGroup fill className={className}>
+      {classID
+        ? <Button
+              alignText="left"
+              title="Item class"
+              outlined disabled>
+            {cfg.title ?? "Class N/A"}
+          </Button>
+        : null}
+      <Button
+          alignText="left"
+          fill outlined
+          disabled={!canJump}
+          onClick={jump}
+          loading={itemResult.isUpdating}
+          title={cfg.title}
+          css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
+        {itemView}
+      </Button>
+      {itemButtons.map(props => <Button {...props} outlined />)}
 
       {onChange
         ? <RelatedItemSelectionDialog
@@ -122,7 +144,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
           />
         : null}
-    </ControlGroup>
+    </ButtonGroup>
   );
 };
 
