@@ -35,8 +35,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
   }, [JSON.stringify(criteria)]);
 
   function onAddGroup(parent: number[]) {
-    var p = JSON.parse(JSON.stringify(parent));
-    p.reverse();
+    const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     const newGroup: CriteriaGroup = makeBlankCriteria();
     mutateGroup(newCriteria, p, { action: 'insert', item: newGroup });
@@ -45,8 +44,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
   }
 
   function onDelete(parent: number[], idx: number) {
-    var p = JSON.parse(JSON.stringify(parent));
-    p.reverse();
+    const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     mutateGroup(newCriteria, p, { action: 'delete', idx });
     updateCriteria(newCriteria[0]);
@@ -54,8 +52,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
   }
 
   function onEditItem(parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) {
-    var p = JSON.parse(JSON.stringify(parent));
-    p.reverse();
+    const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     mutateGroup(newCriteria, p, { action: 'edit', idx, item: newItem });
     updateCriteria(newCriteria[0]);
@@ -114,4 +111,11 @@ export const CriteriaGroupLabel: React.FC<CriteriaGroupLabelProps> = function ({
     {" "}
     of:
   </>;
+}
+
+
+function reverseArray<T>(arr: T[]): T[] {
+  var copy = JSON.parse(JSON.stringify(arr));
+  copy.reverse();
+  return copy;
 }
