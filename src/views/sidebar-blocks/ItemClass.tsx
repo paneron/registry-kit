@@ -22,7 +22,9 @@ function ({ classID, onApplyCriteria }) {
       {clsMeta.alternativeNames?.join(', ') || 'N/A'}
     </PropertyView>
     {onApplyCriteria
-      ? <Button icon="filter" small fill outlined onClick={onApplyCriteria}>Show only items of this class</Button>
+      ? <Button icon="filter" small fill outlined onClick={onApplyCriteria}>
+          Show only items of this class
+        </Button>
       : null}
   </>;
 };
