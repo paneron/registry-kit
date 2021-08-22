@@ -19,7 +19,7 @@ function ({ classID, onApplyCriteria }) {
       {clsMeta.title}
     </PropertyView>
     <PropertyView label="Alternative names">
-      {clsMeta.alternativeNames?.join(', ') || 'N/A'}
+      {clsMeta.alternativeNames?.join(', ') ?? 'N/A'}
     </PropertyView>
     {onApplyCriteria
       ? <Button icon="filter" small fill outlined onClick={onApplyCriteria}>
