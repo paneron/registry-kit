@@ -130,7 +130,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
           disabled={!canJump}
           onClick={jump}
           loading={itemResult.isUpdating}
-          title={cfg.title}>
+          title={`${cfg.title} (click to jump to item)`}>
         {itemView}
       </Button>
       {itemButtons.map(props => <Button {...props} outlined />)}
