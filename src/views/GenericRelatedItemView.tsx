@@ -183,7 +183,7 @@ const RelatedItemSelectionDialog: React.FC<{
         criteria: availableClassIDs.map(classID => ({
           key: 'item-class',
           query: CRITERIA_CONFIGURATION['item-class'].toQuery({ classID }, { itemClasses, subregisters }),
-          })),
+        })),
       });
     }
     if (availableSubregisterIDs && availableSubregisterIDs.length > 0) {
