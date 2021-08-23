@@ -4,7 +4,7 @@
 import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, ButtonGroup, Classes, Colors, Tag } from '@blueprintjs/core';
+import { Button, ButtonGroup, Classes, Colors, InputGroup, Tag } from '@blueprintjs/core';
 import { Popover2, Tooltip2 } from '@blueprintjs/popover2';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
@@ -84,6 +84,7 @@ export const SearchQuery: React.FC<{
           Filter
         </Button>
       </Popover2>
+      <InputGroup />
       {rootCriteria.criteria.length > 0
         ? <Button
             disabled={!onCriteriaChange}
