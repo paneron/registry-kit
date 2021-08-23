@@ -39,6 +39,7 @@ import type { SelfApprovedCRData } from './change-request/SelfApprovedCR';
 import { proposalsToObjectChangeset } from './change-request/objectChangeset';
 import NewItem from './NewItem';
 import AddItemMenu from './AddItemMenu';
+import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 
 
 const toaster = Toaster.create({ position: 'bottom' });
@@ -49,6 +50,7 @@ interface Query {
 }
 type Action =
   | { type: 'update-query'; payload: { query: Query; }; }
+  | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | undefined; }; }
   | { type: 'open-item'; payload: { itemPath: string; }; }
   //| { type: 'select-class', payload: { classID: string | undefined } }
@@ -61,16 +63,15 @@ interface BaseState {
   view: 'item' | 'grid';
   selectedItemPath: string | undefined;
   query: Query;
+  quickSubstringQuery: string;
 }
 interface ItemState extends BaseState {
   view: 'item';
   selectedItemPath: string;
-  query: Query;
 }
 interface GridState extends BaseState {
   view: 'grid';
   selectedItemPath: string | undefined;
-  query: Query;
 }
 type State = ItemState | GridState;
 
@@ -145,6 +146,12 @@ export const RegisterItemBrowser: React.FC<
             view: 'grid',
             query: action.payload.query,
           };
+        case 'update-quick-substring-query':
+          return {
+            ...prevState,
+            view: 'grid',
+            quickSubstringQuery: action.payload.substring,
+          };
         case 'exit-item':
           return {
             ...prevState,
@@ -158,12 +165,9 @@ export const RegisterItemBrowser: React.FC<
       view: 'grid',
       selectedItemPath: undefined,
       query: { criteria: defaultSearchCriteria ?? makeBlankCriteria() },
+      quickSubstringQuery: '',
     },
     null);
-
-  const queryExpression = useDebounce(
-    criteriaGroupToQueryExpression(state.query.criteria),
-    500);
   
   const Sidebar = useMemo(() => makeSidebar(usePersistentDatasetStateReducer!), []);
 
@@ -469,10 +473,30 @@ export const RegisterItemBrowser: React.FC<
     ? itemPathToItemRef(subregisters !== undefined, state.selectedItemPath)
     : undefined;
 
+  const quickSearchString = (state.quickSubstringQuery ?? '').trim();
+  const effectiveCriteria: CriteriaGroup = quickSearchString !== ''
+    ? {
+        require: 'all',
+        criteria: [
+          {
+            key: 'raw-substring',
+            query: CRITERIA_CONFIGURATION['raw-substring'].toQuery(
+              { substring: quickSearchString },
+              { itemClasses: itemClassConfiguration, subregisters }),
+          },
+        ],
+      }
+    : state.query.criteria;
+
+  const queryExpression = useDebounce(
+    criteriaGroupToQueryExpression(effectiveCriteria), 500);
+
   const toolbar: JSX.Element = <ControlGroup>
     <SearchQuery
       rootCriteria={state.query.criteria}
       onCriteriaChange={(criteria) => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
+      quickSearchString={quickSearchString}
+      onQuickSearchStringChange={substring => dispatch({ type: 'update-quick-substring-query', payload: { substring } })}
       viewingMeta={viewingMeta}
       onViewMeta={setViewingMeta}
       itemClasses={itemClassConfiguration}

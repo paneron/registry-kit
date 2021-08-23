@@ -218,6 +218,7 @@ const RelatedItemSelectionDialog: React.FC<{
         useRegisterItemData={useRegisterItemData}
         toolbar={<SearchQuery
           rootCriteria={filterCriteria}
+          quickSearchString=""
           viewingMeta={false}
           itemClasses={itemClasses}
           availableClassIDs={availableClassIDs}
