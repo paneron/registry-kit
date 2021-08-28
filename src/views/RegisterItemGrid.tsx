@@ -4,8 +4,7 @@
 import { splitEvery } from 'ramda';
 import React, { useMemo, useState, useEffect, useContext } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, ControlGroup, Classes, Colors, InputGroup, Tag } from '@blueprintjs/core';
-import { Popover2, Tooltip2 } from '@blueprintjs/popover2';
+import { Classes } from '@blueprintjs/core';
 import makeSidebar from '@riboseinc/paneron-extension-kit/widgets/Sidebar';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -14,127 +13,14 @@ import { Hooks } from '@riboseinc/paneron-extension-kit/types';
 import {
   InternalItemReference,
   RegisterItem as RegisterItemCell, RegisterItemDataHook,
-  RegistryViewProps,
   RelatedItemClassConfiguration
 } from '../types';
 import { BrowserCtx } from './BrowserCtx';
 import { itemPathToItemRef, itemRefToItemPath } from './itemPathUtils';
-import CriteriaTree from './FilterCriteria';
-import { CriteriaGroup, CriteriaTransformer } from './FilterCriteria/models';
-import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
-import criteriaGroupToSummary from './FilterCriteria/criteriaGroupToSummary';
+import { CriteriaTransformer } from './FilterCriteria/models';
 import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
 import ItemSummary from './sidebar-blocks/ItemSummary';
 import ItemClass from './sidebar-blocks/ItemClass';
-
-
-export const SearchQuery: React.FC<{
-  rootCriteria: CriteriaGroup
-  onCriteriaChange?: (rootCriteria: CriteriaGroup) => void
-
-  quickSearchString: string
-  onQuickSearchStringChange?: (searchString: string) => void
-
-  viewingMeta: boolean
-  onViewMeta?: (newState: boolean) => void
-  itemClasses: RegistryViewProps["itemClassConfiguration"]
-  availableClassIDs?: string[]
-  subregisters: RegistryViewProps["subregisters"]
-  className?: string
-}> = function ({
-  rootCriteria,
-  onCriteriaChange,
-  quickSearchString,
-  onQuickSearchStringChange,
-  viewingMeta,
-  onViewMeta,
-  itemClasses,
-  availableClassIDs,
-  subregisters,
-  className,
-}) {
-  const classIDs = availableClassIDs ?? Object.keys(itemClasses);
-  return (
-    <ControlGroup css={css`flex: 1; align-items: center; overflow: hidden;`} className={className}>
-      <InputGroup
-        disabled={!onQuickSearchStringChange}
-        value={quickSearchString}
-        leftIcon="search"
-        placeholder="Quick text search"
-        title="Search for a substring occurring anywhere within serialized item data."
-        css={css`width: 200px; ${quickSearchString !== '' ? 'input { font-weight: bold; }' : ''}`}
-        rightElement={<Button
-          disabled={!onQuickSearchStringChange || quickSearchString === ''}
-          onClick={() => onQuickSearchStringChange?.('')}
-          small
-          minimal
-          icon="cross"
-          title="Clear quick search"
-        />}
-        onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)}
-      />
-      <Popover2
-          minimal
-          popoverClassName="filter-popover"
-          css={css`& { flex: unset !important }`} // BP3 defualt styling stretches popover trigger inside button group.
-          content={
-            <>
-              <CriteriaTree
-                key="tree"
-                criteria={rootCriteria}
-                onChange={onCriteriaChange}
-                itemClasses={itemClasses}
-                availableClassIDs={classIDs}
-                subregisters={subregisters}
-                css={css`width: 100vw; max-height: 50vh; overflow-y: auto;`}
-              />
-              <div key="query" css={css`margin-top: 5px; padding: 0 10px 10px 10px; color: ${Colors.GRAY3}; font-size: 90%;`}>
-                Computed query: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
-              </div>
-            </>}>
-        <Button
-            title="Edit advanced query"
-            icon='filter'
-            alignText='left'
-            rightIcon={rootCriteria.criteria.length > 0
-              ? quickSearchString !== ''
-                ? <Tooltip2
-                      placement="bottom"
-                      minimal
-                      content={<>Clear quick text search for advanced query to have effect.</>}>
-                    <Tag round>off: using quick search</Tag>
-                  </Tooltip2>
-                : <Tooltip2
-                      placement="bottom"
-                      minimal
-                      content={<>Showing items where {criteriaGroupToSummary(rootCriteria, { itemClasses, subregisters })}</>}>
-                    <Tag intent="success" round>on</Tag>
-                  </Tooltip2>
-              : <Tag round>off: showing all</Tag>}>
-          Advanced
-        </Button>
-      </Popover2>
-      {rootCriteria.criteria.length > 0
-        ? <Button
-            disabled={!onCriteriaChange}
-            icon="filter-remove"
-            title="Clear advanced query (show all)"
-            onClick={() => onCriteriaChange!({ criteria: [], require: 'all' })} />
-        : null}
-      {/*<CRMenu selected={activeCRID} onSelect={onSelectCR} />*/}
-      {onViewMeta || viewingMeta
-        ? <Button
-            icon="settings"
-            active={viewingMeta}
-            disabled={!onViewMeta}
-            title="View or edit dataset metadata"
-            onClick={onViewMeta ? () => onViewMeta(!viewingMeta) : undefined}
-            css={css`margin-left: 10px;`}
-          />
-        : null}
-    </ControlGroup>
-  );
-};
 
 
 export const RegisterItemGrid: React.FC<{
