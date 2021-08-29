@@ -28,5 +28,5 @@ export const BrowserCtx = createContext<BrowserCtx>({
     isUpdating: true,
     refresh: () => void 0,
   }),
-  getRelatedItemClassConfiguration: () => ({ title: 'N/A', itemView: () => <span>Loading…</span> })
+  getRelatedItemClassConfiguration: () => ({ title: 'N/A', itemView: () => <span>Loading…</span> }),
 });
