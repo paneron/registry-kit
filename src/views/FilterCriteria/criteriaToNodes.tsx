@@ -7,7 +7,7 @@ import { Button, ButtonGroup, HTMLSelect, OptionProps, TreeNodeInfo, ControlGrou
 import { ItemClassConfigurationSet, Subregisters } from '../../types';
 import { CriteriaGroup, Criterion, isCriteriaGroup, isCriteriaKey } from './models';
 import { CriteriaGroupLabel } from './index';
-import { CRITERIA_CONFIGURATION } from "./CRITERIA_CONFIGURATION";
+import { CRITERIA_CONFIGURATION } from './CRITERIA_CONFIGURATION';
 
 
 /* Building tree nodes */
