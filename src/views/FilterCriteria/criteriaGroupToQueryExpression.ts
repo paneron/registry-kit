@@ -16,7 +16,7 @@ export default function criteriaGroupToQueryExpression(cg: CriteriaGroup): strin
 
   let result: string;
   if (exps.length < 1) {
-    result = `true`;
+    result = 'true';
   } else {
     switch (cg.require) {
       case 'all':
