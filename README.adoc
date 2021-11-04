@@ -81,8 +81,9 @@ When ready & tested, release your extension on NPM:
 $ npm publish
 --
 
-NOTE: Currently, only extensions released under `@riboseinc` NPM scope are supported.
-Plugin name must be prefixed with `paneron-extension-` (e.g., `@riboseinc/paneron-extension-foo-registry`).
+NOTE: Currently, only extensions released under `@riboseinc` and `@paneron` NPM scopes are supported.
+Plugin name must either match `@riboseinc/paneron-extension-foo-registry`
+or `@paneron/extension-foo-registry`.
 
 === Rules of Paneron extensions
 
