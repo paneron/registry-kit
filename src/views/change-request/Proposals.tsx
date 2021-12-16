@@ -146,6 +146,7 @@ function ({ proposal, itemRef, onChange }) {
   return <DetailView
     useRegisterItemData={useRegisterItemData}
     getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
+    css={css`background: white; border-radius: 5px; margin: 0 -30px; overflow-y: auto;`}
     itemData={proposal.payload}
   />;
 };
@@ -167,7 +168,7 @@ function ({ itemRef, onChange }) {
   }
   const DetailView = itemClasses[classID].views.detailView ?? itemClasses[classID].views.editView;
   return <DetailView
-    css={css`background: white; border-radius: 5px; margin: 0 -30px;`}
+    css={css`background: white; border-radius: 5px; margin: 0 -30px; overflow-y: auto;`}
     className={Classes.ELEVATION_2}
     useRegisterItemData={useRegisterItemData}
     getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
