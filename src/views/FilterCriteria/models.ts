@@ -91,6 +91,13 @@ export function isCriteriaGroup(val: any): val is CriteriaGroup {
   return val.hasOwnProperty('require');
 }
 
+// TODO: Deprecate in favour of `BLANK_CRITERIA`?
 export function makeBlankCriteria(): CriteriaGroup {
-  return { require: 'all', criteria: [] };
+  return BLANK_CRITERIA;
 }
+
+/** Useful as no-op default where a valid criteria is required. */
+export const BLANK_CRITERIA: CriteriaGroup = {
+  require: 'all',
+  criteria: [],
+};
