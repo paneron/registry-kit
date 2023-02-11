@@ -15,8 +15,19 @@ export interface ExtensionContext {
 }
 
 export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
+  /**
+   * Configuration for all items in this register.
+   * This includes items in subregisters.
+   */
   itemClassConfiguration: Items
+
+  /**
+   * Default expression used to sort an item.
+   * Passed to useFilteredIndex().
+   */
   keyExpression?: string
+
+  /** Subregister information. */
   subregisters?: Subregisters<Items>
 }
 
@@ -60,7 +71,14 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
 
   validatePayload?: (item: P) => Promise<boolean>
   sanitizePayload?: (item: P) => Promise<P>
+
+  // XXX: Confirm if obsolete and remove
   itemSorter?: (a: P, b: P) => number
+
+  /**
+   * Expression used to sort an item of this class.
+   * Passed to useFilteredIndex().
+   */
   keyExpression?: string
 
   exportFormats?: ExportFormatConfiguration<P>[]
@@ -107,15 +125,25 @@ export interface RegistryItemViewProps<P extends Payload> {
 }
 
 export interface GenericRelatedItemViewProps {
+  /** Currently selected item’s ref. */
   itemRef?: InternalItemReference
+
   className?: string
   useRegisterItemData: RegisterItemDataHook
   getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
   availableClassIDs?: string[]
   availableSubregisterIDs?: string[]
+
+  // XXX: Check if obsolete, remove if unused
   itemSorter?: ItemClassConfiguration<any>["itemSorter"]
+
+  /** Called to auto-create an item (can’t auto-create if not provided) */
   onCreateNew?: () => Promise<InternalItemReference>
+
+  /** Called when current item is cleared (can’t clear if not provided) */
   onClear?: () => void
+
+  /** Called when a new item is selected (can’t change if not provided) */
   onChange?: (newRef: InternalItemReference) => void
 }
 
