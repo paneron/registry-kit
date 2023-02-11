@@ -3,13 +3,36 @@ import { IconName } from '@blueprintjs/core';
 import type { ItemClassConfigurationSet, Subregisters } from '../../types';
 
 
+/**
+ * Defines how to display a search criterion.
+ * T: criteria data structure.
+ */
 export interface CriterionConfiguration<T extends Record<string, any>> {
   icon?: IconName
   label: string;
+
+  /**
+   * Widget that displays and optionally allows editing
+   * criteria data structure.
+   */
   widget: CriteriaWidget<T>;
+
+  /**
+   * Determines whether to enable this search criteria based on 
+   * registry configuration.
+   */
   isEnabled?: (opts: CommonOpts) => boolean
+
+  /** Summarizes criteria in a human-readable way. */
   toSummary: (data: T, opts: CommonOpts) => string | JSX.Element;
+
+  /**
+   * Coverts criteria structure to a string
+   * that can be passed to filtering backend.
+   */
   toQuery: (data: T, opts: CommonOpts) => string;
+
+  /** Converts a query string to criteria structure. */
   fromQuery: (query: string, opts: CommonOpts) => T;
 }
 
@@ -53,6 +76,7 @@ export interface Criterion {
   query: string;
 }
 
+/** Register metadata that may be needed to display filter criteria. */
 export interface CommonOpts {
   subregisters?: Subregisters;
   itemClasses: ItemClassConfigurationSet;
