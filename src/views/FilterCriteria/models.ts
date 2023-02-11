@@ -72,8 +72,11 @@ type CriteriaWidget<T extends Record<string, any>> = React.FC<{
 }>;
 
 export interface Criterion {
-  key: CriterionKey;
+  /** Specific criterion as a string. */
   query: string;
+
+  /** Key in criteria configuration that defines how to work with this criterion. */
+  key: CriterionKey;
 }
 
 /** Register metadata that may be needed to display filter criteria. */
