@@ -1,4 +1,4 @@
-import { InternalItemReference } from '../types';
+import type { InternalItemReference } from '../types';
 
 
 export function itemRefToItemPath({ subregisterID, classID, itemID }: InternalItemReference): string {

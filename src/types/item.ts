@@ -1,6 +1,6 @@
 
-import { RegisterStakeholder } from './stakeholder';
-import { Citation, LocalizedAlternative } from './util';
+import type { RegisterStakeholder } from './stakeholder';
+import type { Citation, LocalizedAlternative } from './util';
 
 
 export type Payload = Record<string, any>
