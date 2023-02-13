@@ -46,6 +46,16 @@ interface ItemReference {
 
 export type InternalItemReference = Omit<ItemReference, 'registerID'>
 
+export function isInternalItemReference(val: any): val is InternalItemReference {
+  return (
+    val &&
+    val.hasOwnProperty('itemID') &&
+    val.hasOwnProperty('classID') &&
+    typeof val['itemID'] == 'string' &&
+    typeof val['classID'] == 'string'
+  );
+}
+
 
 interface AbstractItemSource {
   type: string
@@ -81,4 +91,14 @@ export interface RegisterItem<P extends Payload> {
   source?: RegisterItemSource
   // TODO: Citations were suggested to be moved to proposals, as motivating/substantiating evidence.
   // TODO: Register item, however, should have a relationship that points to the original proto-item from another register.
+}
+
+export function isRegisterItem(val: any): val is RegisterItem<any> {
+  return (
+    val &&
+    val.hasOwnProperty('id') &&
+    val.hasOwnProperty('data') &&
+    val.hasOwnProperty('status') &&
+    ITEM_STATUSES.indexOf(val.status) >= 0
+  );
 }
