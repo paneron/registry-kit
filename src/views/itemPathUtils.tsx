@@ -1,6 +1,10 @@
 import type { InternalItemReference } from '../types';
 
 
+/**
+ * Returns dataset-relative path to a register item,
+ * given structured item reference.
+ */
 export function itemRefToItemPath({ subregisterID, classID, itemID }: InternalItemReference): string {
   if (subregisterID) {
     return `/subregisters/${subregisterID}/${classID}/${itemID}.yaml`;
@@ -9,6 +13,11 @@ export function itemRefToItemPath({ subregisterID, classID, itemID }: InternalIt
   }
 }
 
+/**
+ * Attempts to return a structured register item reference
+ * given a dataset-relative item path.
+ * If some components are missing, returns an incomplete reference.
+ */
 export function itemPathToItemRefLike(hasSubregisters: boolean, itemPath: string):
 { itemID?: string; classID?: string; subregisterID?: string; } {
   const pathNormalized = itemPath.trim()
@@ -37,6 +46,7 @@ export function itemPathToItemRefLike(hasSubregisters: boolean, itemPath: string
   return { subregisterID, classID, itemID };
 }
 
+/** Returns just register item ID, given dataset-relative path. */
 export function itemPathToItemID(objPath: string): string | undefined {
   const objPathComponents = objPath?.split('/');
   const selectedItemID = objPathComponents !== undefined
@@ -45,6 +55,11 @@ export function itemPathToItemID(objPath: string): string | undefined {
   return selectedItemID;
 }
 
+/**
+ * Attempts to return a structured register item reference
+ * given a dataset-relative item path.
+ * If some components are missing, throws an Error.
+ */
 export function itemPathToItemRef(hasSubregisters: boolean, itemPath: string): InternalItemReference {
   const maybeRef = itemPathToItemRefLike(hasSubregisters, itemPath);
   if (maybeRef.classID && maybeRef.itemID) {
