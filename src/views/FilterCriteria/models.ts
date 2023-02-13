@@ -91,7 +91,7 @@ export interface CriteriaGroup {
 }
 
 export function isCriteriaGroup(val: any): val is CriteriaGroup {
-  return val.hasOwnProperty('require');
+  return val && val.hasOwnProperty('require') && val.hasOwnProperty('criteria');
 }
 
 // TODO: Deprecate in favour of `BLANK_CRITERIA`?
