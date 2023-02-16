@@ -10,12 +10,22 @@ import { CriteriaGroupLabel } from './index';
 import { CRITERIA_CONFIGURATION } from './CRITERIA_CONFIGURATION';
 
 
-/* Building tree nodes */
+/**
+ * Builds Blueprint’s tree nodes given criteria,
+ * callbacks and relevant register configuration.
+ */
 export default function criteriaToNodes(
   cs: (CriteriaGroup | Criterion)[],
   opts: {
     path?: number[];
+
+    /** XXX: This seems to be obsolete. Don’t use, investigate for usefulness. */
     implied?: true;
+
+    /**
+     * Called when criteria is being edited. `commit` is set to true
+     * when change should take effect.
+     */
     onEditItem?: (parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) => void;
     onDeleteItem?: (parent: number[], idx: number) => void;
     onAddGroup?: (parent: number[]) => void;
