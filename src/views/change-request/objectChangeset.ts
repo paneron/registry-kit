@@ -14,6 +14,10 @@ import {
 import { itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
 
 
+/**
+ * Given change proposals, returns applicable changes
+ * to objects in the dataset.
+ */
 export async function proposalsToObjectChangeset(
   crID: string,
   hasSubregisters: boolean,
@@ -45,10 +49,13 @@ export async function proposalsToObjectChangeset(
 }
 
 // TODO: Refactor out the business logic of proposal approval.
-/* Core logic of approving a proposal.
-   Takes a proposal and extra options (depending on proposal type).
-   Returns a register item.
-*/
+/**
+ * Given a change proposal, returns applicable changes
+ * to objects in the dataset.
+ * Core logic of approving a proposal.
+ * Takes a proposal and extra options (depending on proposal type).
+ * Returns a register item.
+ */
 async function proposalToObjectChangeset(
   crID: string,
   proposal: ChangeProposal,
