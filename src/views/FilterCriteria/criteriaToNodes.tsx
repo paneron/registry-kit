@@ -110,7 +110,7 @@ export default function criteriaToNodes(
               onClick={() => opts.onEditItem!(
                 path,
                 idx,
-                { key: 'custom', query: cfg.toQuery({ customExpression: 'true' }, { subregisters, itemClasses }) },
+                { key: 'custom', query: cfg.toQuery({ customExpression: 'false' }, { subregisters, itemClasses }) },
                 true)}>
             add criteria
           </Button>
