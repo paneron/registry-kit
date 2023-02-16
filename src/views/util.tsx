@@ -39,6 +39,7 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
     const cfg = classes[clsID];
     return {
       title: cfg.meta.title,
+      // TODO: The itemView/listItemView inconsistency is annoying
       itemView: cfg.views.listItemView,
     };
   };
