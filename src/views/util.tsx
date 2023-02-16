@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 //import log from 'electron-log';
+import format from 'date-fns/format';
 import React from 'react';
 import { css, jsx } from '@emotion/react';
 import { FormGroup, FormGroupProps } from '@blueprintjs/core';
@@ -21,6 +22,15 @@ export const PropertyDetailView: React.FC<{
       inline={inline}>
     {children}
   </FormGroup>;
+};
+
+
+export const Datestamp: React.FC<{
+  date: Date
+  className?: string
+}> = function ({ date, className }) {
+  const asString = format(date, 'yyyy-MM-dd');
+  return <span className={className} title={date.toString()}>{asString}</span>;
 };
 
 
