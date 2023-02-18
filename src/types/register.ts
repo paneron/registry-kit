@@ -15,7 +15,7 @@ export interface Register {
   stakeholders: RegisterStakeholder[]
 }
 
-interface Version {
+export interface Version {
   id: string
   timestamp: Date
 }
