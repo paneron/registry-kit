@@ -1,8 +1,10 @@
 import { CriteriaGroup, isCriteriaGroup } from './models';
 
-/* Building query expression */
 
-
+/**
+ * Given a CriteriaGroup,
+ * returns a query expression suitable for use with filtered object indexes..
+ */
 export default function criteriaGroupToQueryExpression(cg: CriteriaGroup): string {
   const exps: string[] = [];
 
