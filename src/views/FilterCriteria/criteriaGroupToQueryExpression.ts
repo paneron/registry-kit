@@ -10,7 +10,11 @@ export default function criteriaGroupToQueryExpression(cg: CriteriaGroup): strin
 
   for (const c of cg.criteria) {
     if (isCriteriaGroup(c)) {
-      exps.push(`${criteriaGroupToQueryExpression(c)}`);
+      if (c.criteria.length > 1) {
+        exps.push(`(${criteriaGroupToQueryExpression(c)})`);
+      } else if (c.criteria.length > 0) {
+        exps.push(`${criteriaGroupToQueryExpression(c)}`);
+      }
     } else {
       exps.push(c.query);
     }
