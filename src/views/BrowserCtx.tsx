@@ -8,11 +8,18 @@ import { ItemClassConfigurationSet, RegisterItemDataHook, RegisterStakeholder, R
 export type BrowserCtx = {
   itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
-  stakeholder?: RegisterStakeholder // If current user is not a stakeholder, this is undefined.
 
+  /**
+   * Stakeholder corresponding to the current user.
+   * If current user is not a stakeholder, undefined.
+   */
+  stakeholder?: RegisterStakeholder
+
+  /**
+   * Common “key expression” (used for sorting) across the register.
+   * Should contain the expression itself, no “return” statement.
+   */
   keyExpression?: string
-  // Common “key expression” (used for sorting) across the register.
-  // Should contain the expression itself, no “return” statement.
 
   useRegisterItemData: RegisterItemDataHook
   jumpToItem?: (classID: string, itemID: string, subregisterID?: string) => void;
