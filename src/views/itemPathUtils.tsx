@@ -80,5 +80,10 @@ export function crIDToCRPath(crID: string): string {
 }
 
 export function crPathToCRID(crPath: string): string {
-  return crPath.replace('/change-requests/', '').replace('.yaml', '');
+  return (
+    stripLeadingSlash(crPath).
+    replace('change-requests/', '').
+    split('/')[0].
+    replace('.yaml', '')
+  );
 }
