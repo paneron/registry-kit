@@ -90,42 +90,6 @@ export interface Base<S extends StateType = StateType> {
   state: S
 }
 
-/** 
- * Usage:
- *
- * @example
- * ```ts
- * let someCR;
- * if (isInState<Drafted>(someCR, State.DRAFT)) {
- *   // Can assume someCR is Drafted
- * }
- * ```
- *
- * @example
- * Incorrect usage:
- * ```ts
- * let someCR;
- * if (isInState(someCR, State.DRAFT)) {
- *   // Can NOT assume someCR is Drafted
- * }
- * ```
- *
- * It’ll try to tell you if you mismatch those.
- *
- * @example
- * Will not compile:
- * ```ts
- * let someCR;
- * if (isInState<Drafted>(someCR, State.PROPOSED)) {
- *   // Compile error
- *   // because State.PROPOSED is not a possible value of Drafted["state"]
- * }
- * ```
- */
-export function isInState<CR extends Base>(cr: Base, s: CR["state"]): cr is CR {
-  return cr.state === s;
-}
-
 
 // More specific change request types.
 
@@ -247,4 +211,43 @@ export interface AppealRequest {
 }
 export interface RegisterOwnerInput {
   registerOwnerNotes: string;
+}
+
+
+/** 
+ * CR type guard helper.
+ *
+ * Usage:
+ *
+ * @example
+ * ```ts
+ * let someCR;
+ * if (isInState<Drafted>(someCR, State.DRAFT)) {
+ *   // Can assume someCR is Drafted
+ * }
+ * ```
+ *
+ * @example
+ * Incorrect usage:
+ * ```ts
+ * let someCR;
+ * if (isInState(someCR, State.DRAFT)) {
+ *   // Can NOT assume someCR is Drafted
+ * }
+ * ```
+ *
+ * It’ll try to tell you if you mismatch those.
+ *
+ * @example
+ * Will not compile:
+ * ```ts
+ * let someCR;
+ * if (isInState<Drafted>(someCR, State.PROPOSED)) {
+ *   // Compile error
+ *   // because State.PROPOSED is not a possible value of Drafted["state"]
+ * }
+ * ```
+ */
+export function isInState<CR extends Base>(cr: Base, s: CR["state"]): cr is CR {
+  return cr.state === s;
 }
