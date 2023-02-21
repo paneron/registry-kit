@@ -216,6 +216,8 @@ export interface RegisterOwnerInput {
 
 /** 
  * CR type guard helper.
+ * Normally you would not use it directly and instead use
+ * more specific is[Type]() helper from this module.
  *
  * Usage:
  *
@@ -224,15 +226,6 @@ export interface RegisterOwnerInput {
  * let someCR;
  * if (isInState<Drafted>(someCR, State.DRAFT)) {
  *   // Can assume someCR is Drafted
- * }
- * ```
- *
- * @example
- * Incorrect usage:
- * ```ts
- * let someCR;
- * if (isInState(someCR, State.DRAFT)) {
- *   // Can NOT assume someCR is Drafted
  * }
  * ```
  *
@@ -247,7 +240,17 @@ export interface RegisterOwnerInput {
  *   // because State.PROPOSED is not a possible value of Drafted["state"]
  * }
  * ```
+ *
+ * @example
+ * Incorrect usage (do not do this):
+ * ```ts
+ * let someCR;
+ * if (isInState(someCR, State.DRAFT)) {
+ *   // Can NOT assume someCR is Drafted
+ *   // You MUST specify generic type parameter
+ * }
+ * ```
  */
-export function isInState<CR extends Base>(cr: Base, s: CR["state"]): cr is CR {
+function isInState<CR extends Base>(cr: Base, s: CR["state"]): cr is CR {
   return cr.state === s;
 }
