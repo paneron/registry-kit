@@ -4,14 +4,14 @@
 import { jsx } from '@emotion/react';
 import React, { useContext } from 'react';
 import VisualDiff from 'react-visual-diff';
-import { RegisterItem } from '../../types/item';
+import { RegisterItem, Payload } from '../../types/item';
 import { ItemDetailView } from '../../types/views';
 import { BrowserCtx } from '../BrowserCtx';
 import AnnotatedChange from '../AnnotatedChange';
 
 
 const InlineDiff: React.FC<{
-  DetailView: ItemDetailView<unknown>
+  DetailView: ItemDetailView<Payload>
   item1: RegisterItem<any>["data"]
   item2: RegisterItem<any>["data"]
 }> = React.memo(({ DetailView, item1, item2 }) => {
