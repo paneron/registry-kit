@@ -92,6 +92,12 @@ export type Transitions = {
 
 /**
  * Base change request type.
+ *
+ * Note that e.g. type Base<typeof State.DRAFT> does not equal to Drafted
+ * because Drafted includes additional information (namely, SubmitterInput).
+ *
+ * If the state of a CR matters, this type should not be used directly
+ * and concrete types should be used instead.
  */
 export interface Base<S extends StateType = StateType> {
   id: string
