@@ -19,11 +19,21 @@ export const State = {
 
 export type StateType = typeof State[keyof typeof State]
 
+/**
+ * A function that transitions CR1 to CR2.
+ *
+ * The function is declared to return the object
+ * without the `state` field, it is set
+ * by common wrapper function to reduce duplication.
+ */
 export type Transition<
-  F extends Base,
-  T extends Base,
+  /** From CR of this subtype */
+  CR1 extends Base,
+  /** To CR of this subtype */
+  CR2 extends Base,
+  /** Using this extra information */
   P extends Record<string, any> = any,
-> = (cr: F, payload: P) => Omit<T, 'state'>
+> = (cr: CR1, payload: P) => Omit<CR2, 'state'>
 
 
 /**

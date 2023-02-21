@@ -45,20 +45,20 @@ import * as CR from './cr';
  */
 export function transition
 <
-  C extends CR.Base,
-  C2 extends CR.Base<S2>,
-  S1 extends ((keyof CR.Transitions) & C["state"]),
+  CR1 extends CR.Base,
+  CR2 extends CR.Base<S2>,
+  S1 extends ((keyof CR.Transitions) & CR1["state"]),
   S2 extends (CR.StateType & (keyof CR.Transitions[S1])),
   T extends CR.Transitions[S1][S2],
 >(
-  cr: C,
+  cr: CR1,
   s2: S2 extends keyof CR.Transitions[S1] ? S2 : never,
-  p: T extends CR.Transition<C, C2, infer P> ? P : never,
-): T extends CR.Transition<C, infer N> ? N : never {
+  p: T extends CR.Transition<CR1, CR2, infer P> ? P : never,
+): T extends CR.Transition<CR1, infer N> ? N : never {
   const currentState = cr.state as S1;
   const possibleTransitions = TRANSITIONS[currentState];
   if (possibleTransitions) {
-    const transitionToNextState = possibleTransitions[s2] as CR.Transition<C, C2> | undefined;
+    const transitionToNextState = possibleTransitions[s2] as CR.Transition<CR1, CR2> | undefined;
     if (transitionToNextState) {
       const result = {
         ...transitionToNextState(cr, p),
