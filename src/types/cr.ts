@@ -247,7 +247,7 @@ export interface RegisterOwnerInput {
  * let someCR;
  * if (isInState(someCR, State.DRAFT)) {
  *   // Can NOT assume someCR is Drafted
- *   // You MUST specify generic type parameter
+ *   // The compiler must know the expected concrete CR type
  * }
  * ```
  */
