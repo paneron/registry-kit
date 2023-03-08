@@ -93,11 +93,11 @@ export const RAW_SUBSTRING: CriterionConfiguration<{ substring?: string }> = {
   icon: 'search-text',
   toQuery: ({ substring }) =>
     substring?.trim()
-      ? `JSON.stringify(obj.data).toLowerCase().indexOf("${substring.toLowerCase().replace(/"/g, "\\\"")}") >= 0`
+      ? `JSON.stringify(obj.data ?? {}).toLowerCase().indexOf("${substring.toLowerCase().replace(/"/g, "\\\"")}") >= 0`
       : `true`,
   fromQuery: (query) => ({
     substring: (query.
-      split('JSON.stringify(obj.data).toLowerCase().indexOf("')[1]?.
+      split('JSON.stringify(obj.data ?? {}).toLowerCase().indexOf("')[1]?.
       split('") >= 0')[0] ?? '').replace(/\\"/g, '"'),
   }),
   toSummary: ({ substring }) => {
