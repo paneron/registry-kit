@@ -1,6 +1,6 @@
 {
   "name": "@riboseinc/paneron-registry-kit",
-  "version": "2.0.0-alpha5",
+  "version": "2.0.0",
   "main": "index.js",
   "author": "Ribose Inc. <open.source@ribose.com>",
   "scripts": {
@@ -21,7 +21,6 @@
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
-    "@riboseinc/paneron-extension-kit": "2.0.0-dev31",
     "@blueprintjs/core": "~4.17.6",
     "@blueprintjs/datetime": "~4.4.25",
     "@blueprintjs/icons": "~4.14.3",
@@ -30,6 +29,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@riboseinc/isogit-lfs": "0.1.6",
+    "@riboseinc/paneron-extension-kit": "2.0.0",
     "@types/js-yaml": "^3.12.5",
     "@types/node": "^16.11.7",
     "@types/ramda": "^0.27.35",

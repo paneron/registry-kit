@@ -30,7 +30,7 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
   return makeExtension({
     mainView,
     name,
-    requiredHostAppVersion: '1.0.0-alpha19',
+    requiredHostAppVersion: '2.0.0',
     datasetMigrations: {},
     datasetInitializer: () => import('./migrations/initial'),
   });

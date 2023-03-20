@@ -22,7 +22,9 @@ function ({ objectData, objectPath }) {
         itemData={itemPayload}
         itemRef={itemRef}
       />
-    : <span css={css`opacity: .4`}>(missing item data at {objectPath})</span>;
+    : <span css={css`opacity: .4`}>
+        (missing item data at {objectPath})
+      </span>;
 
   return itemView;
 }
