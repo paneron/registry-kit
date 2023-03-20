@@ -1,9 +1,10 @@
-import { RegisterStakeholder } from './stakeholder';
-import { Locale } from './util';
+import { type RegisterStakeholder, isRegisterStakeholder } from './stakeholder';
+import { type Locale } from './util';
 
 
 export interface Register {
-  id: string
+  // TODO: what is register ID? Perhaps URI is enough?
+  id?: string
   name: string
   contentSummary: string
   uniformResourceIdentifier: string
@@ -15,7 +16,34 @@ export interface Register {
   stakeholders: RegisterStakeholder[]
 }
 
+export function isRegisterMetadata(val: any): val is Register {
+  return (
+    val &&
+    // val.hasOwnProperty('id') &&
+    //typeof val.id === 'string' &&
+    val.hasOwnProperty('name') &&
+    typeof val.name === 'string' &&
+    //val.hasOwnProperty('contentSummary') &&
+    //typeof val.contentSummary === 'string' &&
+    val.hasOwnProperty('stakeholders') &&
+    val.stakeholders.length > 0 &&
+    // Stakeholders must be right
+    val.stakeholders.every(isRegisterStakeholder) &&
+    // Must have at least an owner
+    val.stakeholders.some((s: RegisterStakeholder) => s.role === 'owner') &&
+    // Must have a valid version (or no version? hmm)
+    (val.version === undefined || isVersion(val.version)));
+}
+
 export interface Version {
   id: string
   timestamp: Date
+}
+
+export function isVersion(val: any): val is Version {
+  return (
+    val &&
+    val.hasOwnProperty('id') &&
+    val.hasOwnProperty('timestamp') &&
+    typeof val.id === 'string');
 }

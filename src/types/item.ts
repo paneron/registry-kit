@@ -78,15 +78,18 @@ export interface RegisterItem<P extends Payload> {
   dateAccepted: Date
   // This is a mandatory property, since until their acceptance items “live” as part of their corresponding change requests
 
-  amendedInCR?: string // UUID of change request
+  /** UUID of change request that defined the current version. */
+  amendedInCR?: string
 
   // TODO: Denormalized, should be validated with consistency checks
   supersededBy?: InternalItemReference[]
   supersedes?: InternalItemReference[]
 
+  /**
+   * Register item data. Domain-specific. May include additional human-readable identifiers.
+   * In ISO 19135-1 was represented by “definition”.
+   */
   data: P
-  // Register item data, may include additional human identifiers and any domain-specific data.
-  // In ISO 19135-1, represented by “definition”.
 
   source?: RegisterItemSource
   // TODO: Citations were suggested to be moved to proposals, as motivating/substantiating evidence.

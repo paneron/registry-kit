@@ -49,6 +49,7 @@ export const COMPOSITION_OPERATORS = [
 ] as const;
 export type CompositionOperator = typeof COMPOSITION_OPERATORS[number];
 
+// TODO: Can we not hard-code keys here? Would require some smart generic typing.
 const CRITERIA_KEYS = [
   'item-class',
   'subregister',

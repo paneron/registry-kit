@@ -3,7 +3,8 @@
 
 import { jsx, css } from '@emotion/react';
 import React from 'react';
-import { Button, ButtonGroup, HTMLSelect, OptionProps, TreeNodeInfo, ControlGroup } from '@blueprintjs/core';
+import { Button, ButtonGroup, OptionProps, TreeNodeInfo, ControlGroup } from '@blueprintjs/core';
+import { Select } from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
 import { ItemClassConfigurationSet, Subregisters } from '../../types';
 import { CriteriaGroup, Criterion, isCriteriaGroup, isCriteriaKey } from './models';
 import { CriteriaGroupLabel } from './index';
@@ -43,16 +44,27 @@ export default function criteriaToNodes(
       : undefined;
 
     const disabled = opts.implied === true;
-    const deleteButton: JSX.Element | null = idx < (cs.length - 1) &&
-      opts.onDeleteItem &&
-      !isRoot
-      ? <Button minimal small
-          onClick={() => opts.onDeleteItem!(path, idx)}
-          title="Delete this criteria or criteria block"
-          icon="cross" />
+    const deleteButton: JSX.Element | null =
+      idx < (cs.length - 1) && opts.onDeleteItem
+        ? <Button minimal small
+            onClick={() => opts.onDeleteItem!(path, idx)}
+            title="Delete this criterion or criteria block"
+            disabled={isRoot}
+            icon="cross" />
+        : null;
+    const addGroupButton: JSX.Element | null = opts.onAddGroup
+      ? <Button
+          minimal
+          small
+          title="Add nested criteria block"
+          icon="add-to-artifact"
+          onClick={() => opts.onAddGroup!([...path, idx])} />
       : null;
 
     if (isCriteriaGroup(c)) {
+
+      // Render criteria group recursively
+
       const cg = c as CriteriaGroup;
       return {
         id: `${path.join('-')}-${idx}-${opts.implied}`,
@@ -61,20 +73,14 @@ export default function criteriaToNodes(
         isExpanded: true,
         icon: defaultIcon,
         label: <CriteriaGroupLabel
+          css={css`margin: 2.5px 0`}
           criteriaGroup={cg}
           onUpdate={opts.onEditItem
             ? ((op) => opts.onEditItem!(path, idx, { ...cg, require: op }, true))
             : undefined} />,
         secondaryLabel: <ButtonGroup>
           {opts.implied && isRoot ? <>(implied)</> : null}
-          {opts.onAddGroup
-            ? <Button
-                minimal
-                small
-                title="Add nested criteria block"
-                onClick={() => opts.onAddGroup!([...path, idx])}
-                icon="more" />
-            : null}
+          {addGroupButton}
           {deleteButton}
         </ButtonGroup>,
         childNodes: criteriaToNodes(
@@ -83,7 +89,11 @@ export default function criteriaToNodes(
             : cg.criteria,
           { ...opts, path: [...path, idx] }),
       };
+
     } else {
+
+      // Render leaf criterion
+
       const ci = c as Criterion;
       const { subregisters, itemClasses } = opts;
       if (!isCriteriaKey(ci.key)) {
@@ -106,16 +116,16 @@ export default function criteriaToNodes(
         ? <Button
               small
               minimal
-              icon="add"
+              icon="plus"
               onClick={() => opts.onEditItem!(
                 path,
                 idx,
                 { key: 'custom', query: cfg.toQuery({ customExpression: 'false' }, { subregisters, itemClasses }) },
                 true)}>
-            add criteria
+            criteria
           </Button>
-        : <ControlGroup css={css`margin-right: 2.5px; & > * { transform: scale(0.9); } & > :first-child { transform-origin: left center; } }`}>
-            <HTMLSelect
+        : <ControlGroup vertical css={css`margin-bottom: 2.5px;`}>
+            <Select
               options={criterionTypeOptions}
               value={ci.key}
               disabled={!opts.onEditItem}
@@ -149,6 +159,8 @@ export default function criteriaToNodes(
           {deleteButton}
         </ButtonGroup>,
       };
+
     }
+
   });
 }

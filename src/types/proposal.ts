@@ -1,6 +1,5 @@
-import { Payload } from './item';
-import { RegisterStakeholder } from './stakeholder';
-import { Citation } from './util';
+import type { RegisterStakeholder } from './stakeholder';
+import type { Citation } from './util';
 
 
 export const DECISION_STATUSES = [
@@ -15,16 +14,23 @@ export const DISPOSITION_OPTIONS = [
   'notAccepted',
 ] as const;
 
+/**
+ * Item paths in proposal set must start with a slash
+ * and will be treated relative to dataset root.
+ * Object paths should conform to registry item path shape
+ * of `[/subregisterID]/<classID>/<itemID>.yaml`.
+ */
+export type ProposalSet = {
+  [objectPath: string]: ChangeProposal
+}
+
+/** A change request, per ISO 19135-1 model. */
 export interface ChangeRequest {
   // Supplied by sponsor
-  justification: string // Justification for proposal
+  /** Justification for the change */
+  justification: string
 
-  proposals: {
-    [itemPath: string]: ChangeProposal
-    // item paths must start with a slash
-    // and will be treated relative to dataset root.
-    // Since it is a registry, they’ll look like [/subregisterID]/classID/itemID.yaml
-  }
+  proposals: ProposalSet
 
   // Enforced by the system
   id: string
@@ -40,6 +46,15 @@ export interface ChangeRequest {
   controlBodyNotes?: string
   registerManagerNotes?: string
 }
+
+
+/**
+ * Change request properties for the purposes of drafting.
+ * (`controlBodyNotes` is in question.)
+ */
+export type DraftChangeRequest =
+  Pick<ChangeRequest, 'proposals' | 'justification' | 'controlBodyNotes' | 'sponsor'>;
+
 export const PROPOSAL_TYPES = [
   'addition',
   'clarification',
@@ -55,17 +70,20 @@ interface BaseProposal {
 
 export interface Addition extends BaseProposal {
   type: 'addition'
-  payload: Payload // New item data.
+  ///** New item data. */
+  //payload: Payload
 }
 
 export interface Clarification extends BaseProposal {
   type: 'clarification'
-  payload: Payload // Updated item data.
+  ///** Updated item data */
+  //payload: Payload
 }
 
 export const AMENDMENT_TYPES = [
   'supersession',
   'retirement',
+  'invalidation',
 ] as const;
 interface BaseAmendment extends BaseProposal {
   type: 'amendment'
@@ -78,6 +96,9 @@ export interface Supersession extends BaseAmendment {
   amendmentType: 'supersession'
   supersedingItemIDs: string[]
 }
-export type Amendment = Supersession | Retirement
+export interface Invalidation extends BaseAmendment {
+  amendmentType: 'invalidation'
+}
+export type Amendment = Supersession | Retirement | Invalidation
 
 export type ChangeProposal = Amendment | Clarification | Addition

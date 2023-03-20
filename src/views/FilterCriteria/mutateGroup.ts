@@ -7,12 +7,15 @@ type TreeMutation<T> =
   { action: 'edit'; idx: number; item: T; };
 
 
-/* Mutating criteria tree */
+/** Mutates given criteria tree in place. */
 export default function mutateGroup(
   criteria: (CriteriaGroup | Criterion)[],
+
+  /** Here path must be parent node path in reverse (top-level index coming last). */
   path: number[],
-  // Here path must be parent node path in reverse (top-level index coming last).
-  mutation: TreeMutation<CriteriaGroup | Criterion>) {
+
+  mutation: TreeMutation<CriteriaGroup | Criterion>,
+) {
 
   if (path.length < 1 && mutation.action === 'edit') {
     (criteria[0] as CriteriaGroup).require = (mutation.item as CriteriaGroup).require;

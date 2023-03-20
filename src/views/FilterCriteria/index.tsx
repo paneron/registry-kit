@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx } from '@emotion/react';
+import { jsx, css } from '@emotion/react';
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, TreeNodeInfo, Tree } from '@blueprintjs/core';
 import { ItemClassConfigurationSet, Subregisters } from '../../types';
@@ -80,7 +80,15 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     : [];
 
   return (
-    <Tree contents={[ ...implied, ...nodes ]} className={className} />
+    <Tree
+      contents={[ ...implied, ...nodes ]}
+      className={className}
+      css={css`
+        .bp4-tree-node-content { height: unset; }
+        .bp4-tree-node-label { overflow: unset; }
+        .bp4-tree-node-caret, .bp4-tree-node-caret-none { display: none; }
+      `}
+    />
   );
 }
 
@@ -92,9 +100,11 @@ export default CriteriaTree;
 interface CriteriaGroupLabelProps {
   criteriaGroup: CriteriaGroup
   onUpdate?: (op: CompositionOperator) => void
+  className?: string
 }
-export const CriteriaGroupLabel: React.FC<CriteriaGroupLabelProps> = function ({ criteriaGroup, onUpdate }) {
-  return <>
+export const CriteriaGroupLabel: React.FC<CriteriaGroupLabelProps> =
+function ({ criteriaGroup, onUpdate, className }) {
+  return <div className={className}>
     {onUpdate
       ? <ButtonGroup>
           {COMPOSITION_OPERATORS.map(op =>
@@ -110,7 +120,7 @@ export const CriteriaGroupLabel: React.FC<CriteriaGroupLabelProps> = function ({
       : <strong>{criteriaGroup.require}</strong>}
     {" "}
     of:
-  </>;
+  </div>;
 }
 
 

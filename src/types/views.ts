@@ -1,4 +1,3 @@
-
 import type React from 'react';
 import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
 import type { ObjectDatasetRequest, ObjectDatasetResponse, ValueHook } from '@riboseinc/paneron-extension-kit/types';
@@ -6,15 +5,32 @@ import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } 
 import type { CriteriaGroup } from '../views/FilterCriteria/models';
 
 
+// Hooks
+
+/**
+ * Mostly a wrapper around useObjectData, but coerces value type
+ * (TODO: validate!) and takes into account change request from any
+ * wrapping change request context. If a change request is present,
+ * will substitute proposed item data unless `ignoreActiveCR` is set.
+ *
+ * NOTE: Despite the name, returns the entire RegisterItem,
+ * not just the `.data` property with item payload.
+ */
+export type RegisterItemDataHook<P extends Payload = Payload> =
+  (opts: { itemPaths: string[], ignoreActiveCR?: true }) => ValueHook<Record<string, RegisterItem<P> | null>>;
+
+
 // Extension configuration
 
-export interface ExtensionContext {
-  getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
-  useRegisterItemData: RegisterItemDataHook
-  onJump?: () => void
-}
+// TODO: Obsolete?
+// export interface ExtensionContext {
+//   getRelatedItemClassConfiguration: (classID: string) => RelatedItemClassConfiguration
+//   useRegisterItemData: RegisterItemDataHook
+//   onJump?: () => void
+// }
 
-export interface RegisterConfiguration<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
+export interface RegisterConfiguration
+<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> {
   /**
    * Configuration for all items in this register.
    * This includes items in subregisters.
@@ -31,15 +47,15 @@ export interface RegisterConfiguration<Items extends ItemClassConfigurationSet =
   subregisters?: Subregisters<Items>
 }
 
-export type Subregisters<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> = {
+export type Subregisters
+<Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>> = {
   [subregisterID: string]: {
     title: string
+
+    /** Names of item classes that go in this subregister. */
     itemClasses: (keyof Items)[]
   }
 };
-
-export type RegisterItemDataHook<P extends Payload = Payload> =
-  (opts: { itemPaths: string[] }) => ValueHook<Record<string, RegisterItem<P> | null>>;
 
 export type ItemClassConfigurationSet = {
   [itemClassID: string]: ItemClassConfiguration<any>
@@ -48,7 +64,13 @@ export type ItemClassConfigurationSet = {
 
 
 export interface ExportFormatConfiguration<P extends Payload> {
+  /** The name of the export format. */
   label: string
+
+  /**
+   * The function that takes register item data and some helper functions
+   * and is expected to return a blob.
+   */
   exportItem: (
     itemData: RegisterItem<P>,
     opts: {
@@ -91,13 +113,32 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
 }
 
 
-// Item views
-
 export interface RegistryViewProps
 <Items extends ItemClassConfigurationSet = Record<string, ItemClassConfiguration<any>>>
 extends RegisterConfiguration<Items> {
+  /**
+   * When search is initially opened, have this query pre-defined.
+   * Not very useful since there are also preset searches in the browser now.
+   */
+  // TODO: Obsoluete?
   defaultSearchCriteria?: CriteriaGroup
+
+  customViews?: CustomViewConfiguration[]
 }
+
+export interface CustomViewConfiguration {
+  id: string
+  label: string
+  description: string
+  view: React.FC<{
+    /** View can support optional path for custom state/inner navigation (provisional). */
+    path: string
+  }>
+  icon?: JSX.Element
+}
+
+
+// Item views
 
 export interface ItemAction {
   getButtonProps:
@@ -110,6 +151,10 @@ export type RegistryView = React.FC<RegistryViewProps>
 type RegistryItemPayloadDefaults<P extends Payload> =
   Partial<Omit<P, 'id'>>;
 
+/**
+ * A small part of item class configuration,
+ * useful e.g. for formatting related items.
+ */
 export type RelatedItemClassConfiguration = {
   title: string
   itemView: ItemListView<any>
@@ -117,20 +162,37 @@ export type RelatedItemClassConfiguration = {
 
 
 export interface RegistryItemViewProps<P extends Payload> {
+  /**
+   * Item reference.
+   * Glossarist, for example, uses it to determine language subregister and set appropriate writing direction.
+   */
+  itemRef: Omit<InternalItemReference, 'itemID'> & { itemID?: InternalItemReference['itemID'] }
+
+  /** Item data (payload). */
   itemData: P
+
   className?: string
-  subregisterID?: string
-  useRegisterItemData: RegisterItemDataHook
-  getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
+  //subregisterID?: string
+
+  /** Deprecated */
+  useRegisterItemData?: any
+  /** Deprecated */
+  getRelatedItemClassConfiguration?: any
 }
 
 export interface GenericRelatedItemViewProps {
   /** Currently selected item’s ref. */
   itemRef?: InternalItemReference
 
+  /**
+   * By default, clicking the item will spawn a tab via TabbedWorkspace context.
+   * This prop can customize that behavior.
+   */
+  onJump?: () => void
+
   className?: string
-  useRegisterItemData: RegisterItemDataHook
-  getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
+  //useRegisterItemData: RegisterItemDataHook
+  //getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
   availableClassIDs?: string[]
   availableSubregisterIDs?: string[]
 
@@ -145,22 +207,29 @@ export interface GenericRelatedItemViewProps {
 
   /** Called when a new item is selected (can’t change if not provided) */
   onChange?: (newRef: InternalItemReference) => void
+
+  /** Deprecated */
+  useRegisterItemData?: any
+  /** Deprecated */
+  getRelatedItemClassConfiguration?: any
 }
 
 
-export type ItemEditView<P> = React.FC<RegistryItemViewProps<P> & {
+export type ItemEditView<P extends Payload> = React.FC<RegistryItemViewProps<P> & {
   onChange?: (newData: P) => void
-  onCreateRelatedItem?: (classID: string, subregisterID?: string) => Promise<InternalItemReference>
+  onCreateRelatedItem?:
+    (classID: string, subregisterID?: string) => Promise<InternalItemReference>
 }>;
 
-export interface ItemDetailViewProps<P> extends RegistryItemViewProps<P> {
-  useRegisterItemData: RegisterItemDataHook
+export interface ItemDetailViewProps<P extends Payload> extends RegistryItemViewProps<P> {
+  //useRegisterItemData: RegisterItemDataHook
 }
 
-export type ItemDetailView<P> = React.FC<ItemDetailViewProps<P>>;
+export type ItemDetailView<P extends Payload> = React.FC<ItemDetailViewProps<P>>;
 
-export interface ItemListViewProps<P> extends RegistryItemViewProps<P> {
-  itemID: string
+export interface ItemListViewProps<P extends Payload> extends RegistryItemViewProps<P> {
 }
-export type ItemListView<P> = React.FC<ItemListViewProps<P>>;
+
+export type ItemListView<P extends Payload> = React.FC<ItemListViewProps<P>>;
+
 export type LazyItemView = React.FC<{ itemID: string }>;

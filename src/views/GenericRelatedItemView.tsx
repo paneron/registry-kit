@@ -2,35 +2,67 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useContext, useEffect, useState } from 'react';
-import { GenericRelatedItemViewProps, InternalItemReference, RegisterItem, RelatedItemClassConfiguration } from '../types';
+import React, { useContext, useState } from 'react';
 import { Button, ButtonGroup, ButtonProps, Dialog } from '@blueprintjs/core';
+import {
+  type GenericRelatedItemViewProps,
+  type InternalItemReference,
+  type RelatedItemClassConfiguration,
+  isRegisterItem,
+} from '../types';
 import { BrowserCtx } from './BrowserCtx';
-import RegisterItemGrid, { SearchQuery } from './RegisterItemGrid';
-import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
-import { CriteriaGroup } from './FilterCriteria/models';
-import CRITERIA_CONFIGURATION from './FilterCriteria/CRITERIA_CONFIGURATION';
+import { ChangeRequestContext } from './change-request/ChangeRequestContext';
+import { isDrafted } from '../types/cr';
+import Search from './sidebar/Search';
+import { itemPathToItemRef } from './itemPathUtils';
+import type { Criterion, CriteriaGroup } from './FilterCriteria/models';
+import { Protocols } from './protocolRegistry';
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
   itemRef, className,
-  useRegisterItemData, getRelatedItemClassConfiguration,
   onCreateNew, onClear, onChange,
   availableClassIDs,
-  availableSubregisterIDs,
-  itemSorter,
+  onJump,
+  // availableSubregisterIDs,
+  // itemSorter,
 }) {
-  const { classID, itemID, subregisterID } = itemRef ?? { classID: '', itemID: '', subregisterID: '' };
-  const _itemPath = `${classID}/${itemID}.yaml`;
-  const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : `/${_itemPath}`;
+  const {
+    useRegisterItemData,
+    getRelatedItemClassConfiguration,
+    jumpTo,
+  } = useContext(BrowserCtx);
+  const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
+  const { classID, itemID, subregisterID } = itemRef ?? {
+    classID: '',
+    itemID: '',
+    subregisterID: '',
+  };
+
+  const itemPathWithClass = `${classID}/${itemID}.yaml`;
+  // If curretn register has subregisters, specify subregister-relative path
+  const itemPathWithSubregister = subregisterID
+    ? `subregisters/${subregisterID}/${itemPathWithClass}`
+    : `${itemPathWithClass}`;
+  // If a change request is active
+  // and this item is among clarifications or additions
+  // then use item path relative to the change request
+  const affectedByActiveCR = (
+    activeChangeRequest &&
+    isDrafted(activeChangeRequest) &&
+    activeChangeRequest.items[itemPathWithSubregister]
+  );
+  const itemPath = affectedByActiveCR
+    ? `/proposals/${activeChangeRequest.id}/items/${itemPathWithSubregister}`
+    : `/${itemPathWithSubregister}`;
 
   const [selectDialogState, setSelectDialogState] = useState(false);
 
   //log.debug("Rendering generic related item view", itemRef);
-  const { jumpToItem } = useContext(BrowserCtx);
+  //const { jumpToItem } = useContext(BrowserCtx);
 
   const itemResult = useRegisterItemData({ itemPaths: [itemPath] });
-  const item = (itemResult.value?.[itemPath] || null) as RegisterItem<any> | null;
+  const item = (itemResult.value?.[itemPath] || null);
 
   let classConfigured: boolean;
   let cfg: RelatedItemClassConfiguration;
@@ -54,32 +86,29 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   }
 
   const classIDs = availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : []);
-  const subregisterIDs = availableSubregisterIDs !== undefined
-    ? availableSubregisterIDs
-    : (itemRef?.subregisterID ?? '') !== ''
-    ? [itemRef!.subregisterID!]
-    : undefined;
 
   function jump() {
-    jumpToItem?.(classID, itemID, subregisterID);
+    //jumpToItem?.(classID, itemID, subregisterID);
+    onJump
+      ? onJump()
+      : jumpTo?.(`${Protocols.ITEM_DETAILS}:/${itemPathWithSubregister}`);
   }
 
-  const hasItem = item !== null && classConfigured;
+  const hasItem = item !== null && classConfigured && isRegisterItem(item);
   const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
   const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
-  const canChangeRelatedItem = classIDs.length >= 1 && onChange && !itemResult.isUpdating;
+  const canChangeRelatedItem = /*classIDs.length >= 1 && */onChange && !itemResult.isUpdating;
   const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
-  const canJump = item !== null && jumpToItem && classConfigured && !canClear && !onChange && !itemResult.isUpdating;
+  const canJump = item !== null && classConfigured && !itemResult.isUpdating && (onJump || jumpTo);
 
   let itemView: JSX.Element | null;
   let itemButtons: ButtonProps[] = [];
 
   if (hasItem) {
     itemView = <Item
-      itemID={itemID}
-      useRegisterItemData={useRegisterItemData}
-      itemData={item?.data}
-      getRelatedItemClassConfiguration={getRelatedItemClassConfiguration} />;
+      itemRef={{ classID, itemID, subregisterID }}
+      itemData={item.data}
+    />;
   } else {
     if (canAutoCreateRelatedItem) {
       itemButtons.push({
@@ -96,13 +125,15 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     }
   }
 
+  const willShowItemView = hasItem || itemIsMissing || !onChange;
+
   if (canChangeRelatedItem) {
     itemButtons.push({
       onClick: () => setSelectDialogState(true),
       icon: 'edit',
-      text: 'Specify',
+      text: willShowItemView ? undefined : 'Specify',
       intent: 'primary',
-      disabled: classIDs.length < 1,
+      /*disabled: classIDs.length < 1,*/
     });
   }
 
@@ -113,8 +144,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   //log.debug("Rendering generic related item view: got item", item);
   return (
     <ButtonGroup
-        fill className={className}
-        css={css`.bp3-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
+        fill
+        className={className}
+        css={css`.bp4-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
       {classID
         ? <Button
               alignText="left"
@@ -124,28 +156,30 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             {cfg.title ?? "Class N/A"}
           </Button>
         : null}
-      <Button
-          alignText="left"
-          fill={hasItem} outlined
-          disabled={!canJump}
-          onClick={jump}
-          loading={itemResult.isUpdating}
-          title={`${cfg.title} (click to jump to item)`}>
-        {itemView}
-      </Button>
-      {itemButtons.map(props => <Button {...props} outlined />)}
+      {willShowItemView
+        ? <Button
+              alignText="left"
+              fill={hasItem} outlined
+              disabled={!canJump}
+              onClick={jump}
+              loading={itemResult.isUpdating}
+              title={hasItem
+                ? `${cfg.title} (click to jump to item)`
+                : undefined}>
+            {itemView}
+          </Button>
+        : null}
+
+      {itemButtons.map((props, idx) =>
+        <Button key={idx} outlined {...props} />
+      )}
 
       {onChange
         ? <RelatedItemSelectionDialog
             isOpen={selectDialogState}
             onClose={() => setSelectDialogState(false)}
             onChange={onChange}
-            onClear={onClear}
-            selectedItem={itemRef}
             availableClassIDs={classIDs}
-            availableSubregisterIDs={subregisterIDs}
-            useRegisterItemData={useRegisterItemData}
-            getRelatedItemClassConfiguration={getRelatedItemClassConfiguration}
           />
         : null}
     </ButtonGroup>
@@ -157,49 +191,24 @@ const RelatedItemSelectionDialog: React.FC<{
   isOpen: boolean
   onClose: () => void
   onChange: (itemRef: InternalItemReference) => void
-  onClear?: () => void
-  selectedItem?: InternalItemReference
   availableClassIDs: string[]
-  availableSubregisterIDs?: string[]
-  useRegisterItemData: GenericRelatedItemViewProps["useRegisterItemData"]
-  getRelatedItemClassConfiguration: GenericRelatedItemViewProps["getRelatedItemClassConfiguration"]
 }> = function ({
-  isOpen, onClose, onChange, onClear,
-  selectedItem,
-  availableSubregisterIDs,
+  isOpen, onClose, onChange,
   availableClassIDs,
-  useRegisterItemData,
-  getRelatedItemClassConfiguration,
 }) {
-  const { itemClasses, subregisters } = useContext(BrowserCtx);
+  const { subregisters } = useContext(BrowserCtx);
 
-  const [filterCriteria, setFilterCriteria] = useState<CriteriaGroup>({ require: 'all', criteria: [] });
+  const classCriteria: Criterion[] = availableClassIDs.map(clsID => ({
+    key: 'item-class',
+    query: `objPath.indexOf(\"/${clsID}/\") >= 0`,
+  }));
 
-  useEffect(() => {
-    const baseCriteria: CriteriaGroup[] = [];
-    if (availableClassIDs.length > 0) {
-      baseCriteria.push({
+  const implicitCriteria: CriteriaGroup | undefined = classCriteria.length > 0
+    ? {
         require: 'any',
-        criteria: availableClassIDs.map(classID => ({
-          key: 'item-class',
-          query: CRITERIA_CONFIGURATION['item-class'].toQuery({ classID }, { itemClasses, subregisters }),
-        })),
-      });
-    }
-    if (availableSubregisterIDs && availableSubregisterIDs.length > 0) {
-      baseCriteria.push({
-        require: 'any',
-        criteria: availableSubregisterIDs.map(subregisterID => ({
-          key: 'subregister',
-          query: CRITERIA_CONFIGURATION['subregister'].toQuery({ subregisterID }, { itemClasses, subregisters }),
-        })),
-      });
-    }
-    setFilterCriteria({
-      require: 'all',
-      criteria: baseCriteria,
-    });
-  }, [JSON.stringify(availableClassIDs), JSON.stringify(availableSubregisterIDs)]);
+        criteria: classCriteria,
+      }
+    : undefined;
 
   return (
     <Dialog
@@ -207,24 +216,15 @@ const RelatedItemSelectionDialog: React.FC<{
         onClose={onClose}
         enforceFocus={false}
         style={{ padding: '0', width: 'unset' }}>
-      <RegisterItemGrid
+      <Search
         style={{ height: '90vh', width: '90vw' }}
-        selectedItem={selectedItem ?? undefined /* NOTE: for some reason it can be null; this is wrong */}
-        hasSubregisters={availableSubregisterIDs !== undefined ? true : undefined}
-        queryExpression={criteriaGroupToQueryExpression(filterCriteria)}
-        onSelectItem={(itemRef) => itemRef ? onChange(itemRef) : onClear ? onClear() : void 0}
-        onOpenItem={(itemRef) => { onChange(itemRef); onClose(); }}
-        getRelatedClassConfig={getRelatedItemClassConfiguration}
-        useRegisterItemData={useRegisterItemData}
-        toolbar={<SearchQuery
-          rootCriteria={filterCriteria}
-          quickSearchString=""
-          viewingMeta={false}
-          itemClasses={itemClasses}
-          availableClassIDs={availableClassIDs}
-          subregisters={subregisters}
-          onCriteriaChange={setFilterCriteria}
-        />}
+        availableClassIDs={availableClassIDs}
+        implicitCriteria={implicitCriteria}
+        stateName="superseding-item-selector-search"
+        onOpenItem={(itemPath) => {
+          onChange(itemPathToItemRef(subregisters !== undefined, itemPath));
+          onClose();
+        }}
       />
     </Dialog>
   );
