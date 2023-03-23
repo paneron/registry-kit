@@ -256,6 +256,7 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
       || (proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'))
       ? <FormGroup inline label="superseded by: " css={css`margin: 0;`}>
           <RelatedItems
+            availableClassIDs={[itemClass.meta.id]}
             itemRefs={proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
               ? proposal.supersedingItemIDs.
                 map(id => ({ itemID: id, classID: itemClass.meta.id, subregisterID }))
