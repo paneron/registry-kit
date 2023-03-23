@@ -24,12 +24,7 @@ export const RelatedItems: React.FC<{
     onChange?.(update(itemRefs, { $splice: [[idx, 0, ref]] }));
   }
   return (
-    <ControlGroup
-
-        // TODO: Workaround for BP3 bug with border radius in ControlGroup with a single child; remove if fixed:
-        vertical={itemRefs.length > 0}
-
-        className={className}>
+    <ControlGroup vertical className={className}>
       {itemRefs.map((itemRef, idx) =>
         <GenericRelatedItemView
           itemRef={itemRef}
