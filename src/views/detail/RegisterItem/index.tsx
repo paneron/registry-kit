@@ -217,10 +217,10 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
                       Remove proposed addition
                     </Button>
                   : null}
-                {proposal?.type === 'amendment' && proposal.amendmentType === 'retirement'
+                {proposal?.type === 'amendment'
                   ? <Button
                         intent="warning"
-                        title="Remove amendment for this item from current proposal."
+                        title={`Remove amendment (${proposal.amendmentType}) for this item from current proposal.`}
                         disabled={isBusy}
                         onClick={handleClearProposal}>
                       Clear proposed amendment
