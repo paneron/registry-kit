@@ -14,9 +14,10 @@ import GenericRelatedItemView from '../../GenericRelatedItemView';
  */
 export const RelatedItems: React.FC<{
   itemRefs: InternalItemReference[],
+  availableClassIDs?: string[],
   onChange?: (newItemRefs: InternalItemReference[]) => void,
   className?: string,
-}> = function ({ itemRefs, onChange, className }) {
+}> = function ({ itemRefs, availableClassIDs, onChange, className }) {
   function handleRemoveItemAtIdx(idx: number) {
     onChange?.(update(itemRefs, { $splice: [[idx, 1]] }));
   }
@@ -41,6 +42,7 @@ export const RelatedItems: React.FC<{
       {/* New item placeholder */}
       {onChange
         ? <GenericRelatedItemView
+            availableClassIDs={availableClassIDs}
             onChange={newRef => onChange!(update(
               itemRefs,
               { $push: [newRef] },
