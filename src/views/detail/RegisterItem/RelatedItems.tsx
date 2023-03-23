@@ -10,7 +10,7 @@ import GenericRelatedItemView from '../../GenericRelatedItemView';
 
 
 /**
- * Shows a list of related items .
+ * Shows a list of related items, optionally editable.
  */
 export const RelatedItems: React.FC<{
   itemRefs: InternalItemReference[],
