@@ -55,9 +55,13 @@ export const RegistryView: React.FC<RegistryViewProps> = function (props) {
 };
 
 
+const SIDEBAR_WIDTH_SETTING_NAME = 'registryMainSidebarWidthPixels'
+
+
 const RegistryWorkspace: React.FC<Record<never, never>> = function () {
   const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
+  const { useSettings, updateSetting } = useContext(DatasetContext);
 
   const globalMode: TabbedWorkspaceProps<any>['globalMode'] = useMemo(
     (() => activeChangeRequest
@@ -72,12 +76,23 @@ const RegistryWorkspace: React.FC<Record<never, never>> = function () {
     [activeChangeRequest?.id],
   );
 
+  const { value: { settings } } = useSettings();
+
+  const stored = settings[SIDEBAR_WIDTH_SETTING_NAME]
+  const sidebarWidth: number | undefined = stored && typeof stored === 'number'
+    ? stored as number
+    : undefined;
+
   return <TabbedWorkspace
     css={css`flex: 1 1 auto;`}
     sidebarConfig={sidebarConfig}
     sidebarIDs={sidebarIDs}
     newTabPrompt={<RegisterHome />}
     globalMode={globalMode}
+    sidebarWidth={sidebarWidth}
+    onSidebarResize={(width) => {
+      updateSetting({ key: SIDEBAR_WIDTH_SETTING_NAME, value: width })
+    }}
   />
 };
 
