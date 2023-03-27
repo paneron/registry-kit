@@ -17,6 +17,7 @@ import {
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import useItemRef from '../../hooks/useItemRef';
 import useSingleRegisterItemData from '../../hooks/useSingleRegisterItemData';
 import useItemClassConfig from '../../hooks/useItemClassConfig';
@@ -33,7 +34,7 @@ import {
   maybeEllipsizeString,
   TabContentsWithActions,
 } from '../../util';
-import { crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
+import { itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { RelatedItems } from './RelatedItems';
@@ -49,7 +50,8 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
   const { value: ref } = useItemRef(uri);
   const { value: clsConfig } = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
   //const { value: itemData } = useSingleRegisterItemData(ref);
-  const { updateObjects, performOperation, operationKey } = useContext(DatasetContext);
+  const { updateObjects, makeRandomID, performOperation, operationKey } = useContext(DatasetContext);
+  const { spawnTab } = useContext(TabbedWorkspaceContext);
   const isBusy = operationKey !== undefined;
   const {
     jumpTo,
@@ -141,9 +143,49 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
   }, [
     updateObjects,
     activeCRIsEditable,
+    itemPath,
     JSON.stringify(activeCR),
     JSON.stringify(itemData),
     JSON.stringify(editedClarification),
+  ]);
+
+  // TODO: Very similar to `handleAdd()` in Browse sidebar menu; refactor?
+  const handleProposeLikeThis = useCallback(async function _handleProposeLikeThis(): Promise<void> {
+    if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR || !itemClass || !isRegisterItem(itemData)) {
+      throw new Error("Unable to create item: likely current proposal is not editable or dataset is read-only");
+    }
+    const { classID, subregisterID } = itemRef;
+    const itemID = await makeRandomID();
+    const newRef = { classID, subregisterID, itemID };
+    const newItem: RegisterItem<any> = {
+      id: itemID,
+      dateAccepted: new Date(),
+      status: 'valid',
+      data: { ...itemData.data },
+    };
+    if (isRegisterItem(newItem)) {
+      const newPath = itemRefToItemPath(newRef);
+      await updateObjects({
+        commitMessage: `clone ${itemRef.itemID} to propose a new item`,
+        objectChangeset: updateCRObjectChangeset(
+          activeCR as any,
+          { [newPath]: { type: 'addition' } },
+          { [newPath]: newItem },
+        ),
+        _dangerouslySkipValidation: true,
+      });
+      if (activeCR.id === globallyActiveCRID) {
+        spawnTab(`${Protocols.ITEM_DETAILS}:${itemRefToItemPath(newRef, activeCR.id)}`);
+      }
+    } else {
+      throw new Error("Newly created item did not pass validation (this is likely a bug in RegistryKit");
+    }
+  }, [
+    updateObjects,
+    activeCRIsEditable,
+    itemPath,
+    JSON.stringify(activeCR),
+    JSON.stringify(itemData),
   ]);
 
   if (!itemClass) {
@@ -319,6 +361,17 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
         </FormGroup>
       : null;
 
+    const proposeLikeThis = activeCRIsEditable && !editedClarification
+      ? <Button
+            title="Propose a new item in current proposal, using this item as template."
+            icon='plus'
+            disabled={isBusy}
+            outlined
+            onClick={performOperation('duplicating item', handleProposeLikeThis)}>
+          Propose another like this
+        </Button>
+      : null;
+
     // If there’s a CR context without active CR,
     // or active CR isn’t the same as the one in CR context,
     // then we can assume that the item is shown in proposal window
@@ -363,6 +416,7 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
             {itemStatus}
             {supersedingItems}
             {clarificationAction}
+            {proposeLikeThis}
           </FormGroup>
         </>}
         main={
