@@ -410,37 +410,6 @@ export function isFinalState(state: CR.StateType): boolean {
 }
 
 
-// Transition runtime implementation
-
-// const draft: CR.Transition<
-// | CR.ReturnedForClarificationByControlBody
-// | CR.ReturnedForClarificationByManager
-// | CR.Drafted,
-//   CR.Drafted,
-//   CR.SubmitterInput> =
-// function (cr, { justification, items }) {
-//   return {
-//     ...cr,
-//     justification,
-//     timeEdited: new Date(),
-//     items,
-//   };
-// }
-// 
-// const withdraw: CR.Transition<
-//   CR.Proposed
-// | CR.SubmittedForControlBodyReview
-// | CR.ReturnedForClarificationByControlBody
-// | CR.ReturnedForClarificationByManager,
-//   CR.Withdrawn> =
-// function withdraw (cr) {
-//   return {
-//     ...cr,
-//     timeDisposed: new Date(),
-//   };
-// }
-
-
 const applyRegisterManagerDecision: CR.Transition<
   CR.Proposed,
   CR.SubmittedForControlBodyReview
