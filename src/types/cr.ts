@@ -407,6 +407,8 @@ export type Transitions = {
   [State.DRAFT]: {
     // [State.DRAFT]:
     //   TransitionConfig<Drafted, Drafted, SubmitterInput>;
+    [State.WITHDRAWN]:
+      TransitionConfig<Proposed, Withdrawn>;
     [State.PROPOSED]:
       TransitionConfig<Drafted, Proposed, SubmitterInput>;
   };

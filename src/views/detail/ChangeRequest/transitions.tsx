@@ -482,7 +482,7 @@ CR.TransitionConfig<CR.Withdrawable, CR.Withdrawn, null> = {
   title: "Withdraw",
   targetState: CR.State.WITHDRAWN,
   Widget: null,
-  canBeTransitionedBy: CR.isSubmittedBy,
+  canBeTransitionedBy: (stakeholder, cr) => cr.timeProposed && CR.isSubmittedBy(stakeholder, cr),
   func: (cr: CR.Withdrawable) => ({
     ...cr,
     timeDisposed: new Date(),
@@ -640,6 +640,7 @@ export const STATE_INTENT: { [key in CR.StateType]?: Intent } = {
 /** Associates transition implementation with source/target states. */
 const TRANSITIONS: CR.Transitions = {
   [CR.State.DRAFT]: {
+    [CR.State.WITHDRAWN]: WITHDRAWAL_TRANSITION,
     [CR.State.PROPOSED]: PROPOSAL_TRANSITION,
   },
   [CR.State.PROPOSED]: {
