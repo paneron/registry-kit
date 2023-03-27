@@ -332,10 +332,10 @@ function ({ cr, className }) {
 export function getPastTransitions(cr: CR.Base): [key: string, el: JSX.Element][] {
   const els: [key: string, el: JSX.Element][] = [];
   if (CR.hasSubmitterInput(cr)) {
-    els.push(['Submitter input', <>{cr.justification}</>]);
+    els.push(['Submitter’s justification', <>{cr.justification}</>]);
   }
   if (CR.hasRegisterManagerInput(cr)) {
-    els.push(['Register manager notes', <>{cr.registerManagerNotes}</>]);
+    els.push(['Register manager’s notes', <>{cr.registerManagerNotes}</>]);
   }
   if (CR.hasControlBodyInput(cr)) {
     els.push(['Control body decision', <>{cr.controlBodyNotes}</>]);
