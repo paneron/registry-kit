@@ -253,7 +253,6 @@ export function hasRegisterManagerInput(val: any): val is RegisterManagerInput {
 }
 export interface ControlBodyInput {
   controlBodyNotes: string;
-  controlBodyDecisionEvent: string;
 }
 export function hasControlBodyInput(val: any): val is ControlBodyInput {
   return (

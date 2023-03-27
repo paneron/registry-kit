@@ -338,14 +338,7 @@ export function getPastTransitions(cr: CR.Base): [key: string, el: JSX.Element][
     els.push(['Register manager notes', <>{cr.registerManagerNotes}</>]);
   }
   if (CR.hasControlBodyInput(cr)) {
-    els.push([
-      'Control body input',
-      <>
-        {cr.controlBodyNotes}
-        <br />
-        <em css={css`display: block;`}>Decision event: {cr.controlBodyDecisionEvent}</em>
-      </>
-    ]);
+    els.push(['Control body decision', <>{cr.controlBodyNotes}</>]);
   }
   if (CR.hasAppealRequest(cr)) {
     els.push(['Reason for appeal', <>{cr.appealReason}</>]);
@@ -432,14 +425,13 @@ const applyControlBodyDecision: CR.Transition<
 | CR.Rejected
 | CR.ReturnedForClarificationByControlBody,
   CR.ControlBodyInput> =
-function applyControlBodyDecision (cr, { controlBodyNotes, controlBodyDecisionEvent }) {
-  if (!controlBodyNotes?.trim() || !controlBodyDecisionEvent?.trim()) {
-    throw new Error("Control body notes and decision event are required.");
+function applyControlBodyDecision (cr, { controlBodyNotes }) {
+  if (!controlBodyNotes?.trim()) {
+    throw new Error("Control body decision is required.");
   }
   return {
     ...cr,
     controlBodyNotes,
-    controlBodyDecisionEvent,
   };
 }
 
@@ -562,32 +554,17 @@ const ControlBodyNotesWidget: React.FC<{
   onChange?: (newVal: CR.ControlBodyInput) => void
 }> = function ({ value, onChange }) {
   return (
-    <>
-      <FormGroup label="Control body notes:">
-        <TransitionInputTextArea
-          value={value.controlBodyNotes}
-          required
-          onChange={evt =>
-            onChange?.({
-              controlBodyNotes: evt.currentTarget.value,
-              controlBodyDecisionEvent: value.controlBodyDecisionEvent,
-            })
-          }
-        />
-      </FormGroup>
-      <FormGroup label="Control body decision event:">
-        <TransitionInputTextArea
-          value={value.controlBodyDecisionEvent}
-          required
-          onChange={evt =>
-            onChange?.({
-              controlBodyNotes: value.controlBodyNotes,
-              controlBodyDecisionEvent: evt.currentTarget.value,
-            })
-          }
-        />
-      </FormGroup>
-    </>
+    <FormGroup label="Control body decision:">
+      <TransitionInputTextArea
+        value={value.controlBodyNotes}
+        required
+        onChange={evt =>
+          onChange?.({
+            controlBodyNotes: evt.currentTarget.value,
+          })
+        }
+      />
+    </FormGroup>
   );
 };
 
