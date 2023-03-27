@@ -479,7 +479,7 @@ const applyAppeal: CR.Transition<
   CR.Rejected,
   CR.Appealed,
   CR.AppealRequest> =
-function applyRegisterManagerDecision (cr, { appealReason }) {
+function applyAppeal (cr, { appealReason }) {
   if (!appealReason?.trim()) {
     throw new Error("Appeal reason is required.");
   }
@@ -496,7 +496,7 @@ const applyRegisterOwnerDecision: CR.Transition<
   CR.AcceptedOnAppeal
 | CR.RejectionUpheld,
   CR.RegisterOwnerInput> =
-function applyRegisterManagerDecision (cr, { registerOwnerNotes }) {
+function applyRegisterOwnerDecision (cr, { registerOwnerNotes }) {
   if (!registerOwnerNotes?.trim()) {
     throw new Error("Register owner note is required.");
   }
