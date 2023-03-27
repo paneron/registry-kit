@@ -143,7 +143,7 @@ function ({ cr, className }) {
     () => stakeholder
       ? getTransitions(cr, stakeholder)
       : []
-  ), [JSON.stringify(stakeholder), cr?.id, cr?.state]);
+  ), [JSON.stringify(stakeholder), JSON.stringify(cr)]);
 
   const initialState: State = {
     // Pre-select next state to first available transition
