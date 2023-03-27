@@ -1128,10 +1128,10 @@
   resolved "https://registry.yarnpkg.com/@riboseinc/isogit-lfs/-/isogit-lfs-0.1.6.tgz#31641abf24051c628c1e796b23f45fcee20367ed"
   integrity sha512-LX/FQZTUXIrAR+loZFWHYND5g41KTrS5yZukqDvMgQK3nOnkeLAwtcrb3Lysjg2VwNXQN3KSVD6UeuGr1FlnxA==
 
-"@riboseinc/paneron-extension-kit@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-2.0.1.tgz#27a6c95ac5246c18e187d08c1e3a217725fd92e0"
-  integrity sha512-0g/M01BuhHSQa1xe2NpgpGvWOHXxDXb5fE36SaED5Y35QgRtMe4aceG1trgskJWzddsqxj9kLMA7AmSwQ4doMA==
+"@riboseinc/paneron-extension-kit@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@riboseinc/paneron-extension-kit/-/paneron-extension-kit-2.0.2.tgz#674e1d55fb12a3d37b88d5b77722877a44c4c55d"
+  integrity sha512-GNt6zby/q5NtI6JxyRDMFWXCI5IU755N+JiwoBAX7EcmiWf/N+sK4T6QJa4Yq07IO6JilEdx3JwjZu3FiZSAYA==
 
 "@types/dom4@^2.0.2":
   version "2.0.2"
