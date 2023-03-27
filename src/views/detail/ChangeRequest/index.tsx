@@ -176,10 +176,18 @@ function ({ afterDelete, className }) {
 
               <Divider />
               <div>
-                To register version: <strong>{cr.registerVersion ?? 'N/A'}</strong>
-                {" "}
+                Register&nbsp;version before&nbsp;proposal: <strong>{cr.registerVersion ?? 'N/A'}</strong>
+                &ensp;
                 {cr.registerVersion === registerMetadata?.version?.id
-                  ? <Tag css={css`display: inline;`} intent='success' minimal round>current</Tag>
+                  ? <Tag css={css`display: inline;`} intent='success' minimal round>
+                      current
+                      {" "}
+                      <HelpTooltip intent='success' content={<>
+                        Published version of the register
+                        {" "}
+                        had not changed since this proposal started.
+                      </>} />
+                    </Tag>
                   : <Tag css={css`display: inline;`} intent='warning' minimal round>
                       not current
                       {" "}
