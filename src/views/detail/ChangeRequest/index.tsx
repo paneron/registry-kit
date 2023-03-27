@@ -18,15 +18,17 @@ import {
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
-import { crPathToCRID } from '../../itemPathUtils';
+import { crPathToCRID, crIDToCRPath } from '../../itemPathUtils';
 import {
   ChangeRequestContextProvider,
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
-import { hadBeenProposed, isDisposed } from '../../../types/cr';
+import { Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
+import { Protocols } from '../../protocolRegistry';
 import {
   TabContentsWithActions,
   RegisterHelmet as Helmet,
@@ -38,23 +40,30 @@ import { TransitionOptions, getPastTransitions, getTransitions } from './transit
 
 const View: React.FC<{ uri: string }> = function ({ uri }) {
   const crID = crPathToCRID(uri);
+  const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
 
   return (
     <ChangeRequestContextProvider changeRequestID={crID}>
-      <ChangeRequestDetails css={css`
-        position: absolute;
-        inset: 0;
-        overflow-y: auto;
-      `} />
+      <ChangeRequestDetails
+        css={css`
+          position: absolute;
+          inset: 0;
+          overflow-y: auto;
+        `}
+        afterDelete={() => {
+          closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`);
+        }}
+      />
     </ChangeRequestContextProvider>
   );
 };
 
 
 const ChangeRequestDetails:
-React.VoidFunctionComponent<{ className?: string }> =
-function ({ className }) {
+React.VoidFunctionComponent<{ afterDelete?: () => void, className?: string }> =
+function ({ afterDelete, className }) {
   const { changeRequest: cr, canEdit } = useContext(ChangeRequestContext);
+  const { performOperation, updateTree } = useContext(DatasetContext);
   const {
     registerMetadata,
     stakeholder,
@@ -78,6 +87,14 @@ function ({ className }) {
     const authorIsCurrentUser = (
       stakeholder?.gitServerUsername &&
       cr.submittingStakeholderGitServerUsername === stakeholder.gitServerUsername);
+
+    async function handleDelete() {
+      if (authorIsCurrentUser && cr && updateTree && !isActive && Object.keys(cr.items).length < 1) {
+        const subtreeRoot = crIDToCRPath(cr.id).replace('/main.yaml', '');
+        await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove CR draft' });
+        afterDelete?.();
+      }
+    }
 
     return (
       <TabContentsWithActions
@@ -133,10 +150,17 @@ function ({ className }) {
               display: flex;
               min-height: 70vh;
             `}>
-              <Proposals
-                proposals={cr.items}
-                css={css`flex: 1;`}
-              />
+              {Object.keys(cr.items).length > 0
+                ? <Proposals proposals={cr.items} css={css`flex: 1;`} />
+                : <NonIdealState
+                    icon="clean"
+                    title="Nothing is proposed here yet."
+                    description={authorIsCurrentUser && updateTree && !(cr as Proposed).timeProposed && !isActive
+                      ? <Button onClick={performOperation('deleting proposal', handleDelete)} intent="danger">
+                          Delete this CR draft
+                        </Button>
+                      : undefined}
+                  />}
             </Card>
 
             <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
