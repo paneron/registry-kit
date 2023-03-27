@@ -226,13 +226,13 @@ function ({ cr, className }) {
           flatMap(prop => (prop as Supersession).supersedingItemIDs),
       ],
     })).data as Record<string, RegisterItem<any> | null>;
-    console.debug("Got orig item data", origItemData);
+    //console.debug("Got orig item data", origItemData);
     const newItemData = (await getObjectData({
       objectPaths: Object.entries(cr.items).
         filter(([, prop]) => prop.type === 'clarification' || prop.type === 'addition').
         map(([itemPath, ]) => itemPathInCR(itemPath, cr.id)),
     })).data as Record<string, RegisterItem<any> | null>;
-    console.debug("Got new item data", newItemData);
+    //console.debug("Got new item data", newItemData);
     return await proposalsToObjectChangeset(
         cr.id,
         subregisters !== undefined,
