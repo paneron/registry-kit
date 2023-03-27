@@ -75,6 +75,10 @@ function ({ className }) {
     const crStakeholder = (registerMetadata?.stakeholders ?? []).
       find(s => s.gitServerUsername === cr.submittingStakeholderGitServerUsername);
 
+    const authorIsCurrentUser = (
+      stakeholder?.gitServerUsername &&
+      cr.submittingStakeholderGitServerUsername === stakeholder.gitServerUsername);
+
     return (
       <TabContentsWithActions
         className={className}
@@ -141,9 +145,7 @@ function ({ className }) {
                 ? <div>
                     Author: <RegisterStakeholderListItem
                       stakeholder={crStakeholder}
-                      isCurrentUser={cr.submittingStakeholderGitServerUsername === stakeholder?.gitServerUsername
-                        ? true
-                        : undefined}
+                      isCurrentUser={authorIsCurrentUser || undefined}
                     />
                   </div>
                 : null}
