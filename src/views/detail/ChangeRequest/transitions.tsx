@@ -409,12 +409,9 @@ const applyRegisterManagerDecision: CR.Transition<
 | CR.ReturnedForClarificationByManager,
   CR.RegisterManagerInput> =
 function applyRegisterManagerDecision (cr, { registerManagerNotes }) {
-  if (!registerManagerNotes?.trim()) {
-    throw new Error("Register manager note is required.");
-  }
   return {
     ...cr,
-    registerManagerNotes,
+    registerManagerNotes: registerManagerNotes ?? '',
   };
 }
 
@@ -634,7 +631,12 @@ const TRANSITIONS: CR.Transitions = {
       targetState: CR.State.RETURNED_FOR_CLARIFICATION,
       canBeTransitionedBy: (stakeholder) => ['owner', 'manager'].indexOf(stakeholder.role) >= 0,
       Widget: RegisterManagerNotesWidget,
-      func: applyRegisterManagerDecision,
+      func: function applyRegisterManagerReturnDecision(cr, payload) {
+        if ((payload.registerManagerNotes ?? '').trim() === '') {
+          throw new Error("Register manager notes are required if returning for clarification");
+        }
+        return applyRegisterManagerDecision(cr, payload);
+      },
     },
   },
   [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: {
