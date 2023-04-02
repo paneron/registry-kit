@@ -76,6 +76,7 @@ export interface ExportFormatConfiguration<P extends Payload> {
     opts: {
       getObjectData: (opts: ObjectDatasetRequest) => Promise<ObjectDatasetResponse>,
       getBlob: (val: string) => Promise<Uint8Array>,
+      logger?: { log: Console["log"], error: Console["error"], debug: Console["debug"] },
     },
   ) => Promise<Uint8Array>
 }
