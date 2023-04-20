@@ -453,10 +453,13 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
         }
       />;
     } else {
+      const desc = itemData === null || itemData === undefined
+        ? "does not exist or could not be deserialized"
+        : "may use unexpected data format";
       return <NonIdealState
         icon="heart-broken"
         title="Unable to show item"
-        description="Item may not exist, or use unexpected data format."
+        description={`Item at ${itemPath} ${desc}`}
       />;
     }
   }
