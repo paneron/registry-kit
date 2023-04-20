@@ -29,7 +29,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@riboseinc/isogit-lfs": "0.1.6",
-    "@riboseinc/paneron-extension-kit": "2.0.3",
+    "@riboseinc/paneron-extension-kit": "2.0.4",
     "@types/node": "^16.11.7",
     "@types/ramda": "^0.27.35",
     "@types/react": "17.0.53",
