@@ -99,7 +99,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
   const canChangeRelatedItem = /*classIDs.length >= 1 && */onChange && !itemResult.isUpdating;
   const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
-  const canJump = item !== null && classConfigured && !itemResult.isUpdating && (onJump || jumpTo);
+  const canJump = (item !== null || itemIsMissing) && classConfigured && !itemResult.isUpdating && (onJump || jumpTo);
 
   let itemView: JSX.Element | null;
   let itemButtons: ButtonProps[] = [];
