@@ -108,7 +108,13 @@ export const TabContentsWithActions: React.FC<{
       <div css={css`flex: 0; padding: 10px; display: flex; flex-flow: row wrap; gap: 10px;`}>
         {actions}
       </div>
-      <div css={css`position: relative; flex: 1; padding: 10px; overflow-y: auto; background: ${Colors.GRAY5};`}>
+      <div css={css`
+        position: relative;
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        background: ${Colors.GRAY5};
+      `}>
         {main}
       </div>
     </div>
