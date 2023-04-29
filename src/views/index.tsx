@@ -6,7 +6,7 @@ import { jsx, css } from '@emotion/react';
 
 import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import TabbedWorkspace, { TabbedWorkspaceProps } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace';
+import TabbedWorkspace, { type TabbedWorkspaceProps } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace';
 import {
   makeContextProvider as makeTabbedWorkspaceContextProvider,
   TabbedWorkspaceContext,
