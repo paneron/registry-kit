@@ -114,6 +114,7 @@ export const TabContentsWithActions: React.FC<{
         padding: 10px;
         overflow-y: auto;
         background: ${Colors.GRAY5};
+        .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
       `}>
         {main}
       </div>
