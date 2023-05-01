@@ -9,6 +9,7 @@ import {
   FormGroupProps,
   FormGroup as BaseFormGroup,
   Classes,
+  Colors,
   ControlGroup,
   InputGroup,
   TextArea,
@@ -289,7 +290,6 @@ const FormGroup = styled(BaseFormGroup)`
 const SuperFormGroup_ = styled(FormGroup)`
   border-radius: 5px;
   padding: ${PADDING};
-  background: white;
   > label.bp4-label {
     font-weight: bold;
     margin-bottom: ${PADDING};
@@ -299,6 +299,10 @@ const SuperFormGroup_ = styled(FormGroup)`
     flex-flow: column nowrap;
     gap: ${PADDING};
   }
+
+  /* Note: these colors are picked to work with date input widget specifically. */
+  background: ${Colors.WHITE};
+  .bp4-dark & { background: ${Colors.DARK_GRAY3}; }
 `;
 
 const SuperFormGroup: React.FC<FormGroupProps> = function (props) {
