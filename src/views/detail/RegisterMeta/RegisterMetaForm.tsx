@@ -157,7 +157,7 @@ const RegisterMetaForm: React.FC<{
                 </>} />
               </>}>
           <DatePicker
-            css={css`margin: 0 -${PADDING};`}
+            css={css`margin: 0 -${PADDING_PX - 1}px;`}
             timePrecision={TimePrecision.MINUTE}
             value={value.version?.timestamp ?? null}
             showActionsBar={onChange ? true : false}
@@ -176,7 +176,7 @@ const RegisterMetaForm: React.FC<{
             ? <Button onClick={handleStakeholderAdd} icon="add">Add</Button>
             : null}>
         {stakeholders.length > 0
-          ? <HTMLTable css={css`margin: 0 -${PADDING};`}>
+          ? <HTMLTable css={css`margin: 0 -${PADDING_PX}px;`}>
               <thead>
                 <tr css={css`& > * { white-space: nowrap }`}>
                   <th>Role</th>
@@ -283,21 +283,22 @@ const RegisterMetaForm: React.FC<{
 };
 
 
-const PADDING = '11px';
+const PADDING_PX = 11;
 const FormGroup = styled(BaseFormGroup)`
   margin: 0;
 `;
 const SuperFormGroup_ = styled(FormGroup)`
   border-radius: 5px;
-  padding: ${PADDING};
+  padding: ${PADDING_PX}px;
+
   > label.bp4-label {
     font-weight: bold;
-    margin-bottom: ${PADDING};
+    margin-bottom: ${PADDING_PX}px;
   }
   > .bp4-form-content {
     display: flex;
     flex-flow: column nowrap;
-    gap: ${PADDING};
+    gap: ${PADDING_PX}px;
   }
 
   /* Note: these colors are picked to work with date input widget specifically. */
