@@ -1,5 +1,3 @@
-
-import type { RegisterStakeholder } from './stakeholder';
 import type { Citation, LocalizedAlternative } from './util';
 
 
@@ -27,14 +25,6 @@ export interface RegisterItemClass {
   title: string
   description?: string
   alternativeNames?: LocalizedAlternative<string>[]
-}
-
-export interface RegisterItemRevision<P extends Payload> {
-  timestamp: Date
-  parents: string[] // Revision IDs
-  status: ItemStatus
-  data: P
-  author: RegisterStakeholder
 }
 
 interface ItemReference {
