@@ -1,8 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect, useState } from 'react';
 import { jsx, css } from '@emotion/react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import styled from '@emotion/styled';
 import {
   ControlGroup,
@@ -54,16 +54,12 @@ const Proposals: React.FC<{
 
   const outerBrowserCtx = useContext(BrowserCtx);
   const { jumpTo, subregisters, useRegisterItemData } = outerBrowserCtx;
-  const proposalBrowserCtx: BrowserCtxType = {
-    ...outerBrowserCtx,
-    jumpTo: handleCRJump,
-  };
 
   /**
    * When jumping to an item affected by current CR,
    * jump in-CR instead of spawning tab.
    */
-  function handleCRJump(uri: `${Protocol}:${string}`): void {
+  const handleCRJump = useCallback(function _handleCRJump(uri: `${Protocol}:${string}`): void {
     if (uri.startsWith(Protocols.ITEM_DETAILS)) {
       const itemPath = uri.split(':')[1];
       if (proposals[itemPath]) {
@@ -72,7 +68,12 @@ const Proposals: React.FC<{
         jumpTo?.(uri);
       }
     }
-  }
+  }, [Object.keys(proposals), jumpTo]);
+
+  const proposalBrowserCtx: BrowserCtxType = {
+    ...outerBrowserCtx,
+    jumpTo: handleCRJump,
+  };
 
   const firstProposal: string | undefined = Object.keys(proposals)[0];
 
