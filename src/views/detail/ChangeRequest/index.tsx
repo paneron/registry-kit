@@ -270,7 +270,7 @@ const CRActivation: React.FC<{
           intent={onChangeActiveStatus ? 'primary' : undefined}
           disabled={!onChangeActiveStatus}
           onClick={() => onChangeActiveStatus?.(true)}>
-        {labels?.activate ?? "Enter proposal"}
+        {labels?.activate ?? "Work on this proposal"}
       </Button>;
 };
 
