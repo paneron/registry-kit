@@ -1,8 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import { jsx, css } from '@emotion/react';
 import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { ClassNames, jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
   ControlGroup,
@@ -160,32 +160,37 @@ const Proposals: React.FC<{
                 Reveal in registry
               </Button>
               {Object.keys(proposals).length > 1
-                ? <Select<ChangeProposalItem>
-                      filterable={false}
-                      itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
-                      activeItem={{
-                          itemPath: selectedProposal,
-                          proposal: proposals[selectedProposal],
-                          itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
-                          itemDataBefore: selectedItemCurrentData ?? undefined,
-                          itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
-                        }} // TODO: First time selection is broken
-                      items={
-                        Object.entries(proposals).map(([itemPath, proposal]) => ({
-                          itemPath,
-                          proposal,
-                          itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
-                          itemDataBefore: undefined,
-                          itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
-                        })).filter(item => item.itemData !== null)}
-                      popoverProps={{ minimal: true }}
-                      fill
-                      itemRenderer={ChangeProposalItemView}
-                      onItemSelect={(item) => selectProposal(item.itemPath)}>
-                    <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
-                      {selectedItemSummary}
-                    </Button>
-                  </Select>
+                ? <ClassNames>
+                    {(({ css: css2 }) =>
+                      <Select<ChangeProposalItem>
+                          filterable={false}
+                          itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
+                          menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
+                          activeItem={{
+                              itemPath: selectedProposal,
+                              proposal: proposals[selectedProposal],
+                              itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
+                              itemDataBefore: selectedItemCurrentData ?? undefined,
+                              itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
+                            }} // TODO: First time selection is broken
+                          items={
+                            Object.entries(proposals).map(([itemPath, proposal]) => ({
+                              itemPath,
+                              proposal,
+                              itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
+                              itemDataBefore: undefined,
+                              itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
+                            })).filter(item => item.itemData !== null)}
+                          popoverProps={{ minimal: true }}
+                          fill
+                          itemRenderer={ChangeProposalItemView}
+                          onItemSelect={(item) => selectProposal(item.itemPath)}>
+                        <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
+                          {selectedItemSummary}
+                        </Button>
+                      </Select>
+                    )}
+                  </ClassNames>
                 : <Button
                       fill
                       alignText="left"
