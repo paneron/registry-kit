@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button, ButtonGroup, TreeNodeInfo, Tree } from '@blueprintjs/core';
 import { ItemClassConfigurationSet, Subregisters } from '../../types';
 import { CriteriaGroup, makeBlankCriteria, Criterion, CompositionOperator, COMPOSITION_OPERATORS } from './models';
@@ -61,23 +61,25 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     }
   }
 
-  const nodes: TreeNodeInfo[] = criteriaToNodes([crit], {
+  const nodes: TreeNodeInfo[] = useMemo(() => criteriaToNodes([crit], {
     onEditItem: onChange ? onEditItem : undefined,
     onAddGroup: onChange ? onAddGroup : undefined,
     onDeleteItem: onChange ? onDelete : undefined,
     itemClasses,
     subregisters,
     availableClassIDs,
-  });
+  }), [crit, onChange]);
 
-  const implied: TreeNodeInfo[] = impliedCriteria !== undefined
-    ? criteriaToNodes([impliedCriteria], {
-        implied: true,
-        itemClasses,
-        subregisters,
-        availableClassIDs,
-      })
-    : [];
+  const implied: TreeNodeInfo[] = useMemo((() =>
+    impliedCriteria !== undefined
+      ? criteriaToNodes([impliedCriteria], {
+          implied: true,
+          itemClasses,
+          subregisters,
+          availableClassIDs,
+        })
+      : []
+  ), [impliedCriteria]);
 
   return (
     <Tree
