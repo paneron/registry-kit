@@ -104,11 +104,7 @@ function ({ afterDelete, className }) {
               inline
               labelInfo={<HelpTooltip
                 icon='info-sign'
-                content={<>
-                  <UL>
-                    <li>Proposal ID: {cr.id}</li>
-                  </UL>
-                </>}
+                content={<UL><li>Proposal ID: {cr.id}</li></UL>}
               />}
               label={<strong>Proposal</strong>}
               css={css`margin: 0; .bp4-form-content { display: flex; flex-flow: row wrap; gap: 10px; }`}>
