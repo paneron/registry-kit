@@ -31,6 +31,11 @@ export type BrowserCtx = {
   stakeholder?: RegisterStakeholder
 
   /**
+   * Set if no remote is configured.
+   */
+  offline?: true
+
+  /**
    * Common “key expression” (used for sorting) across the register.
    * Should contain the expression itself, no “return” statement.
    */

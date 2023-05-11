@@ -227,6 +227,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
         value={{
           stakeholder,
           registerMetadata,
+          offline: remoteUsername === undefined ? true : undefined,
 
           subregisters,
           itemClasses: itemClassConfiguration,

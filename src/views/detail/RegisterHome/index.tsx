@@ -18,7 +18,7 @@ import { crIDToCRPath } from '../../itemPathUtils';
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { customViews, registerMetadata, stakeholder } = useContext(BrowserCtx);
+  const { customViews, registerMetadata, stakeholder, offline } = useContext(BrowserCtx);
   const { makeRandomID, updateObjects, performOperation } = useContext(DatasetContext);
 
   const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
@@ -105,8 +105,16 @@ function () {
 
   const intro = <Callout intent="primary" css={css`text-align: left;`}>
     {stakeholder
-      ? <>You are working as {registerStakeholderPlain(stakeholder)}</>
-      : <>Your remote username is not in the list of stakeholders</>}
+      ? <>You can create proposals as {registerStakeholderPlain(stakeholder)}.</>
+      : offline
+        ? <>
+            Because this repository is offline (no remote configured),
+            and remote username is currently required for proposal,
+            you cannot create proposals.</>
+        : <>
+            Since your remote username is not in the list of stakeholders,
+            you cannot create proposals currently.
+          </>}
   </Callout>
 
   const greeting = registerMetadata
