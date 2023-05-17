@@ -5,7 +5,7 @@ import { REGISTER_METADATA_FILENAME } from '../common';
 const enc = new TextEncoder();
 
 const metadata = enc.encode(`
-name: ISO/IEC ICS Codes
+name: "Unnamed registry"
 stakeholders:
   - role: owner
     name: "<owner entity name here>"
@@ -17,8 +17,8 @@ stakeholders:
             value: "<owner entity party contact email here>"
 version:
   id: "1"
-  timestamp: "${(new Date()).toISOString()}",
-contentSummary: Catalogue of codes in the International Classification for Standards.
+  timestamp: "${(new Date()).toISOString()}"
+contentSummary: "<content summary goes here>"
 `);
 
 
