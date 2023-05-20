@@ -4,6 +4,8 @@
       "module": "esnext",
       "moduleResolution": "node",
 
+      "lib": ["es2021", "dom"],
+
       "skipLibCheck": true,
       "strict": true,
       "noUnusedLocals": true,
