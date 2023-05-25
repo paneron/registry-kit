@@ -22,7 +22,6 @@ contentSummary: "<content summary goes here>"
 `);
 
 
-
 const initializeDataset: DatasetMigrationFunction = async (opts) => {
   return {
     versionAfter: '1.0.0',
