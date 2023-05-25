@@ -28,7 +28,7 @@
     "@blueprintjs/select": "~4.9.10",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@riboseinc/paneron-extension-kit": "2.0.7",
+    "@riboseinc/paneron-extension-kit": "2.0.8",
     "@types/node": "^16.11.7",
     "@types/ramda": "^0.27.35",
     "@types/react": "17.0.53",
