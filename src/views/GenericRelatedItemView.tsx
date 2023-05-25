@@ -145,6 +145,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   return (
     <ButtonGroup
         fill
+        dir="ltr"
         className={className}
         css={css`.bp4-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
       {classID
