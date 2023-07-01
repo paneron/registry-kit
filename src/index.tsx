@@ -15,17 +15,13 @@ export type RegistryExtensionMaker =
 export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
   const { name } = opts;
 
-  const mainView: ExtensionMakerProps["mainView"] = async function () {
-    return {
-      default: () => {
-        return (
-          <RegistryView
-            itemClassConfiguration={opts.itemClassConfiguration}
-            subregisters={opts.subregisters}
-          />
-        );
-      },
-    };
+  const mainView: ExtensionMakerProps["mainView"] = function () {
+    return (
+      <RegistryView
+        itemClassConfiguration={opts.itemClassConfiguration}
+        subregisters={opts.subregisters}
+      />
+    );
   };
 
   return makeExtension({
