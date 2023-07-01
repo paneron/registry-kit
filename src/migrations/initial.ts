@@ -1,4 +1,4 @@
-import type { DatasetMigrationFunction } from '@riboseinc/paneron-extension-kit/types/migrations';
+import type { MigrationInfo } from '@riboseinc/paneron-extension-kit/types/migrations';
 import { REGISTER_METADATA_FILENAME } from '../common';
 
 
@@ -22,15 +22,13 @@ contentSummary: "<content summary goes here>"
 `);
 
 
-const initializeDataset: DatasetMigrationFunction = async (opts) => {
-  return {
-    versionAfter: '1.0.0',
-    bufferChangeset: {
-      [REGISTER_METADATA_FILENAME]: {
-        newValue: metadata,
-      },
-    },
-  };
-};
+const initialMigration: MigrationInfo = {
+  versionAfter: '1.0.0',
+  migrator: async function* initialRegistryMigration () {
+    yield {
+      [REGISTER_METADATA_FILENAME]: metadata,
+    };
+  },
+}
 
-export default initializeDataset;
+export default initialMigration;

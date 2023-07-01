@@ -3,6 +3,7 @@ import { makeExtension } from '@riboseinc/paneron-extension-kit';
 import type { Extension } from '@riboseinc/paneron-extension-kit/types';
 import type { ExtensionMakerProps } from '@riboseinc/paneron-extension-kit/types/extension-maker';
 import type { RegistryViewProps } from './types';
+import datasetInitializer from './migrations/initial';
 import { RegistryView } from './views';
 
 export type RegistryExtensionMakerProps =
@@ -32,6 +33,6 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
     name,
     requiredHostAppVersion: '2.0.0',
     datasetMigrations: {},
-    datasetInitializer: () => import('./migrations/initial'),
+    datasetInitializer,
   });
 };
