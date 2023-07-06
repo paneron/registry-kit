@@ -22,6 +22,9 @@ const RegisterMeta: React.FC<Record<never, never>> = function () {
   const canChange = updateObjects ? true : false;
   const didChange = registerMetadata && editedMetadata && JSON.stringify(editedMetadata) !== JSON.stringify(registerMetadata);
 
+  const hasStakeholders = (registerMetadata?.stakeholders ?? []).length > 0;
+  const stakeholderCanEdit = !hasStakeholders || (stakeholder && isOwner(stakeholder));
+
   function handleClear() {
     setEditedMetadata(null);
   }
@@ -68,7 +71,9 @@ const RegisterMeta: React.FC<Record<never, never>> = function () {
         main={
           <RegisterMetaForm
             value={editedMetadata ?? registerMetadata}
-            onChange={updateObjects ? setEditedMetadata : undefined}
+            onChange={(updateObjects && stakeholderCanEdit)
+              ? setEditedMetadata
+              : undefined}
           />
         }
       />
