@@ -152,7 +152,7 @@ function ({ afterDelete, className }) {
                     icon="clean"
                     title="Nothing is proposed here yet."
                     description={authorIsCurrentUser && updateTree && !(cr as Proposed).timeProposed && !isActive
-                      ? <Button onClick={performOperation('deleting proposal', handleDelete)} intent="danger">
+                      ? <Button onClick={performOperation('deleting proposal', handleDelete)}>
                           Delete this CR draft
                         </Button>
                       : undefined}
