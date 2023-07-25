@@ -1,7 +1,7 @@
 import { useContext } from 'react';
-import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { BrowserCtx } from '../BrowserCtx';
-import { CustomViewConfiguration } from '../../types';
+import type { CustomViewConfiguration } from '../../types';
 
 
 export default function useCustomView(viewID: string):
