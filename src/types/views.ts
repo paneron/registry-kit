@@ -68,6 +68,13 @@ export interface ExportFormatConfiguration<P extends Payload> {
   label: string
 
   /**
+   * Trailing part of the filename to save export as;
+   * must include at least extension (with separator),
+   * must not include any path prefix.
+   */
+  filenameExtension: string
+
+  /**
    * The function that takes register item data and some helper functions
    * and is expected to return a blob.
    */
