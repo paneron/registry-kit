@@ -86,7 +86,7 @@ const Proposals: React.FC<{
   // Force select available proposal
   useEffect(() => {
     if (firstProposal && (_selectedProposal === null || !proposals[_selectedProposal])) {
-      selectProposal(firstProposal);
+      selectProposal(firstProposal ?? null);
     }
   }, [firstProposal, _selectedProposal, JSON.stringify(proposals)]);
 
@@ -126,7 +126,7 @@ const Proposals: React.FC<{
     && !currentItemDataReq.isUpdating
     && !proposedItemDataReq.isUpdating
   ) {
-    if (selectedItemCurrentData || selectedItemProposedData) {
+    if (selectedItemCurrentData || selectedItemProposedData || true) {
       const selectedItemSummary = <ProposalSummary
         itemRef={selectedItemRef}
         itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
@@ -220,11 +220,29 @@ const Proposals: React.FC<{
         className={className}
         title="Unable to retrieve proposed item data"
         description={<div css={css`text-align: left;`}>
-          There appears to be a data integrity issue.
+          Attempted to retrieve data for <code>{selectedProposal}</code>,
+          but failed.
+          <br />
+          Perhaps selected item was removed, or there is a data integrity issue.
           <br />
           This might be caused by a problem in the application, or repository contents having been edited outside of the application.
           <br />
           The data should be recoverable by inspecting version control system commit history.
+          <br />
+          <br />
+          <ButtonGroup>
+            <Button onClick={() => selectProposal(firstProposal ?? null)}>
+              {firstProposal
+                ? "Go to first proposed item"
+                : "Unselect proposal"}
+            </Button>
+            <Button
+                intent="danger"
+                onClick={() => selectProposal(firstProposal ?? null)}
+                title="This should help if there’s an addition or clarification proposal with missing proposed item data. NOTE: It removes the proposal, so you may need to create it again.">
+              Delete phantom proposal item
+            </Button>
+          </ButtonGroup>
         </div>}
       />;
     }
