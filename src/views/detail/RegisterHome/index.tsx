@@ -10,16 +10,18 @@ import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets
 import { BrowserCtx } from '../../BrowserCtx';
 import { registerStakeholderPlain } from '../../RegisterStakeholder';
 import { newCRObjectChangeset } from '../../change-request/objectChangeset';
+import { State as ProposalState } from '../../../types/cr';
+import { isRegisterItem } from '../../../types/item';
 
 import { Protocols } from '../../protocolRegistry';
-import { crIDToCRPath } from '../../itemPathUtils';
+import { crIDToCRPath, itemPathInCR } from '../../itemPathUtils';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const { customViews, registerMetadata, stakeholder, offline } = useContext(BrowserCtx);
-  const { makeRandomID, updateObjects, performOperation } = useContext(DatasetContext);
+  const { requestFileFromFilesystem, makeRandomID, updateObjects, performOperation } = useContext(DatasetContext);
 
   const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
 
@@ -56,6 +58,64 @@ function () {
       setNewProposalIdea('');
       spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(crID)}`);
     }
+  }
+
+  async function getCRImportChangeset() {
+    if (!requestFileFromFilesystem) {
+      throw new Error("Cannot request file from filesystem");
+    }
+    const data = await requestFileFromFilesystem({
+      prompt: "Select one register proposal JSON file",
+      filters: [
+        { name: "JSON files", extensions: ['.json'] },
+      ],
+    });
+    const fileData = Object.values(data)[0]!;
+    if (!fileData) {
+      throw new Error("No file was selected");
+    }
+    const crID = fileData.proposalDraft?.id;
+    if (!crID) {
+      throw new Error("Invalid file format");
+    }
+    if (fileData.proposalDraft.state !== ProposalState.DRAFT) {
+      throw new Error(`Invalid proposal state (must be ${ProposalState.DRAFT})`);
+    }
+    const crPath = crIDToCRPath(crID);
+    const changeset = {
+      [crPath]: {
+        oldValue: null,
+        newValue: fileData.proposalDraft,
+      },
+    };
+    for (const [itemPath, itemPayload] of Object.entries(fileData.itemPayloads ?? {})) {
+      if (!isRegisterItem(itemPayload)) {
+        throw new Error("Invalid register item data found in proposal payloads");
+      }
+      changeset[itemPathInCR(itemPath, crID)] = {
+        oldValue: null,
+        newValue: itemPayload,
+      };
+    }
+    return [changeset, crID];
+  }
+
+  async function handleImportProposal() {
+    const [objectChangeset, crID] = await performOperation(
+      'reading proposal data',
+      getCRImportChangeset,
+    )();
+
+    await performOperation(
+      'creating proposal',
+      updateObjects ?? (async () => { throw new Error("Read-only dataset"); }),
+    )({
+      commitMessage: "import proposal",
+      objectChangeset,
+    });
+
+    setNewProposalIdea('');
+    spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(crID)}`);
   }
 
   const menu = (
@@ -95,6 +155,11 @@ function () {
           }
         />
       </MenuItem>
+      <MenuItem
+        text="Import proposal"
+        icon="import"
+        onClick={handleImportProposal}
+      />
       <MenuItem
         text="View register metadata"
         icon="properties"
