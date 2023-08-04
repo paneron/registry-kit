@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React from 'react';
+//import React from 'react';
 import { jsx, css } from '@emotion/react';
 import { Icon } from '@blueprintjs/core';
 
@@ -11,7 +11,7 @@ import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import Browse from './Browse';
 import Search from './Search';
 import { PendingChangeRequestsBlock, ChangeRequestHistoryBlock } from './Registration';
-import Export from './Export';
+import { ExportOptions, ImportOptions } from './ExportImport';
 
 
 export const sidebarIDs = [
@@ -67,16 +67,16 @@ export const sidebarConfig: SuperSidebarConfig<SidebarID> = {
   },
   Export: {
     icon: () => <Icon icon="changes" />,
-    title: "Import and export",
+    title: "Import and export options",
     blocks: [{
       key: 'export',
-      title: "Export",
-      content: <Export />,
+      title: "Export options",
+      content: <ExportOptions />,
       nonCollapsible: true,
     }, {
       key: 'import',
-      title: "Import",
-      content: <>Import TBD</>,
+      title: "Import options",
+      content: <ImportOptions />,
       nonCollapsible: false,
       collapsedByDefault: true,
     }],
