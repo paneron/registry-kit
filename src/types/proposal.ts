@@ -18,7 +18,9 @@ export const DISPOSITION_OPTIONS = [
  * Item paths in proposal set must start with a slash
  * and will be treated relative to dataset root.
  * Object paths should conform to registry item path shape
- * of `[/subregisterID]/<classID>/<itemID>.yaml`.
+ * of `/<classID>/<itemID>.yaml`.
+ * (the `[/subregisterID]/<classID>/<itemID>.yaml` is acceptable
+ * but deprecated, as subregisters are deprecated).
  */
 export type ProposalSet = {
   [objectPath: string]: ChangeProposal
