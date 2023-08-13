@@ -2,9 +2,9 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx } from '@emotion/react';
-import { OptionProps } from '@blueprintjs/core';
+import type { OptionProps } from '@blueprintjs/core';
 import { Select, TextInput } from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
-import { CriteriaConfiguration, CriterionConfiguration } from './models';
+import type { CriteriaConfiguration, CriterionConfiguration } from './models';
 import { SUBREGISTER_PATH_PREFIX } from './index';
 
 

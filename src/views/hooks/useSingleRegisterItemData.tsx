@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemRefToItemPath } from '../itemPathUtils';
-import { InternalItemReference, RegisterItem } from '../../types';
+import type { InternalItemReference, RegisterItem } from '../../types';
 
 
 export default function useSingleRegisterItemData
