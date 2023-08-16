@@ -3,7 +3,7 @@ import { itemPathInCR } from './itemPathUtils';
 
 
 // TODO: Should it be three path components? Probably four
-const REGISTER_ITEM_QUERY = `
+export const REGISTER_ITEM_QUERY = `
   objPath.startsWith("/subregisters/") || (
     objPath.split("/").length === 3 &&
     !objPath.startsWith("/proposals/")
