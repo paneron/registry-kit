@@ -223,11 +223,13 @@ export interface GenericRelatedItemViewProps {
 }
 
 
-export type ItemEditView<P extends Payload> = React.FC<RegistryItemViewProps<P> & {
+export type ItemEditView<P extends Payload> = React.FC<ItemEditViewProps<P>>;
+
+export interface ItemEditViewProps<P extends Payload> extends RegistryItemViewProps<P> {
   onChange?: (newData: P) => void
   onCreateRelatedItem?:
     (classID: string, subregisterID?: string) => Promise<InternalItemReference>
-}>;
+}
 
 export interface ItemDetailViewProps<P extends Payload> extends RegistryItemViewProps<P> {
   //useRegisterItemData: RegisterItemDataHook
