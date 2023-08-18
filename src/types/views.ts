@@ -199,10 +199,7 @@ export interface GenericRelatedItemViewProps {
   onJump?: () => void
 
   className?: string
-  //useRegisterItemData: RegisterItemDataHook
-  //getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
   availableClassIDs?: string[]
-  availableSubregisterIDs?: string[]
 
   // XXX: Check if obsolete, remove if unused
   itemSorter?: ItemClassConfiguration<any>["itemSorter"]
@@ -216,10 +213,16 @@ export interface GenericRelatedItemViewProps {
   /** Called when a new item is selected (can’t change if not provided) */
   onChange?: (newRef: InternalItemReference) => void
 
-  /** Deprecated */
+  /** @deprecated subregisters no longer supported. */
+  availableSubregisterIDs?: string[]
+
+  /** @deprecated */
   useRegisterItemData?: any
-  /** Deprecated */
+  //useRegisterItemData: RegisterItemDataHook
+
+  /** @deprecated */
   getRelatedItemClassConfiguration?: any
+  //getRelatedItemClassConfiguration: ExtensionContext["getRelatedItemClassConfiguration"]
 }
 
 
