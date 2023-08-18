@@ -199,6 +199,12 @@ export interface GenericRelatedItemViewProps {
   onJump?: () => void
 
   className?: string
+
+  /**
+   * Determines which item classes can be selected in the search dialog.
+   * If undefined, *any* class can be chosen.
+   * If empty list, no class can be chosen (weird).
+   */
   availableClassIDs?: string[]
 
   // XXX: Check if obsolete, remove if unused
