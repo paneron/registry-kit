@@ -27,7 +27,10 @@ export const ITEM_CLASS: CriterionConfiguration<{ classID?: string }> = {
       ...Object.entries(itemClasses).
       filter(([clsID, ]) => availableClassIDs.indexOf(clsID) >= 0).
       map(([classID, classData]) => {
-        return { value: classID, label: classData?.meta?.title ?? "Unknown class" };
+        return {
+          value: classID,
+          label: classData?.meta?.title ?? "Unknown class",
+        };
       }),
       { value: '', label: "(not selected)" },
     ];
@@ -41,7 +44,8 @@ export const ITEM_CLASS: CriterionConfiguration<{ classID?: string }> = {
         disabled={!onChange}
         onChange={onChange
           ? (evt) => onChange!({ classID: evt.currentTarget.value })
-          : undefined} />
+          : undefined}
+      />
     );
   },
 };
@@ -82,7 +86,8 @@ export const SUBREGISTER: CriterionConfiguration<{ subregisterID?: string }> = {
         disabled={!onChange}
         onChange={onChange
           ? (evt) => onChange!({ subregisterID: evt.currentTarget.value })
-          : undefined} />
+          : undefined}
+      />
     );
   },
 };
@@ -134,7 +139,8 @@ export const CUSTOM_CONDITION: CriterionConfiguration<{ customExpression?: strin
         placeholder="Enter a valid query expression…"
         onChange={onChange
           ? (customExpression) => onChange!({ customExpression })
-          : undefined} />
+          : undefined}
+      />
     );
   },
 }
