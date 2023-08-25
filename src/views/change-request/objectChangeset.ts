@@ -3,7 +3,7 @@ import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/obj
 import type {
   InternalItemReference,
   RegisterItem,
-  ChangeRequest,
+  ProposalSet,
   ChangeProposal,
   Amendment,
   Supersession,
@@ -117,7 +117,7 @@ export function updateCRObjectChangeset(
 export async function proposalsToObjectChangeset(
   crID: string,
   hasSubregisters: boolean,
-  proposals: ChangeRequest["proposals"],
+  proposals: ProposalSet,
   itemData: Record<string, RegisterItem<any> | null>,
   newItemData: Record<string, RegisterItem<any> | null>,
 ): Promise<ObjectChangeset> {
