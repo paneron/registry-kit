@@ -4,24 +4,30 @@
 import React, { useContext, useState } from 'react';
 //import { Helmet } from 'react-helmet';
 import { jsx, css } from '@emotion/react';
+import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { Menu, MenuDivider, MenuItem, InputGroup, Button, NonIdealState, Spinner, Callout } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
 import { registerStakeholderPlain } from '../../RegisterStakeholder';
-import { newCRObjectChangeset } from '../../change-request/objectChangeset';
-import { State as ProposalState } from '../../../types/cr';
-import { isRegisterItem } from '../../../types/item';
-
+import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
+import { isImportableCR } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
-import { crIDToCRPath, itemPathInCR } from '../../itemPathUtils';
+import { crIDToCRPath } from '../../itemPathUtils';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { customViews, registerMetadata, stakeholder, offline } = useContext(BrowserCtx);
-  const { requestFileFromFilesystem, makeRandomID, updateObjects, performOperation } = useContext(DatasetContext);
+  const { customViews, registerMetadata, stakeholder, offline, itemClasses } = useContext(BrowserCtx);
+  const {
+    requestFileFromFilesystem,
+    makeRandomID,
+    getObjectData,
+    updateObjects,
+    performOperation,
+    getMapReducedData,
+  } = useContext(DatasetContext);
 
   const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
 
@@ -60,7 +66,7 @@ function () {
     }
   }
 
-  async function getCRImportChangeset() {
+  async function getCRImportChangeset(): Promise<[ObjectChangeset, string]> {
     if (!requestFileFromFilesystem) {
       throw new Error("Cannot request file from filesystem");
     }
@@ -74,30 +80,41 @@ function () {
     if (!fileData) {
       throw new Error("No file was selected");
     }
-    const crID = fileData.proposalDraft?.id;
-    if (!crID) {
-      throw new Error("Invalid file format");
-    }
-    if (fileData.proposalDraft.state !== ProposalState.DRAFT) {
-      throw new Error(`Invalid proposal state (must be ${ProposalState.DRAFT})`);
-    }
-    const crPath = crIDToCRPath(crID);
-    const changeset = {
-      [crPath]: {
-        oldValue: null,
-        newValue: fileData.proposalDraft,
-      },
-    };
-    for (const [itemPath, itemPayload] of Object.entries(fileData.itemPayloads ?? {})) {
-      if (!isRegisterItem(itemPayload)) {
-        throw new Error("Invalid register item data found in proposal payloads");
+    if (isImportableCR(fileData)) {
+      const crID = fileData.proposalDraft.id;
+      try {
+        const changeset = await importedProposalToCRObjectChangeset(
+          fileData,
+          itemClasses,
+          getObjectData,
+          async function findObjects(predicate: string) {
+            const result = (await getMapReducedData({
+              chains: {
+                _: {
+                  mapFunc: `
+                    const data = value.data;
+                    if (data && (${predicate})) {
+                      emit({ objectPath: key, objectData: value });
+                    }
+                  `,
+                },
+              },
+            }));
+            // NOTE: map returns an empty object if there’re no items,
+            // but we promise to return a list.
+            if (!Array.isArray(result._)) {
+              return [];
+            }
+            return result._;
+          },
+        );
+        return [changeset, crID];
+      } catch (e) {
+        throw new Error("Error reading proposal data");
       }
-      changeset[itemPathInCR(itemPath, crID)] = {
-        oldValue: null,
-        newValue: itemPayload,
-      };
+    } else {
+      throw new Error("Invalid proposal format");
     }
-    return [changeset, crID];
   }
 
   async function handleImportProposal() {

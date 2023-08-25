@@ -3,6 +3,7 @@
 import type React from 'react';
 import type { ProposalSet } from './proposal';
 import { type RegisterStakeholder } from './stakeholder';
+import type { RegisterItem } from './item';
 
 
 
@@ -98,6 +99,22 @@ export function isCreatedBy(stakeholder: RegisterStakeholder, cr: Base): boolean
 
 export function canBeEditedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
   return isCreatedBy(stakeholder, cr) && isEditableState(cr.state);
+}
+
+
+/** Proposal structure for single-file proposal import format. */
+export interface ImportableCR {
+  /** Proposal data. */
+  proposalDraft: Drafted,
+  /** Register item data for additions & clarifications. */
+  itemPayloads: Record<string, RegisterItem<any>>,
+}
+export function isImportableCR(val: any): val is ImportableCR {
+  // TODO: More complete check
+  return (
+    val.proposalDraft.id
+    && isDrafted(val.proposalDraft as Base)
+    && Object.keys(val.itemPayloads).length > 0);
 }
 
 
