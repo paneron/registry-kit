@@ -26,7 +26,11 @@ export type ProposalSet = {
   [objectPath: string]: ChangeProposal
 }
 
-/** A change request, per ISO 19135-1 model. */
+/**
+ * A change request, per ISO 19135-1 model.
+ *
+ * @deprecated use cr.Base (or a more specific type) instead
+ */
 export interface ChangeRequest {
   // Supplied by sponsor
   /** Justification for the change */
