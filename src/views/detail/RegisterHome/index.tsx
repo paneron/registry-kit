@@ -175,6 +175,7 @@ function () {
       <MenuItem
         text="Import proposal"
         icon="import"
+        disabled={!canCreateCR}
         onClick={handleImportProposal}
       />
       <MenuItem
