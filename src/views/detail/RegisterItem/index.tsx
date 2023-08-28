@@ -85,28 +85,28 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
     ? activeCR.items[itemPath]
     : null) ?? null;
 
-  const handleClearProposal = () => performProposalOperation("draft: clear proposal", null);
-  const handleRetire = () => performProposalOperation("draft: propose retirement", {
+  const handleClearProposal = () => performProposalOperation('clearing draft proposal', null);
+  const handleRetire = () => performProposalOperation('proposing retirement of an item', {
     type: 'amendment',
     amendmentType: 'retirement',
   });
-  const handleInvalidate = () => performProposalOperation("draft: propose invalidation", {
+  const handleInvalidate = () => performProposalOperation('proposing invalidation', {
     type: 'amendment',
     amendmentType: 'invalidation',
   });
-  const handleSupersedeWith = (items: string[]) => performProposalOperation("draft: propose supersession", {
+  const handleSupersedeWith = (items: string[]) => performProposalOperation('proposing supersession', {
     type: 'amendment',
     amendmentType: 'supersession',
     supersedingItemIDs: items,
   });
   const handleClarify = async () => {
-    await performProposalOperation("draft: clarify item", {
+    await performProposalOperation('proposing clarification', {
       type: 'clarification',
     });
     setEditedClarification(null);
   };
   const handleEditAddition = async () => {
-    await performProposalOperation("draft: edit added item", {
+    await performProposalOperation('editing proposed addition', {
       type: 'addition',
     });
     setEditedClarification(null);
