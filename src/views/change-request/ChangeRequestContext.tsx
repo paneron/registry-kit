@@ -40,6 +40,7 @@ export const ChangeRequestContextProvider: React.FC<{
 
   const changeRequest = useObjectData({
     objectPaths: crPath ? [crPath] : [],
+    nounLabel: 'proposal(s)',
   }).value?.data[crPath ?? ''] as CR ?? (crPath ? undefined : null);
 
   return (
