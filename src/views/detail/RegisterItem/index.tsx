@@ -50,9 +50,8 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
   const { value: ref } = useItemRef(uri);
   const { value: clsConfig } = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
   //const { value: itemData } = useSingleRegisterItemData(ref);
-  const { updateObjects, makeRandomID, performOperation, operationKey } = useContext(DatasetContext);
+  const { updateObjects, makeRandomID, performOperation, isBusy } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const isBusy = operationKey !== undefined;
   const {
     jumpTo,
     subregisters,
