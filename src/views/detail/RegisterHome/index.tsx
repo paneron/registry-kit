@@ -86,6 +86,7 @@ function () {
         const changeset = await importedProposalToCRObjectChangeset(
           fileData,
           itemClasses,
+          stakeholder!.gitServerUsername!,
           getObjectData,
           async function findObjects(predicate: string) {
             const result = (await getMapReducedData({
