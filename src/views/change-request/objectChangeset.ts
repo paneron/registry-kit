@@ -68,10 +68,13 @@ export async function importedProposalToCRObjectChangeset(
   importableCR: ImportableCR,
   /** Available item classes per register configuration. */
   itemClasses: ItemClassConfigurationSet,
+  /** VCS username of the person performing the import. */
+  importingStakeholderGitServerUsername: string,
   getObjectData: (opts: { objectPaths: string[] }) => Promise<{ data: ObjectDataset }>,
   findObjects: (predicate: string) => Promise<any[]>,
 ): Promise<ObjectChangeset> {
   const proposalDraft: Drafted = importableCR.proposalDraft;
+  proposalDraft.submittingStakeholderGitServerUsername = importingStakeholderGitServerUsername;
   const crID = proposalDraft.id;
   const crPath = crIDToCRPath(crID);
 
