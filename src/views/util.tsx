@@ -43,11 +43,13 @@ export const PropertyDetailView: React.FC<{
   title: FormGroupProps["label"]
   secondaryTitle?: FormGroupProps["labelInfo"]
   inline?: FormGroupProps["inline"]
-}> = function ({ title, inline, children, secondaryTitle }) {
+  className?: string
+}> = function ({ title, secondaryTitle, inline, children, className }) {
   return <FormGroup
       label={`${title}:`}
       labelInfo={secondaryTitle}
       css={css`&, &.bp4-inline { label.bp4-label { font-weight: bold; line-height: unset } }`}
+      className={className}
       inline={inline}>
     {children}
   </FormGroup>;
