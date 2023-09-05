@@ -201,6 +201,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
 
   const registerMetadataReq = useObjectData({
     objectPaths: [REGISTER_METADATA_FILENAME],
+    nounLabel: 'register meta',
   }) as ValueHook<{ data: Record<string, Record<string, any> | null> }>;
   const maybeRegisterMetadata =
     registerMetadataReq.value.data?.[REGISTER_METADATA_FILENAME] ??
