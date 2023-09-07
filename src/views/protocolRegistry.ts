@@ -1,4 +1,4 @@
-import { ProtocolRegistry } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/types';
+import type { ProtocolRegistry } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/types';
 import RegisterItem from './detail/RegisterItem';
 import RegisterMeta from './detail/RegisterMeta';
 import ChangeRequest from './detail/ChangeRequest';
