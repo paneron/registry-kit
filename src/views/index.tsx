@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useCallback, useState, useMemo } from 'react';
 import { jsx, css } from '@emotion/react';
 
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
@@ -92,9 +92,9 @@ const RegistryWorkspace: React.FC<Record<never, never>> = function () {
     newTabPrompt={<RegisterHome />}
     globalMode={globalMode}
     sidebarWidth={sidebarWidth}
-    onSidebarResize={(width) => {
+    onSidebarResize={useCallback((width) => {
       updateSetting({ key: SIDEBAR_WIDTH_SETTING_NAME, value: width })
-    }}
+    }, [updateSetting])}
   />
 };
 
