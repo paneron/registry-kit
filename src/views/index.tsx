@@ -4,7 +4,7 @@
 import React, { useContext, useState, useMemo } from 'react';
 import { jsx, css } from '@emotion/react';
 
-import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import TabbedWorkspace, { type TabbedWorkspaceProps } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace';
 import {
