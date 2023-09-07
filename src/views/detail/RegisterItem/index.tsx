@@ -16,6 +16,7 @@ import {
   H5,
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import { normalizeObject } from '@riboseinc/paneron-extension-kit/util';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import useItemRef from '../../hooks/useItemRef';
@@ -184,8 +185,10 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
     updateObjects,
     activeCRIsEditable,
     itemPath,
-    JSON.stringify(activeCR),
-    JSON.stringify(itemData),
+    activeCR?.id,
+    activeCR?.state,
+    Object.entries(activeCR?.items ?? {}).flat().join(''),
+    itemData ? JSON.stringify(normalizeObject(itemData)) : itemData,
   ]);
 
   if (!itemClass) {
