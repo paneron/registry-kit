@@ -79,7 +79,7 @@ const RegistryWorkspace: React.FC<Record<never, never>> = function () {
   const { value: { settings } } = useSettings();
   const { value: { settings: globalSettings } } = useGlobalSettings();
 
-  const stored = settings[SIDEBAR_WIDTH_SETTING_NAME]
+  const stored = settings[SIDEBAR_WIDTH_SETTING_NAME];
   const sidebarWidth: number | undefined = stored && typeof stored === 'number'
     ? stored as number
     : undefined;
