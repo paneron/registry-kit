@@ -26,7 +26,7 @@ import {
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
-import { Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
+import { type Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { Protocols } from '../../protocolRegistry';
 import {
@@ -277,4 +277,4 @@ const CRTitle: React.FC<{ uri: string }> = function ({ uri }) {
   return <>Proposal “{maybeEllipsizeString(justification ?? uri)}”</>;
 }
 
-export default { main: View, title: CRTitle, plainTitle: async (uri: string) => `proposal ${uri}` };
+export default { main: View, title: CRTitle };
