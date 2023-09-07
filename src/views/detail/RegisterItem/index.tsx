@@ -28,6 +28,7 @@ import {
   type RegisterItem,
   isRegisterItem,
 } from '../../../types';
+import type { Drafted } from '../../../types/cr';
 import { BrowserCtx } from '../../BrowserCtx';
 import {
   RegisterHelmet as Helmet,
@@ -167,7 +168,7 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
       await updateObjects({
         commitMessage: `clone ${itemRef.itemID} to propose a new item`,
         objectChangeset: updateCRObjectChangeset(
-          activeCR as any,
+          activeCR as Drafted,
           { [newPath]: { type: 'addition' } },
           { [newPath]: newItem },
         ),
