@@ -256,7 +256,9 @@ function ({ stateName, onOpenItem, className, style }) {
             hasCaret: true,
             icon: 'folder-open',
             label: folderInfo.title,
-            secondaryLabel: folderInfo.moreMenu ? <MoreMenu>{folderInfo.moreMenu}</MoreMenu> : undefined,
+            secondaryLabel: folderInfo.moreMenu
+              ? <MoreMenu>{folderInfo.moreMenu}</MoreMenu>
+              : undefined,
           }]}
         />
         <div css={css`flex: 1;`}>
