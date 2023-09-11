@@ -44,6 +44,28 @@ type Action =
   | { type: 'exit-folder'; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
 
+const initialState: State = {
+  selectedFolderID: null,
+  enteredFolderID: null,
+  selectedItemPath: null,
+};
+function validateState(loadedValue: any): loadedValue is State {
+  return (
+    _validateFolderID(loadedValue.enteredFolderID) &&
+    _validateFolderID(loadedValue.selectedFolderID) &&
+    loadedValue.selectedItemPath !== undefined
+  );
+};
+function _validateFolderID(foldID: string) {
+  return foldID !== undefined &&
+  (
+    foldID === null || (
+      foldID.startsWith('by-item-class/') ||
+      foldID.startsWith('by-subregister/')
+    )
+  )
+}
+
 const Browse: React.FC<{
   availableClassIDs?: string[]
   onOpenItem?: (itemPath: string) => void
@@ -60,23 +82,7 @@ function ({ stateName, onOpenItem, className, style }) {
   const [ state, dispatch, ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     stateName ?? 'browse-sidebar',
     undefined,
-    function valdateState(loadedValue): loadedValue is State {
-      function validateFolderID(foldID: string) {
-        return foldID !== undefined &&
-        (
-          foldID === null || (
-            foldID.startsWith('by-item-class/') ||
-            foldID.startsWith('by-subregister/')
-          )
-        )
-
-      }
-      return (
-        validateFolderID(loadedValue.enteredFolderID) &&
-        validateFolderID(loadedValue.selectedFolderID) &&
-        loadedValue.selectedItemPath !== undefined
-      );
-    },
+    validateState,
     (prevState, action) => {
       switch (action.type) {
         case 'select-folder':
@@ -121,11 +127,7 @@ function ({ stateName, onOpenItem, className, style }) {
           throw new Error("Unexpected browse state");
       }
     },
-    {
-      selectedFolderID: null,
-      enteredFolderID: null,
-      selectedItemPath: null,
-    },
+    initialState,
     null);
 
   // If currently focused tab changed, select corresponding item in view
