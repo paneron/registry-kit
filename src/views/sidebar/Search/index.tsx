@@ -37,6 +37,12 @@ type Action =
   | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
 
+const initialState: State = {
+  query: { criteria: BLANK_CRITERIA },
+  quickSubstringQuery: '',
+  selectedItemPath: null,
+};
+
 const Search: React.FC<{
   /**
    * Criteria that will always apply.
@@ -58,12 +64,6 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const { keyExpression, itemClasses, subregisters, selectedRegisterItem } = useContext(BrowserCtx);
   const { changeRequest } = useContext(ChangeRequestContext);
-
-  const initialState: State = {
-    query: { criteria: BLANK_CRITERIA },
-    quickSubstringQuery: '',
-    selectedItemPath: null,
-  };
 
   const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     stateName ?? 'search-sidebar',
