@@ -25,7 +25,7 @@ import {
 import { REGISTER_METADATA_FILENAME } from '../common';
 
 import GenericRelatedItemView from './GenericRelatedItemView';
-import { sidebarConfig, SidebarID, sidebarIDs } from './sidebar';
+import { sidebarConfig, type SidebarID, sidebarIDs } from './sidebar';
 import { BrowserCtx } from './BrowserCtx';
 import { _getRelatedClass } from './util';
 import RegisterHome from './detail/RegisterHome';
