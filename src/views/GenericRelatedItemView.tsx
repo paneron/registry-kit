@@ -13,11 +13,17 @@ import {
 import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
 import { isDrafted } from '../types/cr';
-import { DUMMY_REF } from '../types/item';
 import Search from './sidebar/Search';
 import { itemPathToItemRef } from './itemPathUtils';
 import type { Criterion, CriteriaGroup } from './FilterCriteria/models';
 import { Protocols } from './protocolRegistry';
+
+
+const DUMMY_REF = {
+  classID: '',
+  itemID: '',
+  subregisterID: '',
+} as const;
 
 
 export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
