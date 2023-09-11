@@ -46,6 +46,12 @@ export function isInternalItemReference(val: any): val is InternalItemReference 
   );
 }
 
+export const DUMMY_REF: InternalItemReference = {
+  itemID: 'NONEXISTENT_ITEM_ID',
+  classID: 'NONEXISTENT_CLASS_ID',
+  subregisterID: undefined,
+} as const;
+
 
 interface AbstractItemSource {
   type: string

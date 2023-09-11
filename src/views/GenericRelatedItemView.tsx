@@ -13,6 +13,7 @@ import {
 import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
 import { isDrafted } from '../types/cr';
+import { DUMMY_REF } from '../types/item';
 import Search from './sidebar/Search';
 import { itemPathToItemRef } from './itemPathUtils';
 import type { Criterion, CriteriaGroup } from './FilterCriteria/models';
@@ -33,11 +34,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     jumpTo,
   } = useContext(BrowserCtx);
   const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
-  const { classID, itemID, subregisterID } = itemRef ?? {
-    classID: '',
-    itemID: '',
-    subregisterID: '',
-  };
+  const { classID, itemID, subregisterID } = itemRef ?? DUMMY_REF;
 
   const itemPathWithClass = `${classID}/${itemID}.yaml`;
   // If curretn register has subregisters, specify subregister-relative path

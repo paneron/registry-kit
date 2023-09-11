@@ -25,9 +25,9 @@ import useItemClassConfig from '../../hooks/useItemClassConfig';
 import { Protocols } from '../../protocolRegistry';
 import {
   type ChangeProposal,
-  type InternalItemReference,
   type RegisterItem,
   isRegisterItem,
+  DUMMY_REF,
 } from '../../../types';
 import type { Drafted } from '../../../types/cr';
 import { BrowserCtx } from '../../BrowserCtx';
@@ -65,7 +65,7 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
 
   const itemClass = clsConfig;
   const itemClassID = itemClass?.meta?.id;
-  const itemRef = ref ?? dummyRef;
+  const itemRef = ref ?? DUMMY_REF;
   const { itemID, subregisterID } = itemRef;
 
   const _itemPath = `${itemClassID ?? 'NONEXISTENT_CLASS'}/${itemID}.yaml`;
@@ -476,7 +476,7 @@ const ItemTitle: React.FC<{ uri: string }> = function ({ uri }) {
   const fallbackView = (() => <>{ref?.itemID ?? uri}</>);
   const View = itemData ? (clsConfig?.views.listItemView ?? fallbackView) : fallbackView;
   return <View
-    itemRef={ref ?? dummyRef}
+    itemRef={ref ?? DUMMY_REF}
     itemData={itemData}
   />;
 }
@@ -485,13 +485,6 @@ const ItemTitle: React.FC<{ uri: string }> = function ({ uri }) {
 export default {
   main: ItemDetail,
   title: ItemTitle,
-};
-
-
-const dummyRef: InternalItemReference = {
-  itemID: 'NONEXISTENT_ITEM_ID',
-  classID: 'NONEXISTENT_CLASS_ID',
-  subregisterID: undefined,
 };
 
 
