@@ -100,7 +100,7 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
     if (selectedItemPath) {
       dispatch({ type: 'select-item', payload: { itemPath: selectedItemPath } });
     }
-  }, [selectedItemPath]);
+  }, [selectedItemPath, dispatch]);
 
   const quickSearchString = (state.quickSubstringQuery ?? '').trim();
   const withSearchString: CriteriaGroup = state.query.criteria.criteria.length < 1 && quickSearchString !== ''
