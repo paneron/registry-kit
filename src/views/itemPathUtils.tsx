@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { isInternalItemReference } from '../types';
 import type { InternalItemReference } from '../types';
 
 
@@ -33,6 +35,28 @@ export function incompleteItemRefToItemPathPrefix(
     ? `/proposals/${inCRWithID}/items/${fullPath}`
     : `/${fullPath}`;
   return maybeInCR;
+}
+
+/**
+ * Gives memoized structured item reference or `null`,
+ * given subregisters and `itemPath`.
+ */
+export function useItemRef(
+  hasSubregisters: boolean,
+  itemPath: null | undefined | string,
+): InternalItemReference | null {
+  return useMemo(() => {
+    if (itemPath) {
+      const maybeItemRef = itemPathToItemRefLike(hasSubregisters, itemPath);
+      if (isInternalItemReference(maybeItemRef)) {
+        return maybeItemRef;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }, [hasSubregisters, itemPath]);
 }
 
 /**
