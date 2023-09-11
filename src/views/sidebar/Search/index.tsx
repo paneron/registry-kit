@@ -139,6 +139,15 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
     ? getRegisterItemQuery(queryExpressionDebounced, changeRequest ?? undefined)
     : 'return false';
 
+  const handleSelectItem = useCallback(
+    (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
+    [dispatch]);
+
+
+  const handleOpenItem = useCallback(
+    onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
+    [onOpenItem, spawnTab]);
+
   return (
     <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
       <SearchQuery
@@ -159,12 +168,8 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
               queryExpression={datasetObjectSearchQueryExpression}
               keyExpression={keyExpression}
               selectedItemPath={state.selectedItemPath}
-              onSelectItem={useCallback(
-                (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
-                [dispatch])}
-              onOpenItem={useCallback(
-                onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
-                [onOpenItem, spawnTab])}
+              onSelectItem={handleSelectItem}
+              onOpenItem={handleOpenItem}
             />
           : null}
       </div>
