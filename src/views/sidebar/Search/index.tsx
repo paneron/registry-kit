@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useCallback, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
@@ -145,8 +145,12 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
         rootCriteria={state.query.criteria}
         quickSearchString={state.quickSubstringQuery}
         availableClassIDs={availableClassIDs}
-        onCriteriaChange={criteria => dispatch({ type: 'update-query', payload: { query: { criteria } } })}
-        onQuickSearchStringChange={substring => dispatch({ type: 'update-quick-substring-query', payload: { substring } })}
+        onCriteriaChange={useCallback((
+          criteria => dispatch({ type: 'update-query', payload: { query: { criteria } } })
+        ), [dispatch])}
+        onQuickSearchStringChange={useCallback((
+          substring => dispatch({ type: 'update-quick-substring-query', payload: { substring } })
+        ), [dispatch])}
         css={css`padding: 5px;`}
       />
       <div css={css`flex: 1;`}>
@@ -155,8 +159,12 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
               queryExpression={datasetObjectSearchQueryExpression}
               keyExpression={keyExpression}
               selectedItemPath={state.selectedItemPath}
-              onSelectItem={itemPath => dispatch({ type: 'select-item', payload: { itemPath }})}
-              onOpenItem={onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`))}
+              onSelectItem={useCallback(
+                (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
+                [dispatch])}
+              onOpenItem={useCallback(
+                onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
+                [onOpenItem, spawnTab])}
             />
           : null}
       </div>
