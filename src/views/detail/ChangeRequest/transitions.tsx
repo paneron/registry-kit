@@ -50,13 +50,13 @@ function ({ cr, className }) {
       : []
   ), [JSON.stringify(stakeholder), JSON.stringify(cr)]);
 
-  const initialState: State = {
+  const initialState: State = useMemo((() => ({
     // Pre-select next state to first available transition
     chosenNextState: transitions.length > 0
       ? transitions[0][0]
       : undefined,
     stateInput: {},
-  };
+  })), [transitions]);
 
   const [ state, dispatch, stateRecalled ] =
   (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
