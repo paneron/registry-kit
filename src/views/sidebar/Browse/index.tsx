@@ -244,7 +244,6 @@ function ({ stateName, onOpenItem, className, style }) {
 
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
-        {/* */}
         <Tree
           css={css`flex: 0;`}
           onNodeClick={() => dispatch({ type: 'select-item', payload: { itemPath: null }})}
