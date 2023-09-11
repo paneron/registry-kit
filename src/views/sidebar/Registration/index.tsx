@@ -42,6 +42,10 @@ interface ChangeRequestBlockState {
   quickSubstringQuery: string;
   selectedItemPath: string | null;
 }
+const initialState: ChangeRequestBlockState = {
+  quickSubstringQuery: '',
+  selectedItemPath: null,
+};
 type ChangeRequestBlockAction =
   | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
@@ -51,11 +55,6 @@ const ChangeRequestListBlock: React.FC<{ impliedQuery: string }> = function ({ i
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab, focusedTabURI } = useContext(TabbedWorkspaceContext);
   const { selectedRegisterItem } = useContext(BrowserCtx);
-
-  const initialState: ChangeRequestBlockState = {
-    quickSubstringQuery: '',
-    selectedItemPath: null,
-  };
 
   const itemPath = selectedRegisterItem
     ? itemRefToItemPath(selectedRegisterItem.ref)
