@@ -139,7 +139,7 @@ function ({ stateName, onOpenItem, className, style }) {
         dispatch({ type: 'select-item', payload: { itemPath } });
       }
     }
-  }, [focusedTabURI]);
+  }, [focusedTabURI, dispatch]);
 
   async function handleAdd(classID: string, subregisterID?: string) {
     if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR) {
