@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx } from '@emotion/react';
-import React, { useContext } from 'react';
+import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { type SomeCR as CR, canBeEditedBy } from '../../types/cr';
 import { BrowserCtx } from '../BrowserCtx';
@@ -43,16 +43,19 @@ export const ChangeRequestContextProvider: React.FC<{
     nounLabel: 'proposal(s)',
   }).value?.data[crPath ?? ''] as CR ?? (crPath ? undefined : null);
 
+  const canEdit = changeRequest
+    && stakeholder
+    && canBeEditedBy(stakeholder, changeRequest)
+      ? true
+      : false;
+
+  const ctx: ChangeRequestContextSpec = useMemo((() => ({
+    changeRequest,
+    canEdit,
+  })), [changeRequest, canEdit]);
+
   return (
-    <ChangeRequestContext.Provider value={{
-      changeRequest,
-      canEdit:
-        changeRequest
-        && stakeholder
-        && canBeEditedBy(stakeholder, changeRequest)
-          ? true
-          : false,
-    }}>
+    <ChangeRequestContext.Provider value={ctx}>
       {children}
     </ChangeRequestContext.Provider>
   );
