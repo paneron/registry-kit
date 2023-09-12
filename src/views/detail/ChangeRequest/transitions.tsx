@@ -48,7 +48,14 @@ function ({ cr, className }) {
     () => stakeholder
       ? getTransitions(cr, stakeholder)
       : []
-  ), [JSON.stringify(stakeholder), JSON.stringify(cr)]);
+  ), [
+    JSON.stringify(stakeholder),
+    // IMPORTANT: Below two dependencies arise
+    // from within `getTransitions()` implementation, which in turn
+    // further depends on individual transitions.
+    cr.state,
+    cr.submittingStakeholderGitServerUsername,
+  ]);
 
   const initialState: State = useMemo((() => ({
     // Pre-select next state to first available transition
@@ -87,10 +94,13 @@ function ({ cr, className }) {
     initialState,
     null);
 
-  const selectedTransitionCfg = (stateRecalled && state.chosenNextState
-    ? transitions.find(([t, ]) => t === state.chosenNextState)?.[1]
-    : undefined
-  ) ?? undefined;
+  const selectedTransitionCfg = useMemo((() =>
+    (
+      stateRecalled && state.chosenNextState
+        ? transitions.find(([t, ]) => t === state.chosenNextState)?.[1]
+        : undefined
+    ) ?? undefined
+  ), [stateRecalled, state.chosenNextState, transitions]);
 
   useEffect(() => {
     if (stateRecalled && state.chosenNextState) {
@@ -101,7 +111,7 @@ function ({ cr, className }) {
   }, [
     stateRecalled,
     state.chosenNextState,
-    JSON.stringify(selectedTransitionCfg),
+    selectedTransitionCfg,
   ]);
 
   const [validatedStateInput, stateInputValidationErrors]:
@@ -117,7 +127,7 @@ function ({ cr, className }) {
     } else {
       return [undefined, "no CR or no transition selected"];
     }
-  }, [JSON.stringify(cr), JSON.stringify(selectedTransitionCfg), JSON.stringify(state.stateInput)]);
+  }, [JSON.stringify(cr), selectedTransitionCfg, state.stateInput]);
 
   const getItemChangesetAsApproved = useCallback(
   async function (cr: CR.Accepted | CR.AcceptedOnAppeal): Promise<ObjectChangeset> {
@@ -144,7 +154,7 @@ function ({ cr, className }) {
         cr.items,
         origItemData,
         newItemData);
-  }, [JSON.stringify(cr), JSON.stringify(subregisters)]);
+  }, [cr.id, JSON.stringify(cr.items), subregisters === undefined, getObjectData]);
 
   const handleTransition = useCallback(
   async function (transitionCfg: typeof selectedTransitionCfg, stateInput: CR.StateInput) {
