@@ -31,7 +31,6 @@ export const ChangeRequestContextProvider: React.FC<{
   changeRequestID: string | null
 }> = function ({ changeRequestID, children }) {
   const { useObjectData } = useContext(DatasetContext);
-
   const { stakeholder } = useContext(BrowserCtx);
 
   const crPath = changeRequestID
