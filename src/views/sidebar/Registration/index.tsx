@@ -84,33 +84,40 @@ const ChangeRequestListBlock: React.FC<{ impliedQuery: string }> = function ({ i
     initialState,
     null);
 
-  const query = itemPath
+  const query = useMemo((() => itemPath
     ? `return ${CR_BASE_QUERY} && ${impliedQuery} && obj.items["${itemPath}"] !== undefined`
     : itemPath === null
       ? `return ${CR_BASE_QUERY} && ${impliedQuery}`
       // If item data is loading or unavailable, don’t show any CRs
       // to avoid flashing all CRs during item switching.
-      : `return false`;
-
-  const selectedCRPath: string | null =
-    focusedTabURI && focusedTabURI.startsWith(`${Protocols.CHANGE_REQUEST}:`)
-      ? focusedTabURI.split(':')[1]
-      : null;
+      : `return false`
+  ), [impliedQuery, itemPath]);
 
   useEffect(() => {
+    const selectedCRPath: string | null =
+      focusedTabURI && focusedTabURI.startsWith(`${Protocols.CHANGE_REQUEST}:`)
+        ? focusedTabURI.split(':')[1]
+        : null;
     if (itemPath !== undefined && selectedCRPath) {
       setTimeout(() => {
         dispatch({ type: 'select-item', payload: { itemPath: selectedCRPath } });
       }, 500);
     }
-  }, [itemPath, selectedCRPath]);
+  }, [dispatch, itemPath, focusedTabURI]);
 
   return (
     <ChangeRequestSearchResultList
       queryExpression={query}
       selectedItemPath={state.selectedItemPath}
-      onSelectItem={itemPath => dispatch({ type: 'select-item', payload: { itemPath }})}
-      onOpenItem={(itemPath) => spawnTab(`${Protocols.CHANGE_REQUEST}:${itemPath}`)}
+      onSelectItem={useCallback((itemPath =>
+        dispatch({
+          type: 'select-item',
+          payload: { itemPath },
+        })
+      ), [dispatch])}
+      onOpenItem={useCallback((itemPath =>
+        spawnTab(`${Protocols.CHANGE_REQUEST}:${itemPath}`)
+      ), [spawnTab])}
     />
   )
 };
