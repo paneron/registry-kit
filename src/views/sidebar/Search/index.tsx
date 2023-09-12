@@ -166,15 +166,13 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
         css={css`padding: 5px;`}
       />
       <div css={css`flex: 1;`}>
-        {stateRecalledDebounced
-          ? <SearchResultList
-              queryExpression={datasetObjectSearchQueryExpression}
-              keyExpression={keyExpression}
-              selectedItemPath={state.selectedItemPath}
-              onSelectItem={handleSelectItem}
-              onOpenItem={handleOpenItem}
-            />
-          : null}
+        <SearchResultList
+            queryExpression={datasetObjectSearchQueryExpression}
+            keyExpression={keyExpression}
+            selectedItemPath={state.selectedItemPath}
+            onSelectItem={handleSelectItem}
+            onOpenItem={handleOpenItem}
+          />
       </div>
     </div>
   );
