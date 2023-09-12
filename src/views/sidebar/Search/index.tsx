@@ -96,6 +96,7 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
   const selectedItemPath = selectedRegisterItem?.ref
     ? itemRefToItemPath(selectedRegisterItem.ref, changeRequest?.id)
     : null;
+
   useEffect(() => {
     if (selectedItemPath) {
       dispatch({ type: 'select-item', payload: { itemPath: selectedItemPath } });
