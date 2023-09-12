@@ -50,7 +50,6 @@ type ChangeRequestBlockAction =
   | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
 
-
 const ChangeRequestListBlock: React.FC<{ impliedQuery: string }> = function ({ impliedQuery }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab, focusedTabURI } = useContext(TabbedWorkspaceContext);
