@@ -85,13 +85,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
 
   const Item = cfg.itemView;
 
-  async function handleCreateNew() {
-    if (!onCreateNew) { return; }
-    const itemRef = await onCreateNew();
-    console.debug("Created new", itemRef);
-  }
-
-  const classIDs = availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : []);
+  const classIDs = useMemo((() =>
+    availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : [])
+  ), [availableClassIDs?.join(','), itemRef?.classID]);
 
   function jump() {
     //jumpToItem?.(classID, itemID, subregisterID);
@@ -102,21 +98,41 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
 
   const hasItem = item !== null && classConfigured && isRegisterItem(item);
   const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
-  const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
-  const canChangeRelatedItem = /*classIDs.length >= 1 && */onChange && !itemResult.isUpdating;
-  const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
+  const willShowItemView = hasItem || itemIsMissing || !onChange;
   const canJump = (item !== null || itemIsMissing) && classConfigured && !itemResult.isUpdating && (onJump || jumpTo);
 
-  let itemView: JSX.Element | null;
-  let itemButtons: ButtonProps[] = [];
+  const itemView: JSX.Element | null = useMemo(() => {
+    let itemView: JSX.Element | null;
 
-  if (hasItem) {
-    itemView = <Item
-      itemRef={{ classID, itemID, subregisterID }}
-      itemData={item.data}
-    />;
-  } else {
-    if (canAutoCreateRelatedItem) {
+    if (hasItem) {
+      itemView = <Item
+        itemRef={{ classID, itemID, subregisterID }}
+        itemData={item.data}
+      />;
+    } else {
+      if (itemIsMissing) {
+        itemView = <span>Item not found: {itemID ?? 'N/A'}</span>;
+      } else {
+        itemView = <span>Item not specified</span>;
+      }
+    }
+    return itemView;
+  }, [itemID, classID, subregisterID, item, hasItem, itemIsMissing]);
+
+  const itemButtons = useMemo(() => {
+    const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
+    const canChangeRelatedItem = /*classIDs.length >= 1 && */onChange && !itemResult.isUpdating;
+    const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
+
+    let itemButtons: ButtonProps[] = [];
+
+    async function handleCreateNew() {
+      if (!onCreateNew) { return; }
+      const itemRef = await onCreateNew();
+      console.debug("Created new item", itemRef);
+    }
+
+    if (!hasItem && canAutoCreateRelatedItem) {
       itemButtons.push({
         onClick: handleCreateNew,
         icon: 'add',
@@ -124,28 +140,21 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
         intent: 'primary',
       });
     }
-    if (itemIsMissing) {
-      itemView = <span>Item not found: {itemID ?? 'N/A'}</span>;
-    } else {
-      itemView = <span>Item not specified</span>;
+    if (canChangeRelatedItem) {
+      itemButtons.push({
+        onClick: () => setSelectDialogState(true),
+        icon: 'edit',
+        text: willShowItemView ? undefined : 'Specify',
+        intent: 'primary',
+        /*disabled: classIDs.length < 1,*/
+      });
     }
-  }
+    if (canClear) {
+      itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
+    }
 
-  const willShowItemView = hasItem || itemIsMissing || !onChange;
-
-  if (canChangeRelatedItem) {
-    itemButtons.push({
-      onClick: () => setSelectDialogState(true),
-      icon: 'edit',
-      text: willShowItemView ? undefined : 'Specify',
-      intent: 'primary',
-      /*disabled: classIDs.length < 1,*/
-    });
-  }
-
-  if (canClear) {
-    itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
-  }
+    return itemButtons;
+  }, [itemID, itemResult.isUpdating, onCreateNew, onChange, onClear]);
 
   //log.debug("Rendering generic related item view: got item", item);
   return (
