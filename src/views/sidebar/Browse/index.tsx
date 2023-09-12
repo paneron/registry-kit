@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, IconName, Menu, MenuItem, MenuDivider, Tree, TreeNodeInfo } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
@@ -141,7 +141,7 @@ function ({ stateName, onOpenItem, className, style }) {
     }
   }, [focusedTabURI, dispatch]);
 
-  async function handleAdd(classID: string, subregisterID?: string) {
+  const handleAdd = useCallback(async function _handleAdd(classID: string, subregisterID?: string) {
     if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR) {
       throw new Error("Unable to create item: likely current proposal is not editable or dataset is read-only");
     }
@@ -172,7 +172,22 @@ function ({ stateName, onOpenItem, className, style }) {
       _dangerouslySkipValidation: true,
     });
     spawnTab(`${Protocols.ITEM_DETAILS}:${itemRefToItemPath(ref, activeCR.id)}`);
-  }
+  }, [activeCR, activeCRIsEditable, subregisters === undefined, spawnTab, updateObjects, makeRandomID]);
+
+  const handleSelectItem = useCallback(
+    (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
+    [dispatch]);
+  const handleDeselectItem = useCallback(
+    (() => dispatch({ type: 'select-item', payload: { itemPath: null } })),
+    [dispatch]);
+  const handleOpenItem = useCallback(
+    ((itemPath) =>
+      (onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)))
+      (itemPath)),
+    [onOpenItem, spawnTab]);
+  const handleExitFolder = useCallback(
+    (() => dispatch({ type: 'exit-folder' })),
+    [dispatch]);
 
   if (state.enteredFolderID !== null) {
     // If we are in a folder, show a tree with a single element
@@ -246,9 +261,10 @@ function ({ stateName, onOpenItem, className, style }) {
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
         <Tree
           css={css`flex: 0;`}
-          onNodeClick={() => dispatch({ type: 'select-item', payload: { itemPath: null }})}
-          onNodeCollapse={() => dispatch({ type: 'exit-folder' })}
-          onNodeDoubleClick={() => dispatch({ type: 'exit-folder' })}
+          // This click handler deselects any items in results, meaning.
+          onNodeClick={handleDeselectItem}
+          onNodeCollapse={handleExitFolder}
+          onNodeDoubleClick={handleExitFolder}
           contents={[{
             id: 'opened-class',
             isSelected: state.selectedItemPath === null,
@@ -266,8 +282,8 @@ function ({ stateName, onOpenItem, className, style }) {
             queryExpression={getRegisterItemQuery(queryExpression, activeCR ?? undefined)}
             keyExpression={keyExpression}
             selectedItemPath={state.selectedItemPath}
-            onSelectItem={itemPath => dispatch({ type: 'select-item', payload: { itemPath }})}
-            onOpenItem={onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`))}
+            onSelectItem={handleSelectItem}
+            onOpenItem={handleOpenItem}
           />
         </div>
       </div>
