@@ -163,6 +163,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
         dir="ltr"
         className={className}
         css={css`.bp4-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
+
       {classID
         ? <Button
               alignText="left"
@@ -172,6 +173,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             {cfg.title ?? "Class N/A"}
           </Button>
         : null}
+
       {willShowItemView
         ? <Button
               alignText="left"
