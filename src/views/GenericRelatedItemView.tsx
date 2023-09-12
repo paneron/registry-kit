@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { Button, ButtonGroup, ButtonProps, Dialog } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
@@ -67,18 +67,21 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
   const itemResult = useRegisterItemData({ itemPaths: [itemPath] });
   const item = (itemResult.value?.[itemPath] || null);
 
-  let classConfigured: boolean;
-  let cfg: RelatedItemClassConfiguration;
-  try {
-    cfg = getRelatedItemClassConfiguration(classID);
-    classConfigured = true;
-  } catch (e) {
-    cfg = {
-      title: classID,
-      itemView: () => <span>{itemID}</span>
-    };
-    classConfigured = false;
-  }
+  const [classConfigured, cfg]: [boolean, RelatedItemClassConfiguration] = useMemo(() => {
+    let classConfigured: boolean;
+    let cfg: RelatedItemClassConfiguration;
+    try {
+      cfg = getRelatedItemClassConfiguration(classID);
+      classConfigured = true;
+    } catch (e) {
+      cfg = {
+        title: classID,
+        itemView: () => <span>{itemID}</span>
+      };
+      classConfigured = false;
+    }
+    return [classConfigured, cfg];
+  }, [itemID, classID, getRelatedItemClassConfiguration]);
 
   const Item = cfg.itemView;
 
