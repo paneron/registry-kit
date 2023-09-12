@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useMemo, useCallback, useContext } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Icon } from '@blueprintjs/core';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
