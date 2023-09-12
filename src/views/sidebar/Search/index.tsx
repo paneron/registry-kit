@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useCallback, useEffect } from 'react';
+import React, { useContext, useCallback, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
@@ -102,32 +102,33 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
     }
   }, [selectedItemPath, dispatch]);
 
-  const quickSearchString = (state.quickSubstringQuery ?? '').trim();
-  const withSearchString: CriteriaGroup = state.query.criteria.criteria.length < 1 && quickSearchString !== ''
-    ? {
-        require: 'all',
-        criteria: [
-          {
-            key: 'raw-substring',
-            query: RAW_SUBSTRING.toQuery(
-              { substring: quickSearchString },
-              { itemClasses, subregisters }),
-          },
-        ],
-      }
-    : state.query.criteria;
-
-  const withImplicit: CriteriaGroup = implicitCriteria
-    ? {
-        require: 'all',
-        criteria: [ implicitCriteria, withSearchString ],
-      }
-    : withSearchString;
-
-  const effectiveQueryExpression = withImplicit.criteria.length > 0
-    ? criteriaGroupToQueryExpression(withImplicit)
-    // If no criteria provided, don’t show anything by default.
-    : 'false';
+  const effectiveQueryExpression = useMemo(() => {
+    const quickSearchString = (state.quickSubstringQuery ?? '').trim();
+    const withSearchString: CriteriaGroup =
+      state.query.criteria.criteria.length < 1 && quickSearchString !== ''
+        ? {
+            require: 'all',
+            criteria: [
+              {
+                key: 'raw-substring',
+                query: RAW_SUBSTRING.toQuery(
+                  { substring: quickSearchString },
+                  { itemClasses, subregisters }),
+              },
+            ],
+          }
+        : state.query.criteria
+    const withImplicit: CriteriaGroup = implicitCriteria
+      ? {
+          require: 'all',
+          criteria: [ implicitCriteria, withSearchString ],
+        }
+      : withSearchString;
+    return withImplicit.criteria.length > 0
+      ? criteriaGroupToQueryExpression(withImplicit)
+      // If no criteria provided, don’t show anything by default.
+      : 'false';
+  }, [state.query.criteria, state.quickSubstringQuery, itemClasses, subregisters]);
 
   const stateRecalledDebounced = useDebounce(stateRecalled, 100);
   const queryExpressionDebounced = useDebounce(
@@ -135,9 +136,11 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
     stateRecalledDebounced ? 500 : 0,
   );
 
-  const datasetObjectSearchQueryExpression = queryExpressionDebounced != 'false'
-    ? getRegisterItemQuery(queryExpressionDebounced, changeRequest ?? undefined)
-    : 'return false';
+  const datasetObjectSearchQueryExpression = useMemo((() =>
+    queryExpressionDebounced != 'false'
+      ? getRegisterItemQuery(queryExpressionDebounced, changeRequest ?? undefined)
+      : 'return false'
+  ), [queryExpressionDebounced, changeRequest]);
 
   const handleSelectItem = useCallback(
     (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
