@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useContext, useCallback, useState, useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
 import { jsx, css } from '@emotion/react';
 
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
@@ -17,9 +18,9 @@ import {
   type RegisterItemDataHook,
   type RegisterStakeholder,
   type RegistryViewProps,
+  type InternalItemReference,
   isRegisterItem,
   isRegisterMetadata,
-  isInternalItemReference,
 } from '../types';
 
 import { REGISTER_METADATA_FILENAME } from '../common';
@@ -34,7 +35,7 @@ import {
   ChangeRequestContext,
   ChangeRequestContextProvider,
 } from './change-request/ChangeRequestContext';
-import { itemPathInCR, itemPathToItemRefLike } from './itemPathUtils';
+import { useItemRef, itemPathInCR } from './itemPathUtils';
 export { GenericRelatedItemView };
 
 
@@ -73,7 +74,7 @@ const RegistryWorkspace: React.FC<Record<never, never>> = function () {
           onClick: () => spawnTab(`${Protocols.CHANGE_REQUEST}:/proposals/${activeChangeRequest.id}/main.yaml`),
         }
       : undefined),
-    [activeChangeRequest?.id],
+    [activeChangeRequest?.id, spawnTab],
   );
 
   const { value: { settings } } = useSettings();
@@ -111,22 +112,25 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
   const { useObjectData, useRemoteUsername } = useContext(DatasetContext);
   const { focusedTabURI, spawnTab } = useContext(TabbedWorkspaceContext);
 
-  const selectedItemPath: string | null =
+
+  // Active item
+
+  const selectedItemPath: string | null = useMemo((() =>
     focusedTabURI && focusedTabURI.startsWith(`${Protocols.ITEM_DETAILS}:`)
       ? focusedTabURI.split(':')[1]
-      : null;
+      : null
+  ), [focusedTabURI]);
 
-  const selectedItemRef: Record<string, string> | null =
-    selectedItemPath
-      ? itemPathToItemRefLike(subregisters !== undefined, selectedItemPath)
-      : null;
+  const selectedItemRef: InternalItemReference | null = useItemRef(
+    subregisters !== undefined,
+    selectedItemPath);
 
   const maybeSelectedRegisterItemData: Record<string, any> | null = useObjectData({
     objectPaths: selectedItemPath ? [selectedItemPath] : [],
   }).value.data[selectedItemPath ?? ''];
 
-  const selectedRegisterItem: BrowserCtx['selectedRegisterItem'] =
-    isInternalItemReference(selectedItemRef)
+  const selectedRegisterItem: BrowserCtx['selectedRegisterItem'] = useMemo((() =>
+    selectedItemRef
       ? maybeSelectedRegisterItemData &&
         isRegisterItem(maybeSelectedRegisterItemData)
           ? {
@@ -135,14 +139,21 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
               itemClass: itemClassConfiguration[selectedItemRef.classID],
             }
         : undefined
-      : null;
+      : null
+  ), [selectedItemRef, maybeSelectedRegisterItemData]);
+
+
+  // Active CR
+
+  const [ activeChangeRequestID, setActiveChangeRequestID ] = useState<string | null>(null);
+
 
   // TODO: Confirm that end extensions using RegistryKit can’t just import hooks
   // from RegistryKit and we really have to pass this to them via context
   // TODO: Why not use useObjectData directly? Since register item paths
   // are just object paths. The casting here is optimistic, since an item at given path
   // may not be a RegisterItem.
-  const useRegisterItemData: RegisterItemDataHook = (opts) => {
+  const useRegisterItemData: RegisterItemDataHook = useCallback((opts) => {
     // Original item path mapped to its potential alternative path in current CR,
     // if the item is clarified or added in it.
     // TODO(perf): Access CR data and check whether the item is affected instead of blindly trying CR paths
@@ -194,7 +205,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
       ...result,
       value: itemData,
     };
-  };
+  }, [useObjectData, activeChangeRequestID]);
 
 
   // Register data
@@ -212,21 +223,22 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
 
   const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
-  const stakeholder: RegisterStakeholder | undefined = remoteUsername
+  const stakeholder: RegisterStakeholder | undefined = useMemo((() => remoteUsername
     ? (registerMetadata?.stakeholders ?? []).
-      find(s => s.gitServerUsername === remoteUsername)
-    : undefined;
+        find(s => s.gitServerUsername === remoteUsername)
+    : undefined
+  ), [remoteUsername, registerMetadata]);
 
+  const getRelatedItemClassConfiguration = useMemo(
+    (() => _getRelatedClass(itemClassConfiguration)),
+    [itemClassConfiguration]);
 
-  // Active CR
-
-  const [ activeChangeRequestID, setActiveChangeRequestID ] = useState<string | null>(null);
-
-  const getRelatedClass = _getRelatedClass(itemClassConfiguration);
+  const [activeChangeRequestIDDebounced] = useDebounce(activeChangeRequestID, 200);
+  const customViewsMemoized = useMemo((() => customViews ?? []), [customViews]); 
 
   return (
     <BrowserCtx.Provider
-        value={{
+        value={useMemo((() => ({
           stakeholder,
           registerMetadata,
           offline: remoteUsername === undefined ? true : undefined,
@@ -238,17 +250,31 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
 
           selectedRegisterItem,
 
-          activeChangeRequestID,
+          activeChangeRequestID: activeChangeRequestIDDebounced,
           setActiveChangeRequestID,
 
           useRegisterItemData,
-          getRelatedItemClassConfiguration: getRelatedClass,
-          customViews: customViews ?? [],
+          getRelatedItemClassConfiguration,
+          customViews: customViewsMemoized,
 
           keyExpression,
           defaultSearchCriteria,
-        }}>
-      <ChangeRequestContextProvider changeRequestID={activeChangeRequestID}>
+        })), [
+          selectedRegisterItem,
+          activeChangeRequestIDDebounced,
+          stakeholder,
+          registerMetadata,
+          remoteUsername,
+          subregisters,
+          spawnTab,
+          useRegisterItemData,
+          customViewsMemoized,
+          itemClassConfiguration,
+          subregisters,
+          keyExpression,
+          defaultSearchCriteria,
+        ])}>
+      <ChangeRequestContextProvider changeRequestID={activeChangeRequestIDDebounced}>
         {children}
       </ChangeRequestContextProvider>
     </BrowserCtx.Provider>

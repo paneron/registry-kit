@@ -64,7 +64,7 @@ export function useItemRef(
  * given a dataset-relative item path.
  * If some components are missing, returns an incomplete reference.
  */
-export function itemPathToItemRefLike(hasSubregisters: boolean, itemPath: string):
+function itemPathToItemRefLike(hasSubregisters: boolean, itemPath: string):
 { itemID?: string; classID?: string; subregisterID?: string; } {
   const pathNormalized = itemPath.trim()
     ? stripLeadingSlash(itemPathNotInCR(itemPath))

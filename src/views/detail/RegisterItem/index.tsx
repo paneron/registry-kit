@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useCallback } from 'react';
+import React, { useContext, useState, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
@@ -19,7 +19,6 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { normalizeObject } from '@riboseinc/paneron-extension-kit/util';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
-import useItemRef from '../../hooks/useItemRef';
 import useSingleRegisterItemData from '../../hooks/useSingleRegisterItemData';
 import useItemClassConfig from '../../hooks/useItemClassConfig';
 import { Protocols } from '../../protocolRegistry';
@@ -36,7 +35,7 @@ import {
   maybeEllipsizeString,
   TabContentsWithActions,
 } from '../../util';
-import { itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
+import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { RelatedItems } from './RelatedItems';
@@ -49,8 +48,6 @@ import { RelatedItems } from './RelatedItems';
  * is also reused within change request view.
  */
 const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = function ({ uri, inProposalWithID }) {
-  const { value: ref } = useItemRef(uri);
-  const { value: clsConfig } = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
   //const { value: itemData } = useSingleRegisterItemData(ref);
   const { updateObjects, makeRandomID, performOperation, isBusy } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
@@ -61,18 +58,23 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
     activeChangeRequestID: globallyActiveCRID,
   } = useContext(BrowserCtx);
 
+  const ref = useItemRef(subregisters !== undefined, uri);
+
+  const itemClass = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
+
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
 
-  const itemClass = clsConfig;
   const itemClassID = itemClass?.meta?.id;
   const itemRef = ref ?? DUMMY_REF;
   const { itemID, subregisterID } = itemRef;
 
   const _itemPath = `${itemClassID ?? 'NONEXISTENT_CLASS'}/${itemID}.yaml`;
-  const itemPath = subregisterID ? `/subregisters/${subregisterID}/${_itemPath}` : `/${_itemPath}`;
-  const itemRequest = {
+  const itemPath = subregisterID
+    ? `/subregisters/${subregisterID}/${_itemPath}`
+    : `/${_itemPath}`;
+  const itemRequest = useMemo(() => ({
     itemPaths: [itemPath],
-  };
+  }), [itemPath]);
   const itemResponse = useRegisterItemData(itemRequest);
   const itemData = itemResponse.value[itemPath];
 
@@ -142,12 +144,12 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
       _dangerouslySkipValidation: true,
     });
   }, [
-    updateObjects,
+    editedClarification,
     activeCRIsEditable,
     itemPath,
-    JSON.stringify(activeCR),
     JSON.stringify(itemData),
-    JSON.stringify(editedClarification),
+    JSON.stringify(activeCR),
+    updateObjects,
   ]);
 
   // TODO: Very similar to `handleAdd()` in Browse sidebar menu; refactor?
@@ -187,7 +189,7 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
     itemPath,
     activeCR?.id,
     activeCR?.state,
-    Object.entries(activeCR?.items ?? {}).flat().join(''),
+    Object.entries(activeCR?.items ?? {}).flat().map(i => JSON.stringify(i)).toString(),
     itemData ? JSON.stringify(normalizeObject(itemData)) : itemData,
   ]);
 
@@ -470,11 +472,14 @@ const ItemDetail: React.FC<{ uri: string, inProposalWithID?: string }> = functio
 
 
 const ItemTitle: React.FC<{ uri: string }> = function ({ uri }) {
-  const { value: ref } = useItemRef(uri);
-  const { value: clsConfig } = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
+  const { subregisters } = useContext(BrowserCtx);
+  const ref = useItemRef(subregisters !== undefined, uri);
+  const clsConfig = useItemClassConfig(ref?.classID ?? 'NONEXISTENT_CLASS_ID');
   const { value: itemData } = useSingleRegisterItemData(ref);
-  const fallbackView = (() => <>{ref?.itemID ?? uri}</>);
-  const View = itemData ? (clsConfig?.views.listItemView ?? fallbackView) : fallbackView;
+  const fallbackView = useCallback((() => <>{ref?.itemID ?? uri}</>), [uri]);
+  const View = itemData
+    ? (clsConfig?.views.listItemView ?? fallbackView)
+    : fallbackView;
   return <View
     itemRef={ref ?? DUMMY_REF}
     itemData={itemData}
