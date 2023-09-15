@@ -30,100 +30,100 @@ const SearchQuery: React.FC<{
   availableClassIDs,
   className,
 }) {
-    const { itemClasses, subregisters } = useContext(BrowserCtx);
+  const { itemClasses, subregisters } = useContext(BrowserCtx);
 
-    const [ editingAdvanced, toggleEditingAdvanced ] = useState<boolean>(false);
+  const [ editingAdvanced, toggleEditingAdvanced ] = useState<boolean>(false);
 
-    const classIDs = availableClassIDs ?? Object.keys(itemClasses);
+  const classIDs = availableClassIDs ?? Object.keys(itemClasses);
 
-    const hasAdvancedQuery = rootCriteria.criteria.length > 0;
+  const hasAdvancedQuery = rootCriteria.criteria.length > 0;
 
-    function makeDefaultCriteria(): Criterion {
-      if (quickSearchString) {
-        return {
-          key: 'raw-substring',
-          query: RAW_SUBSTRING.toQuery(
-            { substring: quickSearchString },
-            { itemClasses, subregisters },
-          ),
-        }
-      } else {
-        return {
-          key: 'custom',
-          query: CUSTOM_CONDITION.toQuery(
-            { customExpression: 'false' },
-            { itemClasses, subregisters },
-          ),
-        }
+  function makeDefaultCriteria(): Criterion {
+    if (quickSearchString) {
+      return {
+        key: 'raw-substring',
+        query: RAW_SUBSTRING.toQuery(
+          { substring: quickSearchString },
+          { itemClasses, subregisters },
+        ),
+      }
+    } else {
+      return {
+        key: 'custom',
+        query: CUSTOM_CONDITION.toQuery(
+          { customExpression: 'false' },
+          { itemClasses, subregisters },
+        ),
       }
     }
+  }
 
-    return (
-      <ControlGroup fill vertical className={className}>
-        <InputGroup
+  return (
+    <ControlGroup fill vertical className={className}>
+      <InputGroup
+        fill
+        small
+        disabled={!onQuickSearchStringChange || hasAdvancedQuery}
+        value={hasAdvancedQuery ? '' : quickSearchString}
+        leftIcon="search"
+        placeholder="Quick search"
+        title={!hasAdvancedQuery
+          ? "Search for a substring occurring anywhere within serialized item data."
+          : "Advanced query overrides quick search."}
+        css={css`width: 200px; ${quickSearchString !== '' && !hasAdvancedQuery ? 'input { font-weight: bold; }' : ''}`}
+        rightElement={<Button
+          disabled={!onQuickSearchStringChange || quickSearchString === '' || hasAdvancedQuery}
+          onClick={() => onQuickSearchStringChange?.('')}
+          small
+          minimal
+          icon="cross"
+          title="Clear quick search" />}
+        onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)} />
+      <ButtonGroup fill>
+        <Button
           fill
           small
-          disabled={!onQuickSearchStringChange || hasAdvancedQuery}
-          value={hasAdvancedQuery ? '' : quickSearchString}
-          leftIcon="search"
-          placeholder="Quick search"
-          title={!hasAdvancedQuery
-            ? "Search for a substring occurring anywhere within serialized item data."
-            : "Advanced query overrides quick search."}
-          css={css`width: 200px; ${quickSearchString !== '' && !hasAdvancedQuery ? 'input { font-weight: bold; }' : ''}`}
-          rightElement={<Button
-            disabled={!onQuickSearchStringChange || quickSearchString === '' || hasAdvancedQuery}
-            onClick={() => onQuickSearchStringChange?.('')}
-            small
-            minimal
-            icon="cross"
-            title="Clear quick search" />}
-          onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)} />
-        <ButtonGroup fill>
-          <Button
-            fill
-            small
-            title="Edit advanced search query"
-            icon='filter'
-            onClick={!hasAdvancedQuery
-              ? (() => {
-                  onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
-                  toggleEditingAdvanced(true);
-                })
-              : () => toggleEditingAdvanced(v => !v)}
-            active={editingAdvanced && hasAdvancedQuery}
-            disabled={!hasAdvancedQuery && !onCriteriaChange}
-            rightIcon={rootCriteria.criteria.length > 0
-              ? <Tag intent="success" round>on</Tag>
-              : <Tag round>off</Tag>}>
-            Advanced
-          </Button>
-        </ButtonGroup>
-        {hasAdvancedQuery && editingAdvanced
-          ? <>
-              <CriteriaTree
-                key="tree"
-                criteria={rootCriteria}
-                onChange={onCriteriaChange}
-                itemClasses={itemClasses}
-                availableClassIDs={classIDs}
-                subregisters={subregisters}
-                css={css`max-height: 50vh; overflow-y: auto;`} />
-              <div
-                  key="query"
-                  css={css`
-                    margin-top: 5px;
-                    padding: 0 10px 10px 10px;
-                    color: ${Colors.GRAY3};
-                    font-size: 90%;
-                    overflow-wrap: break-word;
-                  `}>
-                Query used: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
-              </div>
-            </>
-          : null}
-      </ControlGroup>
-    );
-  };
+          title="Edit advanced search query"
+          icon='filter'
+          onClick={!hasAdvancedQuery
+            ? (() => {
+                onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
+                toggleEditingAdvanced(true);
+              })
+            : () => toggleEditingAdvanced(v => !v)}
+          active={editingAdvanced && hasAdvancedQuery}
+          disabled={!hasAdvancedQuery && !onCriteriaChange}
+          rightIcon={rootCriteria.criteria.length > 0
+            ? <Tag intent="success" round>on</Tag>
+            : <Tag round>off</Tag>}>
+          Advanced
+        </Button>
+      </ButtonGroup>
+      {hasAdvancedQuery && editingAdvanced
+        ? <>
+            <CriteriaTree
+              key="tree"
+              criteria={rootCriteria}
+              onChange={onCriteriaChange}
+              itemClasses={itemClasses}
+              availableClassIDs={classIDs}
+              subregisters={subregisters}
+              css={css`max-height: 50vh; overflow-y: auto;`} />
+            <div
+                key="query"
+                css={css`
+                  margin-top: 5px;
+                  padding: 0 10px 10px 10px;
+                  color: ${Colors.GRAY3};
+                  font-size: 90%;
+                  overflow-wrap: break-word;
+                `}>
+              Query used: <code>{criteriaGroupToQueryExpression(rootCriteria)}</code>
+            </div>
+          </>
+        : null}
+    </ControlGroup>
+  );
+};
 
 export default SearchQuery;
