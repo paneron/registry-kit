@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import { jsx, css } from '@emotion/react';
 import type { RegisterItem } from '../../types';
 import { BrowserCtx } from '../BrowserCtx';
@@ -10,7 +10,7 @@ import { itemPathToItemRef } from '../itemPathUtils';
 
 /** Register item list view. */
 const ListItem: React.FC<{ objectData: RegisterItem<any>, objectPath: string }> =
-function ({ objectData, objectPath }) {
+memo(function ({ objectData, objectPath }) {
   const { subregisters, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
   const itemRef = itemPathToItemRef(subregisters !== undefined, objectPath);
   const clsConfig = getRelatedItemClassConfiguration(itemRef.classID);
@@ -27,7 +27,7 @@ function ({ objectData, objectPath }) {
       </span>;
 
   return itemView;
-}
+});
 
 
 export default ListItem;

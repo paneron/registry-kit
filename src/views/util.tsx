@@ -3,7 +3,7 @@
 
 //import log from 'electron-log';
 import format from 'date-fns/format';
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import { Helmet, HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
 import { FormGroup, FormGroupProps, Colors } from '@blueprintjs/core';
@@ -26,7 +26,7 @@ export function maybeEllipsizeString(
 }
 
 
-export const RegisterHelmet: React.FC<HelmetProps> = function (props) {
+export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
   const { title: datasetTitle } = useContext(DatasetContext);
 
   return (
@@ -36,7 +36,7 @@ export const RegisterHelmet: React.FC<HelmetProps> = function (props) {
       {props.children}
     </Helmet>
   );
-};
+});
 
 
 export const PropertyDetailView: React.FC<{

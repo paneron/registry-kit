@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useCallback, useMemo, useEffect } from 'react';
+import React, { memo, useContext, useCallback, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
@@ -59,7 +59,7 @@ const Search: React.FC<{
   className?: string
   style?: React.CSSProperties
 }> =
-function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, className, style }) {
+memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const { keyExpression, itemClasses, subregisters, selectedRegisterItem } = useContext(BrowserCtx);
@@ -177,7 +177,7 @@ function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, classNam
       </div>
     </div>
   );
-};
+});
 
 
 const SearchResultList = makeSearchResultList<RegisterItem<any>>(ListItem, (objPath) => ({
