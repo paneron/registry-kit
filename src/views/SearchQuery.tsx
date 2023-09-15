@@ -12,7 +12,6 @@ import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQuer
 import { BrowserCtx } from './BrowserCtx';
 
 
-
 const SearchQuery: React.FC<{
   rootCriteria: CriteriaGroup;
   onCriteriaChange?: (rootCriteria: CriteriaGroup) => void;
