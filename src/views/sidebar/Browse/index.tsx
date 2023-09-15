@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { memo, useMemo, useCallback, useContext, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, IconName, Menu, MenuItem, MenuDivider, Tree, TreeNodeInfo } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
@@ -73,7 +73,7 @@ const Browse: React.FC<{
   className?: string
   style?: React.CSSProperties
 }> =
-function ({ stateName, onOpenItem, className, style }) {
+memo(function ({ stateName, onOpenItem, className, style }) {
   const { performOperation, updateObjects, makeRandomID, usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab, focusedTabURI } = useContext(TabbedWorkspaceContext);
   const { keyExpression, itemClasses, subregisters } = useContext(BrowserCtx);
@@ -141,7 +141,7 @@ function ({ stateName, onOpenItem, className, style }) {
     }
   }, [focusedTabURI, dispatch]);
 
-  const handleAdd = useCallback(async function _handleAdd(classID: string, subregisterID?: string) {
+  const createItem = useCallback(async function _createItem(classID: string, subregisterID?: string) {
     if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR) {
       throw new Error("Unable to create item: likely current proposal is not editable or dataset is read-only");
     }
@@ -189,6 +189,18 @@ function ({ stateName, onOpenItem, className, style }) {
     (() => dispatch({ type: 'exit-folder' })),
     [dispatch]);
 
+  const handleAdd: undefined | ((clsID: string) => Promise<void>) = useMemo((() =>
+    !subregisters && activeCRIsEditable && performOperation
+      ? (clsID) => performOperation('generating new item', createItem)(clsID)
+      : undefined
+  ), [createItem, subregisters === undefined, activeCRIsEditable, performOperation]);
+
+  const handleAddInSubregister: undefined | ((clsID: string, subregID: string) => Promise<void>) = useMemo((() =>
+    subregisters && activeCRIsEditable && performOperation
+      ? (clsID, subregID) => performOperation('generating new item', createItem)(clsID, subregID)
+      : undefined
+  ), [createItem, subregisters === undefined, activeCRIsEditable, performOperation]);
+
   if (state.enteredFolderID !== null) {
     // If we are in a folder, show a tree with a single element
     // indicating currently entered folder
@@ -206,9 +218,7 @@ function ({ stateName, onOpenItem, className, style }) {
         moreMenu: clsConfig
           ? <ItemClassMenu
               cfg={itemClasses[classID]}
-              onCreate={!subregisters && activeCRIsEditable && performOperation
-                ? () => performOperation('generating new item', handleAdd)(classID)
-                : undefined}
+              onCreate={handleAdd ? () => handleAdd(classID) : undefined}
             />
           : undefined,
       };
@@ -232,8 +242,8 @@ function ({ stateName, onOpenItem, className, style }) {
           ? <SubregisterMenu
               cfg={subregConfig}
               itemClasses={itemClasses}
-              onCreate={activeCRIsEditable && performOperation
-                ? (clsID) => performOperation('generating new item', handleAdd)(clsID, subregisterID)
+              onCreate={handleAddInSubregister
+                ? (clsID) => handleAddInSubregister(clsID, subregisterID)
                 : undefined}
             />
           : undefined,
@@ -312,9 +322,7 @@ function ({ stateName, onOpenItem, className, style }) {
         <MoreMenu>
           <ItemClassMenu
             cfg={classConfig}
-            onCreate={!subregisters && activeCRIsEditable && performOperation
-              ? () => performOperation('generating new item', handleAdd)(classID)
-              : undefined}
+            onCreate={handleAdd ? () => handleAdd(classID) : undefined}
           />
         </MoreMenu>,
     })), ...(subregisters
@@ -339,8 +347,8 @@ function ({ stateName, onOpenItem, className, style }) {
               <SubregisterMenu
                 cfg={subregisterConfig}
                 itemClasses={itemClasses}
-                onCreate={activeCRIsEditable && performOperation
-                  ? (clsID) => performOperation('generating new item', handleAdd)(clsID, subregisterID)
+                onCreate={handleAddInSubregister
+                  ? (clsID) => handleAddInSubregister(clsID, subregisterID)
                   : undefined}
               />
             </MoreMenu>,
@@ -367,23 +375,23 @@ function ({ stateName, onOpenItem, className, style }) {
       />
     );
   }
-};
+});
 
 
-const MoreMenu: React.FC<Record<never, never>> = function ({ children }) {
+const MoreMenu: React.FC<Record<never, never>> = memo(function ({ children }) {
   return (
     <Popover2 minimal content={<>{children}</>}>
       <Button icon="more" small minimal />
     </Popover2>
   );
-}
+});
 
 
 const SubregisterMenu: React.FC<{
   cfg: { title: string, itemClasses: string[] };
   itemClasses: BrowserCtx["itemClasses"];
   onCreate?: (classID: string) => void;
-}> = function ({ cfg, itemClasses, onCreate }) {
+}> = memo(function ({ cfg, itemClasses, onCreate }) {
   return (
     <Menu>
       <MenuDivider title={`Item classes in ${cfg.title}`} />
@@ -399,13 +407,13 @@ const SubregisterMenu: React.FC<{
         )}
     </Menu>
   );
-}
+});
 
 
 const ItemClassMenu: React.FC<{
   cfg: BrowserCtx["itemClasses"][string];
   onCreate?: () => void;
-}> = function ({ cfg, onCreate }) {
+}> = memo(function ({ cfg, onCreate }) {
   return (
     <Menu>
       <MenuDivider title="About this class" />
@@ -422,7 +430,7 @@ const ItemClassMenu: React.FC<{
         : null}
     </Menu>
   );
-}
+});
 
 
 const SearchResultList = makeSearchResultList<RegisterItem<any>>(ListItem, (objPath) => ({
