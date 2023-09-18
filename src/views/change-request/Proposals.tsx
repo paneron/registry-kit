@@ -30,7 +30,7 @@ import type { Drafted } from '../../types/cr';
 import { Protocols, type Protocol } from '../protocolRegistry';
 import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../types/proposal';
 import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
-import { itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
+import { useItemRef, itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
 import StructuredDiff from '../diffing/StructuredDiff';
 import registerItemDetailView from '../detail/RegisterItem';
 
@@ -90,10 +90,7 @@ const Proposals: React.FC<{
     }
   }, [firstProposal, _selectedProposal, JSON.stringify(proposals)]);
 
-  const selectedItemRef = selectedProposal
-    ? itemPathToItemRef(subregisters !== undefined, selectedProposal)
-    : null;
-
+  const selectedItemRef = useItemRef(subregisters !== undefined, selectedProposal);
 
   // Data for proposed items
   const proposedItemPaths = Object.entries(proposals).map(([itemPath, proposal]) => {
