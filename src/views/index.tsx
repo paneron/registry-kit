@@ -174,7 +174,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
 
     const result = useObjectData({
       objectPaths: Object.keys(pathsToRequest),
-      nounLabel: 'register item(s)',
+      //nounLabel: 'register item(s)',
     }) as ValueHook<{ data: Record<string, Record<string, any> | null> }>;
 
     const itemData: Record<string, RegisterItem<any> | null> = {};
