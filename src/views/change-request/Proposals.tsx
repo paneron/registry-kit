@@ -126,126 +126,93 @@ const Proposals: React.FC<{
     && !currentItemDataReq.isUpdating
     && !proposedItemDataReq.isUpdating
   ) {
-    if (selectedItemCurrentData || selectedItemProposedData || true) {
-      const selectedItemSummary = <ProposalSummary
-        itemRef={selectedItemRef}
-        itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
-        itemDataBefore={selectedItemCurrentData ?? undefined}
-        proposal={proposals[selectedProposal]}
-      />
+    const selectedItemSummary = <ProposalSummary
+      itemRef={selectedItemRef}
+      itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
+      itemDataBefore={selectedItemCurrentData ?? undefined}
+      proposal={proposals[selectedProposal]}
+    />
 
-      return (
-        <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
-          <div>
-            <ControlGroup>
-              <Switch
-                checked={showDiff}
-                onChange={evt => setShowDiff(evt.currentTarget.checked)}
-                label="View source"
-                css={css`margin-right: 1em !important`}
-              />
-              <Switch
-                checked={showDiff && showOnlyChanged}
-                disabled={!showDiff}
-                onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
-                label="Show clarified properties only"
-              />
-            </ControlGroup>
-            <ButtonGroup>
-              <Button
-                  disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
-                  icon='locate'
-                  onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
-                  title="Open selected item in a new tab (not applicable to proposed additions)">
-                Reveal in registry
-              </Button>
-              {Object.keys(proposals).length > 1
-                ? <ClassNames>
-                    {(({ css: css2 }) =>
-                      <Select<ChangeProposalItem>
-                          filterable={false}
-                          itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
-                          menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
-                          activeItem={{
-                              itemPath: selectedProposal,
-                              proposal: proposals[selectedProposal],
-                              itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
-                              itemDataBefore: selectedItemCurrentData ?? undefined,
-                              itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
-                            }} // TODO: First time selection is broken
-                          items={
-                            Object.entries(proposals).map(([itemPath, proposal]) => ({
-                              itemPath,
-                              proposal,
-                              itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
-                              itemDataBefore: undefined,
-                              itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
-                            })).filter(item => item.itemData !== null)}
-                          popoverProps={{ minimal: true }}
-                          fill
-                          itemRenderer={ChangeProposalItemView}
-                          onItemSelect={(item) => selectProposal(item.itemPath)}>
-                        <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
-                          {selectedItemSummary}
-                        </Button>
-                      </Select>
-                    )}
-                  </ClassNames>
-                : <Button
-                      fill
-                      alignText="left"
-                      icon={getProposalIcon(proposals[selectedProposal])}
-                      rightIcon="chevron-down">
-                    {selectedItemSummary}
-                  </Button>}
-            </ButtonGroup>
-          </div>
-          <div css={css`position: relative; flex: 1;`}>
-            <BrowserCtx.Provider value={proposalBrowserCtx}>
-              <ProposalDetail
-                itemRef={selectedItemRef}
-                showDiff={showDiff}
-                showOnlyChanged={showOnlyChanged}
-                itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
-                itemDataBefore={selectedItemCurrentData ?? undefined}
-                proposal={proposals[selectedProposal]}
-              />
-            </BrowserCtx.Provider>
-          </div>
-        </div>
-      );
-    } else {
-      return <NonIdealState
-        icon='warning-sign'
-        className={className}
-        title="Unable to retrieve proposed item data"
-        description={<div css={css`text-align: left;`}>
-          Attempted to retrieve data for <code>{selectedProposal}</code>,
-          but failed.
-          <br />
-          Perhaps selected item was removed, or there is a data integrity issue.
-          <br />
-          This might be caused by a problem in the application, or repository contents having been edited outside of the application.
-          <br />
-          The data should be recoverable by inspecting version control system commit history.
-          <br />
-          <br />
+    return (
+      <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
+        <div>
+          <ControlGroup>
+            <Switch
+              checked={showDiff}
+              onChange={evt => setShowDiff(evt.currentTarget.checked)}
+              label="View source"
+              css={css`margin-right: 1em !important`}
+            />
+            <Switch
+              checked={showDiff && showOnlyChanged}
+              disabled={!showDiff}
+              onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
+              label="Show clarified properties only"
+            />
+          </ControlGroup>
           <ButtonGroup>
-            <Button onClick={() => selectProposal(firstProposal ?? null)}>
-              {firstProposal
-                ? "Go to first proposed item"
-                : "Unselect proposal"}
-            </Button>
             <Button
-                intent="danger"
-                onClick={() => selectProposal(firstProposal ?? null)}
-                title="This should help if there’s an addition or clarification proposal with missing proposed item data. NOTE: It removes the proposal, so you may need to create it again.">
-              Delete phantom proposal item
+                disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+                icon='locate'
+                onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
+                title="Open selected item in a new tab (not applicable to proposed additions)">
+              Reveal in registry
             </Button>
+            {Object.keys(proposals).length > 1
+              ? <ClassNames>
+                  {(({ css: css2 }) =>
+                    <Select<ChangeProposalItem>
+                        filterable={false}
+                        itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
+                        menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
+                        activeItem={{
+                            itemPath: selectedProposal,
+                            proposal: proposals[selectedProposal],
+                            itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
+                            itemDataBefore: selectedItemCurrentData ?? undefined,
+                            itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
+                          }} // TODO: First time selection is broken
+                        items={
+                          Object.entries(proposals).map(([itemPath, proposal]) => ({
+                            itemPath,
+                            proposal,
+                            itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
+                            itemDataBefore: undefined,
+                            itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
+                          })).filter(item => item.itemData !== null)}
+                        popoverProps={{ minimal: true }}
+                        fill
+                        itemRenderer={ChangeProposalItemView}
+                        onItemSelect={(item) => selectProposal(item.itemPath)}>
+                      <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
+                        {selectedItemSummary}
+                      </Button>
+                    </Select>
+                  )}
+                </ClassNames>
+              : <Button
+                    fill
+                    alignText="left"
+                    icon={getProposalIcon(proposals[selectedProposal])}
+                    rightIcon="chevron-down">
+                  {selectedItemSummary}
+                </Button>}
           </ButtonGroup>
-        </div>}
-      />;
-    }
+        </div>
+        <div css={css`position: relative; flex: 1;`}>
+          <BrowserCtx.Provider value={proposalBrowserCtx}>
+            <ProposalDetail
+              itemRef={selectedItemRef}
+              showDiff={showDiff}
+              showOnlyChanged={showOnlyChanged}
+              itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
+              itemDataBefore={selectedItemCurrentData ?? undefined}
+              proposal={proposals[selectedProposal]}
+            />
+          </BrowserCtx.Provider>
+        </div>
+      </div>
+    );
   } else {
     return <NonIdealState
       icon='clean'
