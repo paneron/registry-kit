@@ -131,7 +131,7 @@ const Proposals: React.FC<{
       itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
       itemDataBefore={selectedItemCurrentData ?? undefined}
       proposal={proposals[selectedProposal]}
-    />
+    />;
 
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
@@ -244,7 +244,7 @@ const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
       icon={getProposalIcon(item.proposal)}
       text={<ProposalSummary {...item} />} />
   );
-}
+};
 
 
 interface ProposalProps<P extends ChangeProposal> {
@@ -359,7 +359,7 @@ function getProposalIcon(proposal: ChangeProposal): IconName {
       ? 'add'
       : proposal.type === 'clarification'
         ? 'edit'
-        : 'ban-circle'
+        : 'ban-circle';
 }
 
 
