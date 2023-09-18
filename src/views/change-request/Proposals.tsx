@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
 import {
@@ -70,10 +70,10 @@ const Proposals: React.FC<{
     }
   }, [Object.keys(proposals), jumpTo]);
 
-  const proposalBrowserCtx: BrowserCtxType = {
+  const proposalBrowserCtx: BrowserCtxType = useMemo((() => ({
     ...outerBrowserCtx,
     jumpTo: handleCRJump,
-  };
+  })), [handleCRJump, outerBrowserCtx]);
 
   const firstProposal: string | undefined = Object.keys(proposals)[0];
 
@@ -294,13 +294,13 @@ const clarification: ProposalViewConfig<Clarification> = {
   hint: <>
     altered to represent the same concept more clearly.
   </>,
-  summary: ({ proposal, itemData, itemRef }) => <>Clarification</>,
+  summary: memo(({ proposal, itemData, itemRef }) => <>Clarification</>, () => true),
 };
 
 
 const addition: ProposalViewConfig<Addition> = {
   hint: <>added to this register.</>,
-  summary: ({ proposal, itemData, itemRef }) => <>Addition</>,
+  summary: memo(({ proposal, itemData, itemRef }) => <>Addition</>, () => true),
 };
 
 
@@ -309,7 +309,7 @@ const retirement: ProposalViewConfig<Retirement> = {
     marked as no longer current.
     (Note that this register is append-only, so the item cannot be removed altogether.)
   </>,
-  summary: ({ proposal, itemRef, itemData }) => <>Retirement</>,
+  summary: memo(({ proposal, itemRef, itemData }) => <>Retirement</>, () => true),
 };
 
 
@@ -319,7 +319,7 @@ const supersession: ProposalViewConfig<Supersession> = {
     A relation between the superseding and superseded item will be created,
     though the exact semantics of that relation depend on the register.
   </>,
-  summary: ({ proposal, itemRef, itemData }) => <>Supersession</>,
+  summary: memo(({ proposal, itemRef, itemData }) => <>Supersession</>, () => true),
 };
 
 
@@ -327,7 +327,7 @@ const invalidation: ProposalViewConfig<Invalidation> = {
   hint: <>
     marked as invalid. The exact semantics of invalidation depend on the register.
   </>,
-  summary: ({ proposal, itemRef, itemData }) => <>Invalidation</>,
+  summary: memo(({ proposal, itemRef, itemData }) => <>Invalidation</>, () => true),
 }
 
 
