@@ -42,6 +42,9 @@ interface ChangeProposalItem {
   itemData: Payload
   itemDataBefore: Payload | undefined
 }
+function stringifiedJSONEqual(i1: any, i2: any): boolean {
+  return JSON.stringify(i1) === JSON.stringify(i2);
+}
 
 
 const Proposals: React.FC<{
@@ -190,7 +193,7 @@ const Proposals: React.FC<{
                   {(({ css: css2 }) =>
                     <Select<ChangeProposalItem>
                         filterable={false}
-                        itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
+                        itemsEqual={stringifiedJSONEqual}
                         menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
                         activeItem={activeItem}
                         items={allItems}
