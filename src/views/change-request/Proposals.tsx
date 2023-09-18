@@ -88,7 +88,7 @@ const Proposals: React.FC<{
     if (firstProposal && (_selectedProposal === null || !proposals[_selectedProposal])) {
       selectProposal(firstProposal ?? null);
     }
-  }, [firstProposal, _selectedProposal, JSON.stringify(proposals)]);
+  }, [firstProposal, _selectedProposal, proposals]);
 
   const selectedItemRef = useItemRef(subregisters !== undefined, selectedProposal);
 
