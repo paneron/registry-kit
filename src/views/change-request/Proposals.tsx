@@ -368,7 +368,7 @@ const PROPOSAL_VIEWS: { [type in ProposalOrAmendmentType]: ProposalViewConfig<an
   retirement,
   supersession,
   invalidation,
-};
+} as const;
 
 
 function getProposalIcon(proposal: ChangeProposal): IconName {
