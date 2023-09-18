@@ -259,7 +259,7 @@ function ({ proposal, showDiff, showOnlyChanged, itemRef, itemData, itemDataBefo
 
   const view: JSX.Element = showDiff
     ? <MaximizedStructuredDiff
-        item1={itemDataBefore ?? {}}
+        item1={itemDataBefore ?? ITEM_DATA_PLACEHOLDER}
         item2={itemData}
         showUnchanged={!showOnlyChanged}
         css={css`background: white; border-radius: 2.5px; padding: 10px 0; margin: 10px 0;`}
@@ -361,3 +361,6 @@ function getProposalIcon(proposal: ChangeProposal): IconName {
 
 
 export default Proposals;
+
+
+const ITEM_DATA_PLACEHOLDER = {} as const;
