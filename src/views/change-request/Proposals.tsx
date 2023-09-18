@@ -110,11 +110,41 @@ const Proposals: React.FC<{
     ignoreActiveCR: true,
   });
 
-  const getCurrentItemData = (itemPath: string) => currentItemDataReq.value[itemPath]?.data ?? null;
-  const getProposedItemData = (itemPath: string) => proposedItemDataReq.value[itemPath]?.data ?? null;
+  const getCurrentItemData = useCallback(
+    ((itemPath: string) => currentItemDataReq.value[itemPath]?.data ?? null),
+    [currentItemDataReq.value]);
+  const getProposedItemData = useCallback(
+    ((itemPath: string) => proposedItemDataReq.value[itemPath]?.data ?? null),
+    [proposedItemDataReq.value]);
 
   const selectedItemCurrentData = getCurrentItemData(selectedProposal);
   const selectedItemProposedData = getProposedItemData(selectedProposal);
+
+  const handleItemSelect = useCallback(
+    ((item: ChangeProposalItem) => selectProposal(item.itemPath)),
+    [selectProposal]);
+
+  const activeItem: ChangeProposalItem | null = useMemo((() =>
+    selectedProposal
+      ? ({
+          itemPath: selectedProposal,
+          proposal: proposals[selectedProposal],
+          itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
+          itemDataBefore: selectedItemCurrentData ?? undefined,
+          itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
+        })
+      : null
+  ), [selectedProposal, proposals, subregisters]);
+
+  const allItems: ChangeProposalItem[] = useMemo((() =>
+    Object.entries(proposals).map(([itemPath, proposal]) => ({
+      itemPath,
+      proposal,
+      itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
+      itemDataBefore: undefined,
+      itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
+    })).filter(item => item.itemData !== null)
+  ), [proposals, getCurrentItemData, getProposedItemData]);
 
   if (
     selectedProposal
@@ -162,25 +192,12 @@ const Proposals: React.FC<{
                         filterable={false}
                         itemsEqual={(i1, i2) => JSON.stringify(i1) === JSON.stringify(i2)}
                         menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
-                        activeItem={{
-                            itemPath: selectedProposal,
-                            proposal: proposals[selectedProposal],
-                            itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
-                            itemDataBefore: selectedItemCurrentData ?? undefined,
-                            itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
-                          }} // TODO: First time selection is broken
-                        items={
-                          Object.entries(proposals).map(([itemPath, proposal]) => ({
-                            itemPath,
-                            proposal,
-                            itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
-                            itemDataBefore: undefined,
-                            itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
-                          })).filter(item => item.itemData !== null)}
+                        activeItem={activeItem}
+                        items={allItems}
                         popoverProps={{ minimal: true }}
                         fill
                         itemRenderer={ChangeProposalItemView}
-                        onItemSelect={(item) => selectProposal(item.itemPath)}>
+                        onItemSelect={handleItemSelect}>
                       <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
                         {selectedItemSummary}
                       </Button>
