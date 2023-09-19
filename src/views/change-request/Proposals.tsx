@@ -25,22 +25,25 @@ import type {
   Supersession,
   Invalidation,
   Payload,
+  RegisterItem,
 } from '../../types';
+import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
 import type { Drafted } from '../../types/cr';
 import { Protocols, type Protocol } from '../protocolRegistry';
 import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../types/proposal';
 import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
-import { useItemRef, itemPathToItemRef, itemRefToItemPath } from '../itemPathUtils';
+import { useItemRef, itemPathToItemRef } from '../itemPathUtils';
+import useItemClassConfig from '../hooks/useItemClassConfig';
 import StructuredDiff from '../diffing/StructuredDiff';
-import registerItemDetailView from '../detail/RegisterItem';
+import { ItemDetail } from '../detail/RegisterItem';
 
 
 interface ChangeProposalItem {
   itemPath: string
   itemRef: InternalItemReference
   proposal: ChangeProposal
-  itemData: Payload
-  itemDataBefore: Payload | undefined
+  item: RegisterItem<Payload>
+  itemBefore: RegisterItem<Payload> | undefined
 }
 function stringifiedJSONEqual(i1: any, i2: any): boolean {
   return JSON.stringify(i1) === JSON.stringify(i2);
@@ -113,15 +116,15 @@ const Proposals: React.FC<{
     ignoreActiveCR: true,
   });
 
-  const getCurrentItemData = useCallback(
-    ((itemPath: string) => currentItemDataReq.value[itemPath]?.data ?? null),
+  const getCurrentItem = useCallback(
+    ((itemPath: string) => currentItemDataReq.value[itemPath] ?? null),
     [currentItemDataReq.value]);
-  const getProposedItemData = useCallback(
-    ((itemPath: string) => proposedItemDataReq.value[itemPath]?.data ?? null),
+  const getProposedItem = useCallback(
+    ((itemPath: string) => proposedItemDataReq.value[itemPath] ?? null),
     [proposedItemDataReq.value]);
 
-  const selectedItemCurrentData = getCurrentItemData(selectedProposal);
-  const selectedItemProposedData = getProposedItemData(selectedProposal);
+  const selectedItemCurrent = getCurrentItem(selectedProposal);
+  const selectedItemProposed = getProposedItem(selectedProposal);
 
   const handleItemSelect = useCallback(
     ((item: ChangeProposalItem) => selectProposal(item.itemPath)),
@@ -132,8 +135,8 @@ const Proposals: React.FC<{
       ? ({
           itemPath: selectedProposal,
           proposal: proposals[selectedProposal],
-          itemData: (selectedItemProposedData ?? selectedItemCurrentData)!,
-          itemDataBefore: selectedItemCurrentData ?? undefined,
+          item: (selectedItemProposed ?? selectedItemCurrent)!,
+          itemBefore: selectedItemCurrent ?? undefined,
           itemRef: itemPathToItemRef(subregisters !== undefined, selectedProposal),
         })
       : null
@@ -143,11 +146,11 @@ const Proposals: React.FC<{
     Object.entries(proposals).map(([itemPath, proposal]) => ({
       itemPath,
       proposal,
-      itemData: (getProposedItemData(itemPath) ?? getCurrentItemData(itemPath))! ?? null,
-      itemDataBefore: undefined,
+      item: (getProposedItem(itemPath) ?? getCurrentItem(itemPath))! ?? null,
+      itemBefore: undefined,
       itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
-    })).filter(item => item.itemData !== null)
-  ), [proposals, getCurrentItemData, getProposedItemData]);
+    })).filter(cpi => cpi.item !== null)
+  ), [proposals, getCurrentItem, getProposedItem]);
 
   if (
     selectedProposal
@@ -158,8 +161,8 @@ const Proposals: React.FC<{
   ) {
     const selectedItemSummary = <ProposalSummary
       itemRef={selectedItemRef}
-      itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
-      itemDataBefore={selectedItemCurrentData ?? undefined}
+      item={(selectedItemProposed ?? selectedItemCurrent)!}
+      itemBefore={selectedItemCurrent ?? undefined}
       proposal={proposals[selectedProposal]}
     />;
 
@@ -218,14 +221,16 @@ const Proposals: React.FC<{
         </div>
         <div css={css`position: relative; flex: 1;`}>
           <BrowserCtx.Provider value={proposalBrowserCtx}>
-            <ProposalDetail
-              itemRef={selectedItemRef}
-              showDiff={showDiff}
-              showOnlyChanged={showOnlyChanged}
-              itemData={(selectedItemProposedData ?? selectedItemCurrentData)!}
-              itemDataBefore={selectedItemCurrentData ?? undefined}
-              proposal={proposals[selectedProposal]}
-            />
+            <ErrorBoundary viewName="Proposal detail">
+              <ProposalDetail
+                itemRef={selectedItemRef}
+                showDiff={showDiff}
+                showOnlyChanged={showOnlyChanged}
+                item={(selectedItemProposed ?? selectedItemCurrent)!}
+                itemBefore={selectedItemCurrent ?? undefined}
+                proposal={proposals[selectedProposal]}
+              />
+            </ErrorBoundary>
           </BrowserCtx.Provider>
         </div>
       </div>
@@ -269,37 +274,46 @@ interface ProposalProps<P extends ChangeProposal> {
   showDiff?: boolean
   showOnlyChanged?: boolean
   itemRef: InternalItemReference
-  itemData: Payload
-  itemDataBefore: P extends Clarification ? Payload : undefined
+  item: RegisterItem<Payload>
+  itemBefore: P extends Clarification ? RegisterItem<Payload> : undefined
   onChange?: (newProposal: P) => void
 }
 export const ProposalDetail: React.FC<ProposalProps<ChangeProposal>> =
-function ({ proposal, showDiff, showOnlyChanged, itemRef, itemData, itemDataBefore, onChange }) {
-  const ItemView = registerItemDetailView.main;
+memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore, onChange }) {
+  const itemClass = useItemClassConfig(itemRef.classID ?? 'NONEXISTENT_CLASS_ID');
+
+  if (!itemClass) {
+    throw new Error(`Unknown item class “${itemRef.classID}”!`);
+  }
 
   const view: JSX.Element = showDiff
     ? <MaximizedStructuredDiff
-        item1={itemDataBefore ?? ITEM_DATA_PLACEHOLDER}
-        item2={itemData}
+        item1={itemBefore?.data ?? ITEM_DATA_PLACEHOLDER}
+        item2={item.data}
         showUnchanged={!showOnlyChanged}
         css={css`background: white; border-radius: 2.5px; padding: 10px 0; margin: 10px 0;`}
         className={Classes.ELEVATION_2}
       />
-    : <ItemView uri={itemRefToItemPath(itemRef)} key={JSON.stringify(itemRef)} />
+    : <ItemDetail
+        itemRef={itemRef}
+        item={item}
+        itemClass={itemClass}
+        key={JSON.stringify(itemRef)}
+      />
 
   return <div css={css`position: absolute; inset: 0; display: flex; flex-flow: column;`}>
     {view}
   </div>;
-};
+});
 export const ProposalSummary: React.FC<ProposalProps<ChangeProposal>> =
-function ({ proposal, itemRef, itemData, itemDataBefore, onChange }) {
+function ({ proposal, itemRef, item, itemBefore, onChange }) {
   const { itemClasses } = useContext(BrowserCtx);
   const { classID } = itemRef;
   const ListItemView = itemClasses[classID].views.listItemView;
 
   return <ListItemView
     itemRef={itemRef}
-    itemData={itemData}
+    itemData={item.data}
   />;
 };
 
@@ -314,13 +328,13 @@ const clarification: ProposalViewConfig<Clarification> = {
   hint: <>
     altered to represent the same concept more clearly.
   </>,
-  summary: memo(({ proposal, itemData, itemRef }) => <>Clarification</>, () => true),
+  summary: memo(({ proposal, item, itemRef }) => <>Clarification</>, () => true),
 };
 
 
 const addition: ProposalViewConfig<Addition> = {
   hint: <>added to this register.</>,
-  summary: memo(({ proposal, itemData, itemRef }) => <>Addition</>, () => true),
+  summary: memo(({ proposal, item, itemRef }) => <>Addition</>, () => true),
 };
 
 
@@ -329,7 +343,7 @@ const retirement: ProposalViewConfig<Retirement> = {
     marked as no longer current.
     (Note that this register is append-only, so the item cannot be removed altogether.)
   </>,
-  summary: memo(({ proposal, itemRef, itemData }) => <>Retirement</>, () => true),
+  summary: memo(({ proposal, itemRef, item }) => <>Retirement</>, () => true),
 };
 
 
@@ -339,7 +353,7 @@ const supersession: ProposalViewConfig<Supersession> = {
     A relation between the superseding and superseded item will be created,
     though the exact semantics of that relation depend on the register.
   </>,
-  summary: memo(({ proposal, itemRef, itemData }) => <>Supersession</>, () => true),
+  summary: memo(({ proposal, itemRef, item }) => <>Supersession</>, () => true),
 };
 
 
@@ -347,7 +361,7 @@ const invalidation: ProposalViewConfig<Invalidation> = {
   hint: <>
     marked as invalid. The exact semantics of invalidation depend on the register.
   </>,
-  summary: memo(({ proposal, itemRef, itemData }) => <>Invalidation</>, () => true),
+  summary: memo(({ proposal, itemRef, item }) => <>Invalidation</>, () => true),
 }
 
 
