@@ -112,13 +112,19 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
     stakeholder?.gitServerUsername &&
     cr.submittingStakeholderGitServerUsername === stakeholder.gitServerUsername);
 
-  async function handleDelete() {
-    if (authorIsCurrentUser && cr && updateTree && !isActive && Object.keys(cr.items).length < 1) {
-      const subtreeRoot = crIDToCRPath(cr.id).replace('/main.yaml', '');
-      await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove CR draft' });
-      afterDelete?.();
-    }
-  }
+  const crItemEntries = Object.entries(cr.items).map(i => JSON.stringify(i));
+  const hasItems = crItemEntries.length > 0;
+  const crItemMemo = crItemEntries.toString();
+
+  const handleDelete = useMemo((() =>
+    authorIsCurrentUser && updateTree && !isActive && !hasItems && !(cr as Proposed).timeProposed
+    ? performOperation('deleting proposal', async function handleDelete() {
+        const subtreeRoot = crIDToCRPath(cr.id).replace('/main.yaml', '');
+        await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove CR draft' });
+        afterDelete?.();
+      })
+    : undefined
+  ), [isActive, hasItems, authorIsCurrentUser, cr.id, (cr as Proposed).timeProposed, afterDelete, updateTree]);
 
   const crItemEntries = Object.entries(cr.items);
   const proposals = useMemo((() =>
