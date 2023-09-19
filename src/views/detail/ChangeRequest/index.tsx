@@ -126,27 +126,22 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
     : undefined
   ), [isActive, hasItems, authorIsCurrentUser, cr.id, (cr as Proposed).timeProposed, afterDelete, updateTree]);
 
-  const crItemEntries = Object.entries(cr.items);
   const proposals = useMemo((() =>
-    crItemEntries.length > 0
+    hasItems
       ? <Proposals proposals={cr.items} css={css`flex: 1;`} />
       : <NonIdealState
           icon="clean"
           title="Nothing is proposed here yet."
-          description={authorIsCurrentUser && updateTree && !(cr as Proposed).timeProposed && !isActive
-            ? <Button onClick={performOperation('deleting proposal', handleDelete)}>
+          description={handleDelete
+            ? <Button onClick={handleDelete}>
                 Delete this CR draft
               </Button>
             : undefined}
         />
   ), [
-    crItemEntries.length,
-    crItemEntries.map(i => JSON.stringify(i)).toString(),
-    performOperation,
     handleDelete,
-    updateTree,
-    authorIsCurrentUser,
-    isActive,
+    hasItems,
+    crItemMemo,
   ]);
 
   return (
