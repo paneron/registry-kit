@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useMemo, useCallback } from 'react';
+import React, { useContext, useMemo, memo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
@@ -38,19 +38,19 @@ import {
 import { TransitionOptions, getPastTransitions, getTransitions } from './transitions';
 
 
-const View: React.FC<{ uri: string }> = function ({ uri }) {
+const View: React.VoidFunctionComponent<{ uri: string }> =
+memo(function ({ uri }) {
   const crID = crPathToCRID(uri);
   return (
     <ChangeRequestContextProvider changeRequestID={crID}>
       <MaybeChangeRequest uri={uri} />
     </ChangeRequestContextProvider>
   );
-};
+});
 
 
-const MaybeChangeRequest: React.VoidFunctionComponent<{
-  uri: string
-}> = function ({ uri }) {
+const MaybeChangeRequest: React.VoidFunctionComponent<{ uri: string }> =
+memo(function ({ uri }) {
   const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
   const { changeRequest: cr, canEdit } = useContext(ChangeRequestContext);
   const handleAfterDelete = useCallback(
@@ -78,7 +78,7 @@ const MaybeChangeRequest: React.VoidFunctionComponent<{
         description={"Unable to load proposal"}
       />
   );
-};
+});
 
 
 const ChangeRequestDetails: React.VoidFunctionComponent<{
@@ -86,7 +86,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
   canEdit: boolean,
   afterDelete?: () => void,
   className?: string,
-}> = function ({ cr, canEdit, afterDelete, className }) {
+}> = memo(function ({ cr, canEdit, afterDelete, className }) {
   const { performOperation, updateTree } = useContext(DatasetContext);
   const {
     registerMetadata,
@@ -271,7 +271,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
         </div>}
     />
   );
-};
+});
 
 
 const CRActivation: React.FC<{
@@ -301,10 +301,10 @@ const CRActivation: React.FC<{
 };
 
 
-const CRTitle: React.FC<{ uri: string }> = function ({ uri }) {
+const CRTitle: React.FC<{ uri: string }> = memo(function ({ uri }) {
   const { useObjectData } = useContext(DatasetContext);
   const justification = useObjectData({ objectPaths: [uri] }).value.data?.[uri]?.justification;
   return <>Proposal “{maybeEllipsizeString(justification ?? uri)}”</>;
-}
+});
 
 export default { main: View, title: CRTitle };
