@@ -97,9 +97,9 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
   const helmet = useMemo((() =>
     <Helmet>
-      <title>Viewing proposal: {cr?.justification ?? "N/A"}</title>
+      <title>Viewing proposal: {cr.justification ?? "N/A"}</title>
     </Helmet>
-  ), [cr?.justification]);
+  ), [cr.justification]);
 
   const isActive = activeChangeRequestID === cr.id;
   const anotherIsActive = activeChangeRequestID && activeChangeRequestID !== cr.id;
