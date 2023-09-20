@@ -15,7 +15,7 @@ export type RegistryExtensionMaker =
 export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
   const { name } = opts;
 
-  const mainView: ExtensionMakerProps["mainView"] = function () {
+  const mainView: ExtensionMakerProps["mainView"] = function _RegistryView () {
     return (
       <RegistryView
         itemClassConfiguration={opts.itemClassConfiguration}
