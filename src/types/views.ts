@@ -111,7 +111,7 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
    */
   keyExpression?: string
 
-  exportFormats?: ExportFormatConfiguration<P>[]
+  exportFormats?: Readonly<ExportFormatConfiguration<P>[]>
 
   views: {
     listItemView: ItemListView<P>

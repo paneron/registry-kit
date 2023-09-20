@@ -24,7 +24,7 @@ export interface RegisterItemClass {
   id: string
   title: string
   description?: string
-  alternativeNames?: LocalizedAlternative<string>[]
+  alternativeNames?: Readonly<LocalizedAlternative<string>[]>
 }
 
 interface ItemReference {
