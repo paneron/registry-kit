@@ -45,7 +45,8 @@ const TabbedWorkspaceContextProvider = makeTabbedWorkspaceContextProvider<Protoc
   protocolRegistry);
 
 
-export const RegistryView: React.FC<RegistryViewProps> = function (props) {
+export const RegistryView: React.FC<RegistryViewProps> =
+function RegistryView (props) {
   return (
     <TabbedWorkspaceContextProvider stateKey="main-registry-view">
       <BrowserCtxProvider {...props}>
@@ -59,7 +60,8 @@ export const RegistryView: React.FC<RegistryViewProps> = function (props) {
 const SIDEBAR_WIDTH_SETTING_NAME = 'registryMainSidebarWidthPixels'
 
 
-const RegistryWorkspace: React.FC<Record<never, never>> = function () {
+const RegistryWorkspace: React.FC<Record<never, never>> =
+function RegistryWorkspace () {
   const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const { useSettings, updateSetting, useGlobalSettings } = useContext(DatasetContext);
@@ -100,7 +102,7 @@ const RegistryWorkspace: React.FC<Record<never, never>> = function () {
 };
 
 
-const BrowserCtxProvider: React.FC<RegistryViewProps> = function ({
+const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvider ({
   itemClassConfiguration,
   subregisters,
   keyExpression,
