@@ -7,7 +7,7 @@ const enc = new TextEncoder();
 const metadata = enc.encode(`
 name: "Unnamed registry"
 stakeholders:
-  - role: owner
+  - role: submitter
     name: "<owner entity name here>"
     gitServerUsername: "<VCS username here>"
     parties:
