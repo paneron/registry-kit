@@ -29,6 +29,6 @@ const initialMigration: MigrationInfo = {
       [REGISTER_METADATA_FILENAME]: metadata,
     };
   },
-}
+};
 
 export default initialMigration;
