@@ -24,7 +24,7 @@ contentSummary: "<content summary goes here>"
 
 const initialMigration: MigrationInfo = {
   versionAfter: '1.0.0',
-  migrator: async function* initialRegistryMigration () {
+  migrator: async function * initialRegistryMigration () {
     yield {
       [REGISTER_METADATA_FILENAME]: metadata,
     };
