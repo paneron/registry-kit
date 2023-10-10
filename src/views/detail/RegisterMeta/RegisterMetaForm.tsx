@@ -20,6 +20,7 @@ import {
 } from '@blueprintjs/core';
 import { DatePicker, TimePrecision } from '@blueprintjs/datetime';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { GriddishContainer } from '../../../views/util'; 
 import type { Register, RegisterStakeholder, Locale } from '../../../types';
 import { isStakeholderRole } from '../../../types';
 import { STAKEHOLDER_ROLES, StakeholderRole } from '../../../types/stakeholder';
@@ -87,7 +88,7 @@ const RegisterMetaForm: React.FC<{
   }
 
   return (
-    <div css={css`display: flex; flex-flow: row wrap; align-content: flex-start; align-items: flex-start; gap: 10px;`} className={className}>
+    <GriddishContainer className={className}>
 
       <SuperFormGroup label="Basics:">
         <FormGroup label="Name:">
@@ -297,7 +298,7 @@ const RegisterMetaForm: React.FC<{
             </HTMLTable>
           : null}
       </SuperFormGroup>
-    </div>
+    </GriddishContainer>
   );
 };
 

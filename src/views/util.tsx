@@ -26,6 +26,22 @@ export function maybeEllipsizeString(
 }
 
 
+export const GriddishContainer: React.FC<{ className?: string }> =
+function ({ className, children }) {
+  return (
+    <div css={css`
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        align-items: flex-start;
+        gap: 10px;
+    `} className={className}>
+      {children}
+    </div>
+  );
+};
+
+
 export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
   const { title: datasetTitle } = useContext(DatasetContext);
 
