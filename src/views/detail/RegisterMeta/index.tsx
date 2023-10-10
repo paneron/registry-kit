@@ -79,7 +79,7 @@ const RegisterMeta: React.FC<Record<never, never>> = function () {
       />
     );
   } else if (registerMetadata === undefined) {
-    return <NonIdealState icon={<Spinner />} />
+    return <NonIdealState icon={<Spinner />} />;
   } else {
     return <NonIdealState icon="heart-broken" description="Failed to read registry metadata." />
   }
