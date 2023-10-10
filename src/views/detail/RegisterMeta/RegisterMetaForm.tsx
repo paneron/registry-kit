@@ -82,6 +82,10 @@ const RegisterMetaForm: React.FC<{
   function handleStakeholderAdd() {
     onChange!({ ...value, stakeholders: [ ...stakeholders, DUMMY_STAKEHOLDER ] });
   }
+  function handleStakeholderDelete(idx: number) {
+    onChange!(update(value, { stakeholders: { $splice: [[idx, 1]] } }));
+  }
+
   return (
     <div css={css`display: flex; flex-flow: row wrap; align-content: flex-start; align-items: flex-start; gap: 10px;`} className={className}>
 
@@ -226,14 +230,24 @@ const RegisterMetaForm: React.FC<{
                       <ControlGroup vertical={s.parties.length > 1}>
                         {s.parties.map((party, partyIdx) =>
                           <ButtonGroup key={partyIdx}>
-                            <Button
-                                key="delete"
-                                outlined
-                                disabled={!onChange || s.parties.length < 2 || party.name !== ''}
-                                title="Delete this party"
-                                onClick={() => onChange!(update(value, { stakeholders: { [idx]: { parties: { $splice: [[ partyIdx, 1 ]] } } } }))}
-                                icon="cross"
-                              />
+                            {s.parties.length < 2
+                              ? <Button
+                                    key="delete"
+                                    outlined
+                                    disabled={!onChange || s.parties.length > 1}
+                                    title="Delete this stakeholder"
+                                    onClick={() => handleStakeholderDelete(idx)}
+                                    icon="cross"
+                                    intent="warning"
+                                  />
+                              : <Button
+                                    key="delete"
+                                    outlined
+                                    disabled={!onChange || s.parties.length < 2 || party.name !== ''}
+                                    title="Delete this party"
+                                    onClick={() => onChange!(update(value, { stakeholders: { [idx]: { parties: { $splice: [[ partyIdx, 1 ]] } } } }))}
+                                    icon="cross"
+                                  />}
                             {partyIdx === s.parties.length - 1
                               ? <Button
                                   key="add"
