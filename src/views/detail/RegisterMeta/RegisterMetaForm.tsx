@@ -33,8 +33,9 @@ const DUMMY_VERSION: Register["version"] = {
 
 const DUMMY_CONTACT: Register["stakeholders"][number]["parties"][number]["contacts"][number] = {
   label: 'email',
-  value: ''
-}
+  value: '',
+};
+
 const DUMMY_PARTY: Register["stakeholders"][number]["parties"][number] = {
   name: '',
   contacts: [DUMMY_CONTACT],
