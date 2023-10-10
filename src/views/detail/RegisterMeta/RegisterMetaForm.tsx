@@ -26,7 +26,11 @@ import { STAKEHOLDER_ROLES, StakeholderRole } from '../../../types/stakeholder';
 
 
 
-const DUMMY_VERSION: Register["version"] = { id: '', timestamp: new Date() };
+const DUMMY_VERSION: Register["version"] = {
+  id: '',
+  timestamp: new Date(),
+};
+
 const DUMMY_CONTACT: Register["stakeholders"][number]["parties"][number]["contacts"][number] = {
   label: 'email',
   value: ''
