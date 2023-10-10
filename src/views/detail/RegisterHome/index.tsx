@@ -1,25 +1,31 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState } from 'react';
+import React, { useMemo, useContext } from 'react';
 //import { Helmet } from 'react-helmet';
 import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { Menu, MenuDivider, MenuItem, InputGroup, Button, NonIdealState, Spinner, Callout } from '@blueprintjs/core';
+import { Card, Menu, MenuItem, type MenuItemProps, NonIdealState, Spinner } from '@blueprintjs/core';
+import { registerStakeholderPlain } from '../../RegisterStakeholder';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
-import { registerStakeholderPlain } from '../../RegisterStakeholder';
+import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
 import { isImportableCR } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
 import { crIDToCRPath } from '../../itemPathUtils';
+import { GriddishContainer } from '../../../views/util'; 
+import MetaSummary from './MetaSummary';
+import { TabContentsWithActions } from '../../util';
+import { CurrentProposal, NewProposal } from './Proposal';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { customViews, registerMetadata, stakeholder, offline, itemClasses } = useContext(BrowserCtx);
+  const { customViews, registerMetadata, stakeholder, offline, itemClasses, setActiveChangeRequestID } = useContext(BrowserCtx);
+  const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const {
     requestFileFromFilesystem,
     makeRandomID,
@@ -28,8 +34,6 @@ function () {
     performOperation,
     getMapReducedData,
   } = useContext(DatasetContext);
-
-  const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
 
   const registerVersion = registerMetadata?.version;
   const canCreateCR = (
@@ -58,10 +62,9 @@ function () {
     }
   }
 
-  async function handleNewProposal() {
-    if (newProposalIdea) {
+  async function handleNewProposal(newProposalIdea: string) {
+    if (newProposalIdea.trim()) {
       const crID = await performOperation("creating proposal", createCR)(newProposalIdea);
-      setNewProposalIdea('');
       spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(crID)}`);
     }
   }
@@ -132,97 +135,132 @@ function () {
       objectChangeset,
     });
 
-    setNewProposalIdea('');
     spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(crID)}`);
   }
 
-  const menu = (
-    <Menu css={css`margin: 10px;`}>
-      <MenuDivider title="Quick links" />
-      {customViews.map((cv, _) => 
-        <MenuItem
-          key={cv.id}
-          text={cv.label}
-          title={cv.description}
-          icon={cv.icon}
-          onClick={() => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`)}
-        />
-      )}
-      {customViews.length > 0 ? <MenuDivider /> : null}
+  const customActions = useMemo(() => customViews.map(cv => ({
+    key: cv.id,
+    text: cv.label,
+    title: cv.description,
+    icon: cv.icon,
+    onClick: () => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`),
+  })), [spawnTab, customViews]);
 
-      <MenuItem
-        text={`Propose a change to version ${registerMetadata?.version?.id ?? '(missing)'}`}
-        disabled={!canCreateCR}
-        icon="lightbulb"
-        title={canCreateCR
-            ? "A blank proposal will be created and opened in a new tab."
-            : undefined}>
-        <InputGroup
-          value={newProposalIdea || undefined}
-          placeholder="Your idea…"
-          title="Justification draft (you can change this later)"
-          onChange={evt => setNewProposalIdea(evt.currentTarget.value)}
-          rightElement={
-            <Button
-              small
-              intent={newProposalIdea ? 'primary': undefined}
-              disabled={!newProposalIdea}
-              onClick={handleNewProposal}
-              icon="tick"
-            />
-          }
-        />
-      </MenuItem>
-      <MenuItem
-        text="Import proposal"
-        icon="import"
-        disabled={!canCreateCR}
-        onClick={handleImportProposal}
-      />
-      <MenuItem
-        text="View register metadata"
-        icon="properties"
-        onClick={() => spawnTab(Protocols.REGISTER_META)}
-      />
-    </Menu>
+  let proposalBlock = useMemo(() => {
+    if (activeCR) {
+      return <HomeBlock
+        View={CurrentProposal}
+        props={activeCR
+          ? { proposal: activeCR, stakeholder }
+          : activeCR}
+        actions={[{
+          text: "Exit proposal view",
+          onClick: () => setActiveChangeRequestID?.(null),
+          disabled: !setActiveChangeRequestID,
+        }]}
+      />;
+    } else {
+      const importAction: MenuItemProps = {
+        text: "Import proposal",
+        icon: 'import',
+        disabled: !canCreateCR,
+        onClick: handleImportProposal,
+      };
+      switch (stakeholder?.role) {
+        case 'submitter':
+        case 'owner':
+        case 'manager':
+        case 'control-body':
+          return <HomeBlock
+            View={NewProposal}
+            props={!offline && registerMetadata
+              ? {
+                  stakeholder,
+                  register: registerMetadata,
+                  onPropose: canCreateCR ? handleNewProposal : undefined,
+                }
+              : null}
+            actions={!offline && registerMetadata
+              ? [importAction]
+              : []}
+            error={offline
+              ? <>
+                  Because this repository is offline (no remote configured),
+                  and remote username is currently required for proposal,
+                  you cannot create proposals.
+                </>
+              : !registerMetadata
+                ? "Unable to retrieve register metadata"
+                : undefined}
+          />;
+        case undefined:
+        default:
+          return <HomeBlock
+            View={CurrentProposal}
+            props={null}
+            error="View view is not implemented yet"
+          />;
+      }
+    }
+  }, [stakeholder, activeCR, canCreateCR, registerMetadata, setActiveChangeRequestID]);
+
+  return (
+    <TabContentsWithActions
+      actions={
+        <>
+          Acting as {stakeholder
+            ? <>stakeholder: {registerStakeholderPlain(stakeholder)}</>
+            : <>non-stakeholder</>}
+        </>
+      }
+      main={
+        <GriddishContainer>
+          <HomeBlock
+            View={MetaSummary}
+            props={registerMetadata
+              ? { register: registerMetadata, stakeholder }
+              : registerMetadata}
+            error={registerMetadata === null ? "Failed to load register metadata" : undefined}
+            actions={useMemo(() => [{
+              text: "View or edit register metadata",
+              onClick: () => spawnTab(Protocols.REGISTER_META),
+              icon: "properties",
+            }], [spawnTab])}
+          />
+          {proposalBlock}
+          {customActions.length > 0
+            ? <HomeBlock View={() => <></>} props={{}} actions={customActions} />
+            : null}
+        </GriddishContainer>
+      }
+    />
   );
-
-  const intro = <Callout intent="primary" css={css`text-align: left;`}>
-    {stakeholder
-      ? <>You can create proposals as {registerStakeholderPlain(stakeholder)}.</>
-      : offline
-        ? <>
-            Because this repository is offline (no remote configured),
-            and remote username is currently required for proposal,
-            you cannot create proposals.</>
-        : <>
-            Since your remote username is not in the list of stakeholders,
-            you cannot create proposals currently.
-          </>}
-  </Callout>
-
-  const greeting = registerMetadata
-    ? <NonIdealState
-        title={`Welcome to ${registerMetadata.name}`}
-        description={<>
-          {intro}
-          {menu}
-        </>}
-      />
-    : registerMetadata === undefined
-      ? <NonIdealState
-          icon={<Spinner />}
-          description="Loading register information…"
-        />
-      : <NonIdealState
-          icon="heart-broken"
-          title="Register metadata is missing or invalid."
-          description={<>
-            {menu}
-          </>}
-        />;
-
-  return greeting;
 }
 
 export default RegisterHome;
+
+
+interface HomeBlockProps<P extends Record<string, any>> {
+  View: React.VoidFunctionComponent<P>,
+  props: P | null | undefined,
+  error?: string | JSX.Element,
+  actions?: MenuItemProps[],
+}
+function HomeBlock<P extends Record<string, any>>(
+  { View, props, error, actions }: HomeBlockProps<P>
+) {
+  return (
+    <Card css={css`padding: 11px; border-radius: 5px;`}>
+      {props
+        ? <View {...props} />
+        : props === undefined
+          ? <NonIdealState icon={<Spinner />} />
+          : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
+      {actions
+        ? <Menu>
+            {actions.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
+          </Menu>
+        : null}
+    </Card>
+  );
+}
