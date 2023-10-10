@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import update, { Spec } from 'immutability-helper';
+import update, { type Spec } from 'immutability-helper';
 import React from 'react';
 import { jsx, css } from '@emotion/react';
 import styled from '@emotion/styled';
