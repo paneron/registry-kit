@@ -41,6 +41,7 @@ const DUMMY_PARTY: Register["stakeholders"][number]["parties"][number] = {
   name: '',
   contacts: [DUMMY_CONTACT],
 };
+
 const DUMMY_STAKEHOLDER: Register["stakeholders"][number] = {
   role: StakeholderRole.Submitter,
   name: '',
@@ -74,12 +75,14 @@ const RegisterMetaForm: React.FC<{
   }
 
   const stakeholders = value.stakeholders ?? [];
+
   function makeStakeholderChangeHandler<T extends HTMLInputElement | HTMLSelectElement>(
     idx: number,
     func: (val: string) => Spec<typeof value["stakeholders"][number]>,
   ) {
     return makeFormEventHandler<T>(val => ({ stakeholders: { [idx]: func(val) } }));
   }
+
   function handleStakeholderAdd() {
     onChange!({ ...value, stakeholders: [ ...stakeholders, DUMMY_STAKEHOLDER ] });
   }
