@@ -6,8 +6,9 @@ import format from 'date-fns/format';
 import React, { memo, useContext } from 'react';
 import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
-import { FormGroup, FormGroupProps, Colors } from '@blueprintjs/core';
+import { Card, FormGroup, Classes, type FormGroupProps, H2, H4, Button, ButtonGroup, type ButtonProps, Tag, type TagProps, Colors } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import HelpTooltip, { type HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import type { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 export { GenericRelatedItemView } from './GenericRelatedItemView';
 
@@ -24,22 +25,6 @@ export function maybeEllipsizeString(
     ? `${str.slice(0, maxLength)}…`
     : str;
 }
-
-
-export const GriddishContainer: React.FC<{ className?: string }> =
-function ({ className, children }) {
-  return (
-    <div css={css`
-        display: flex;
-        flex-flow: row wrap;
-        align-content: flex-start;
-        align-items: flex-start;
-        gap: 10px;
-    `} className={className}>
-      {children}
-    </div>
-  );
-};
 
 
 export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
@@ -140,4 +125,145 @@ export const TabContentsWithActions: React.FC<{
       </div>
     </div>
   );
+};
+
+
+export type ClassificationEntry = TagProps & { tooltip?: HelpTooltipProps };
+export interface TabContentsWithHeaderProps {
+  title: JSX.Element | string
+  smallTitle?: boolean
+  classification?: ClassificationEntry[]
+  actions?: (ButtonProps | ButtonProps[])[]
+  tooltip?: HelpTooltipProps
+  className?: string
+
+  /**
+   * CSS to apply to child contents wrapper div.
+   *
+   * If 'card-grid', children would be expected to be cards
+   * (e.g., `FormGroupAsCardInGrid` or `CardInGrid`)
+   *
+   * 'card-grid' implies 'scrollable'.
+   */
+  layout?: undefined | 'card-grid' | 'scrollable'
 }
+export const TabContentsWithHeader: React.FC<TabContentsWithHeaderProps> =
+function ({ title, smallTitle, classification, actions, className, layout, children }) {
+  return (
+    <div css={css`
+      position: absolute; inset: 0;
+      display: flex; flex-flow: column nowrap;
+    `} className={className}>
+      <div css={css`margin: 10px 10px 0 10px;`}>
+        {smallTitle
+          ? <H4>{title}</H4>
+          : <H2>{title}</H2>}
+      </div>
+      {classification
+        ? <div css={css`flex: 0; padding: 10px; ${actions ? 'padding-bottom: 0;' : ''} display: flex; flex-flow: row wrap; gap: 10px;`}>
+            {classification.map(p =>
+              <Tag
+                {...p}
+                rightIcon={p.tooltip
+                  ? <HelpTooltip {...p.tooltip} />
+                  : undefined}
+              />
+            )}
+          </div>
+        : null}
+      {actions
+        ? <div css={css`flex: 0; padding: 10px; display: flex; flex-flow: row wrap; gap: 10px;`}>
+            {actions.map(props => {
+              if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
+                return (
+                  <ButtonGroup>
+                    {(props as ButtonProps[]).map(p => <Button {...p} />)}
+                  </ButtonGroup>
+                );
+              } else {
+                return <Button {...(props as ButtonProps)} />;
+              }
+            })}
+          </div>
+        : null}
+      <div css={css`
+        position: relative;
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+
+        ${layout === undefined
+          ? `> :only-child { position: absolute; inset: 0 }`
+          : ''}
+
+        ${layout === 'scrollable' || layout === 'card-grid'
+          ? `
+              background: ${Colors.GRAY5};
+              .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
+            `
+          : ''}
+
+        ${layout === 'card-grid'
+          ? `
+              display: flex;
+              flex-flow: row wrap;
+              align-content: flex-start;
+              align-items: flex-start;
+              gap: 10px;
+            `
+          : ''
+        }
+      `}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+
+export const CardInGrid: React.FC<Record<never, never>> = function ({ children }) {
+  return (
+    <Card
+        css={css`border-radius: 5px;`}
+        className={Classes.ELEVATION_3}>
+      {children}
+    </Card>
+  );
+};
+
+
+/** Useful in case of tab “card-grid” layout. */
+export const FormGroupAsCardInGrid: React.FC<FormGroupProps & { paddingPx?: number }> =
+function ({ paddingPx, ...props }) {
+  const paddingPx_ = paddingPx ?? 11;
+  return (
+    <FormGroup
+      {...props}
+      css={css`
+        margin: 0;
+
+        border-radius: 5px;
+        padding: ${paddingPx_}px;
+
+        > label.bp4-label {
+          font-weight: bold;
+          margin-bottom: ${paddingPx_}px;
+        }
+        > .bp4-form-content {
+          display: flex;
+          flex-flow: column nowrap;
+          gap: ${paddingPx_}px;
+
+          > .bp4-form-group {
+            margin: 0;
+          }
+        }
+
+        /* Note: these colors are picked to work with some form widgets, date input widget specifically. */
+        background: ${Colors.WHITE};
+        .bp4-dark & { background: ${Colors.DARK_GRAY3}; }
+      `}
+      className={Classes.ELEVATION_3}
+    />
+  );
+};
