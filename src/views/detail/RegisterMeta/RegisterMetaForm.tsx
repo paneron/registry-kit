@@ -4,14 +4,10 @@
 import update, { type Spec } from 'immutability-helper';
 import React from 'react';
 import { jsx, css } from '@emotion/react';
-import styled from '@emotion/styled';
 import {
-  FormGroupProps,
-  FormGroup as BaseFormGroup,
-  Classes,
-  Colors,
   ControlGroup,
   InputGroup,
+  FormGroup,
   TextArea,
   HTMLTable,
   HTMLSelect,
@@ -20,7 +16,7 @@ import {
 } from '@blueprintjs/core';
 import { DatePicker, TimePrecision } from '@blueprintjs/datetime';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
-import { GriddishContainer } from '../../../views/util'; 
+import { FormGroupAsCardInGrid } from '../../../views/util'; 
 import type { Register, RegisterStakeholder, Locale } from '../../../types';
 import { isStakeholderRole } from '../../../types';
 import { STAKEHOLDER_ROLES, StakeholderRole } from '../../../types/stakeholder';
@@ -55,6 +51,8 @@ const RegisterMetaForm: React.FC<{
   onChange?: (newMeta: Register) => void;
   className?: string;
 }> = function ({ value, onChange, className }) {
+
+  console.debug("Rendering RegisterMetaForm");
 
   function handleOperatingLanguageChange(fieldName: keyof Omit<Locale, 'characterEncoding'>) {
     return (evt: React.FormEvent<HTMLInputElement>) => {
@@ -91,9 +89,9 @@ const RegisterMetaForm: React.FC<{
   }
 
   return (
-    <GriddishContainer className={className}>
+    <>
 
-      <SuperFormGroup label="Basics:">
+      <FormGroupAsCardInGrid label="Basics:" paddingPx={PADDING_PX}>
         <FormGroup label="Name:">
           <InputGroup
             fill
@@ -141,9 +139,13 @@ const RegisterMetaForm: React.FC<{
               onChange={handleOperatingLanguageChange('languageCode')} />
           </ControlGroup>
         </FormGroup>
-      </SuperFormGroup>
+      </FormGroupAsCardInGrid>
 
-      <SuperFormGroup label="Version: " css={css`padding-bottom: 0;`}>
+      <FormGroupAsCardInGrid
+          label="Version: "
+          // Accommodation for date picker
+          css={css`padding-bottom: 0;`}
+          paddingPx={PADDING_PX}>
         <FormGroup label="Identifier: ">
           <InputGroup
             value={value.version?.id ?? ''}
@@ -181,10 +183,12 @@ const RegisterMetaForm: React.FC<{
             }
           />
         </FormGroup>
-      </SuperFormGroup>
+      </FormGroupAsCardInGrid>
 
-      <SuperFormGroup
+      <FormGroupAsCardInGrid
+          paddingPx={PADDING_PX}
           label="Stakeholders:"
+          css={css`min-width: max-content`}
           helperText={onChange
             ? <Button onClick={handleStakeholderAdd} icon="add">Add</Button>
             : null}>
@@ -300,38 +304,13 @@ const RegisterMetaForm: React.FC<{
               </tbody>
             </HTMLTable>
           : null}
-      </SuperFormGroup>
-    </GriddishContainer>
+      </FormGroupAsCardInGrid>
+    </>
   );
 };
 
 
 const PADDING_PX = 11;
-const FormGroup = styled(BaseFormGroup)`
-  margin: 0;
-`;
-const SuperFormGroup_ = styled(FormGroup)`
-  border-radius: 5px;
-  padding: ${PADDING_PX}px;
-
-  > label.bp4-label {
-    font-weight: bold;
-    margin-bottom: ${PADDING_PX}px;
-  }
-  > .bp4-form-content {
-    display: flex;
-    flex-flow: column nowrap;
-    gap: ${PADDING_PX}px;
-  }
-
-  /* Note: these colors are picked to work with date input widget specifically. */
-  background: ${Colors.WHITE};
-  .bp4-dark & { background: ${Colors.DARK_GRAY3}; }
-`;
-
-const SuperFormGroup: React.FC<FormGroupProps> = function (props) {
-  return <SuperFormGroup_ {...props} className={Classes.ELEVATION_3} />
-}
 
 
 export default RegisterMetaForm;
