@@ -3,13 +3,13 @@
 
 import React, { useState, useContext } from 'react';
 import { jsx } from '@emotion/react';
-import { Button, ButtonGroup, NonIdealState, Spinner } from '@blueprintjs/core';
+import { NonIdealState, Spinner } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { BrowserCtx } from '../../BrowserCtx';
 import { isRegisterMetadata, type Register } from '../../../types';
 import { isOwner } from '../../../types/stakeholder';
 import { REGISTER_METADATA_FILENAME } from '../../../common';
-import { TabContentsWithActions } from '../../util';
+import { TabContentsWithHeader } from '../../util';
 import RegisterMetaForm from './RegisterMetaForm';
 
 
@@ -52,31 +52,27 @@ const RegisterMeta: React.FC<Record<never, never>> = function () {
 
   if (registerMetadata) {
     return (
-      <TabContentsWithActions
-        actions={<>
-          <ButtonGroup>
-            <Button
-                onClick={handleSave}
-                disabled={!didChange || !canChange}
-                intent={didChange && canChange ? "primary" : undefined}>
-              Save
-            </Button>
-            <Button
-                onClick={handleClear}
-                disabled={!didChange || !canChange}>
-              Clear changes
-            </Button>
-          </ButtonGroup>
-        </>}
-        main={
-          <RegisterMetaForm
-            value={editedMetadata ?? registerMetadata}
-            onChange={(updateObjects && stakeholderCanEdit)
-              ? setEditedMetadata
-              : undefined}
-          />
-        }
-      />
+      <TabContentsWithHeader
+        title="Register metadata"
+        layout="card-grid"
+        actions={[[{
+          onClick: handleSave,
+          disabled: !didChange || !canChange,
+          intent: didChange && canChange ? "primary" : undefined,
+          children: "Save",
+        }, {
+          onClick: handleClear,
+          disabled: !didChange || !canChange,
+          children: "Clear changes",
+        }]]}
+      >
+        <RegisterMetaForm
+          value={editedMetadata ?? registerMetadata}
+          onChange={(updateObjects && stakeholderCanEdit)
+            ? setEditedMetadata
+            : undefined}
+        />
+      </TabContentsWithHeader>
     );
   } else if (registerMetadata === undefined) {
     return <NonIdealState icon={<Spinner />} />;
