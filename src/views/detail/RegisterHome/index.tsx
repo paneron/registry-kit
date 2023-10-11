@@ -3,10 +3,9 @@
 
 import React, { useMemo, useContext } from 'react';
 //import { Helmet } from 'react-helmet';
-import { jsx, css } from '@emotion/react';
+import { jsx } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { Card, Menu, MenuItem, type MenuItemProps, NonIdealState, Spinner } from '@blueprintjs/core';
-import { registerStakeholderPlain } from '../../RegisterStakeholder';
+import { Menu, MenuItem, type MenuItemProps, NonIdealState, Spinner } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
@@ -15,9 +14,8 @@ import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../..
 import { isImportableCR } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
 import { crIDToCRPath } from '../../itemPathUtils';
-import { GriddishContainer } from '../../../views/util'; 
 import MetaSummary from './MetaSummary';
-import { TabContentsWithActions } from '../../util';
+import { TabContentsWithHeader, CardInGrid } from '../../util';
 import { CurrentProposal, NewProposal } from './Proposal';
 
 
@@ -205,35 +203,27 @@ function () {
   }, [stakeholder, activeCR, canCreateCR, registerMetadata, setActiveChangeRequestID]);
 
   return (
-    <TabContentsWithActions
-      actions={
-        <>
-          Acting as {stakeholder
-            ? <>stakeholder: {registerStakeholderPlain(stakeholder)}</>
-            : <>non-stakeholder</>}
-        </>
-      }
-      main={
-        <GriddishContainer>
-          <HomeBlock
-            View={MetaSummary}
-            props={registerMetadata
-              ? { register: registerMetadata, stakeholder }
-              : registerMetadata}
-            error={registerMetadata === null ? "Failed to load register metadata" : undefined}
-            actions={useMemo(() => [{
-              text: "View or edit register metadata",
-              onClick: () => spawnTab(Protocols.REGISTER_META),
-              icon: "properties",
-            }], [spawnTab])}
-          />
-          {proposalBlock}
-          {customActions.length > 0
-            ? <HomeBlock View={() => <></>} props={{}} actions={customActions} />
-            : null}
-        </GriddishContainer>
-      }
-    />
+    <TabContentsWithHeader
+        title={registerMetadata?.name ?? 'Register'}
+        layout="card-grid"
+    >
+      <HomeBlock
+        View={MetaSummary}
+        props={registerMetadata
+          ? { register: registerMetadata, stakeholder }
+          : registerMetadata}
+        error={registerMetadata === null ? "Failed to load register metadata" : undefined}
+        actions={useMemo(() => [{
+          text: "View or edit register metadata",
+          onClick: () => spawnTab(Protocols.REGISTER_META),
+          icon: "properties",
+        }], [spawnTab])}
+      />
+      {proposalBlock}
+      {customActions.length > 0
+        ? <HomeBlock View={() => <></>} props={{}} actions={customActions} />
+        : null}
+    </TabContentsWithHeader>
   );
 }
 
@@ -250,7 +240,7 @@ function HomeBlock<P extends Record<string, any>>(
   { View, props, error, actions }: HomeBlockProps<P>
 ) {
   return (
-    <Card css={css`padding: 11px; border-radius: 5px;`}>
+    <CardInGrid>
       {props
         ? <View {...props} />
         : props === undefined
@@ -261,6 +251,6 @@ function HomeBlock<P extends Record<string, any>>(
             {actions.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
           </Menu>
         : null}
-    </Card>
+    </CardInGrid>
   );
 }
