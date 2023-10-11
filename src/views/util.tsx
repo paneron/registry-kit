@@ -139,5 +139,5 @@ export const TabContentsWithActions: React.FC<{
         {main}
       </div>
     </div>
-  )
+  );
 }
