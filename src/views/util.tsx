@@ -4,7 +4,7 @@
 //import log from 'electron-log';
 import format from 'date-fns/format';
 import React, { memo, useContext } from 'react';
-import { Helmet, HelmetProps } from 'react-helmet';
+import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
 import { FormGroup, FormGroupProps, Colors } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
