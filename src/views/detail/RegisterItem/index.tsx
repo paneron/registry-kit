@@ -49,8 +49,8 @@ import { RelatedItems } from './RelatedItems';
  * NOTE: while generally intended as tab content handler,
  * is also reused within change request view.
  */
-const MaybeItemDetail: React.VoidFunctionComponent<{ uri: string, inProposalWithID?: string }> =
-memo(function ({ uri, inProposalWithID }) {
+const MaybeItemDetail: React.VoidFunctionComponent<{ uri: string }> =
+memo(function ({ uri }) {
   //const { value: itemData } = useSingleRegisterItemData(ref);
   const { jumpTo, subregisters, useRegisterItemData } = useContext(BrowserCtx);
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
@@ -83,7 +83,6 @@ memo(function ({ uri, inProposalWithID }) {
       item={itemData}
       itemRef={itemRef}
       itemClass={itemClass}
-      inProposalWithID={inProposalWithID}
     />;
 
   } else if (itemResponse.isUpdating) {
