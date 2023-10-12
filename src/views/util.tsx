@@ -147,21 +147,30 @@ export interface TabContentsWithHeaderProps {
    */
   layout?: undefined | 'card-grid' | 'scrollable'
 }
+const paddingPx = 11;
 export const TabContentsWithHeader: React.FC<TabContentsWithHeaderProps> =
 function ({ title, smallTitle, classification, actions, className, layout, children }) {
+  const hasActions = (actions ?? []).length > 0;
+  const hasClassification = (classification ?? []).length > 0;
   return (
     <div css={css`
       position: absolute; inset: 0;
+      padding-top: ${paddingPx}px;
       display: flex; flex-flow: column nowrap;
+      gap: ${paddingPx}px;
     `} className={className}>
-      <div css={css`margin: 10px 10px 0 10px;`}>
-        {smallTitle
-          ? <H4>{title}</H4>
-          : <H2>{title}</H2>}
-      </div>
-      {classification
-        ? <div css={css`flex: 0; padding: 10px; ${actions ? 'padding-bottom: 0;' : ''} display: flex; flex-flow: row wrap; gap: 10px;`}>
-            {classification.map(p =>
+      {smallTitle
+        ? <H4 css={css`margin: 0 ${paddingPx}px;`}>{title}</H4>
+        : <H2 css={css`margin: 0 ${paddingPx}px;`}>{title}</H2>}
+      {hasClassification
+        ? <div css={css`
+            flex: 0;
+            margin: 0 ${paddingPx}px;
+            display: flex;
+            flex-flow: row wrap;
+            gap: ${paddingPx}px;
+          `}>
+            {classification!.map(p =>
               <Tag
                 {...p}
                 rightIcon={p.tooltip
@@ -171,9 +180,9 @@ function ({ title, smallTitle, classification, actions, className, layout, child
             )}
           </div>
         : null}
-      {actions
-        ? <div css={css`flex: 0; padding: 10px; display: flex; flex-flow: row wrap; gap: 10px;`}>
-            {actions.map(props => {
+      {hasActions
+        ? <div css={css`margin: 0 ${paddingPx}px; flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;`}>
+            {actions!.map(props => {
               if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
                 return (
                   <ButtonGroup>
@@ -189,12 +198,11 @@ function ({ title, smallTitle, classification, actions, className, layout, child
       <div css={css`
         position: relative;
         flex: 1;
-        padding: 10px;
         overflow-y: auto;
 
         ${layout === undefined
           ? `> :only-child { position: absolute; inset: 0 }`
-          : ''}
+          : 'padding: 10px;'}
 
         ${layout === 'scrollable' || layout === 'card-grid'
           ? `
