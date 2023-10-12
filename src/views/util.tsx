@@ -219,8 +219,7 @@ function ({ title, smallTitle, classification, actions, className, layout, child
               align-items: flex-start;
               gap: 10px;
             `
-          : ''
-        }
+          : ''}
       `}>
         {children}
       </div>
