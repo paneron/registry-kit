@@ -6,7 +6,17 @@ import format from 'date-fns/format';
 import React, { memo, useContext } from 'react';
 import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
-import { Card, FormGroup, Classes, type FormGroupProps, H2, H4, Button, ButtonGroup, type ButtonProps, Tag, type TagProps, Colors } from '@blueprintjs/core';
+import {
+  Card,
+  Classes,
+  FormGroup, type FormGroupProps,
+  H2, H4,
+  Button as BaseButton, type ButtonProps,
+  ButtonGroup,
+  Tag, type TagProps,
+  Colors,
+} from '@blueprintjs/core';
+import { Popover2 as Popover } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip, { type HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import type { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
@@ -133,7 +143,7 @@ export interface TabContentsWithHeaderProps {
   title: JSX.Element | string
   smallTitle?: boolean
   classification?: ClassificationEntry[]
-  actions?: (ButtonProps | ButtonProps[])[]
+  actions?: (ActionProps | ActionProps[])[]
   tooltip?: HelpTooltipProps
   className?: string
 
@@ -148,14 +158,33 @@ export interface TabContentsWithHeaderProps {
   layout?: undefined | 'card-grid' | 'scrollable'
 }
 const paddingPx = 11;
+function findEnabledActions
+<T extends ButtonProps | ButtonProps[] = ButtonProps | ButtonProps[]>
+(props: T[]): ButtonProps[] {
+  return props.map(props =>
+    (props as ButtonProps[]).length !== undefined
+      ? (props as ButtonProps[]).filter(p => !p.disabled)
+      : !(props as ButtonProps).disabled
+        ? props
+        : []
+  ).flat();
+}
 export const TabContentsWithHeader: React.FC<TabContentsWithHeaderProps> =
 function ({ title, smallTitle, classification, actions, className, layout, children }) {
-  const hasActions = (actions ?? []).length > 0;
   const hasClassification = (classification ?? []).length > 0;
+
+  const enabledActions = actions ? findEnabledActions(actions) : [];
+  const hasActions = enabledActions.length > 0;
+
+  // if (enabledActions.length === 1 && !enabledActions[0].intent) {
+  //   enabledActions[0].intent = 'primary';
+  // }
+
   return (
     <div css={css`
       position: absolute; inset: 0;
       padding-top: ${paddingPx}px;
+      ${hasActions ? `padding-bottom: ${paddingPx}px;` : ''}
       display: flex; flex-flow: column nowrap;
       gap: ${paddingPx}px;
     `} className={className}>
@@ -178,21 +207,6 @@ function ({ title, smallTitle, classification, actions, className, layout, child
                   : undefined}
               />
             )}
-          </div>
-        : null}
-      {hasActions
-        ? <div css={css`margin: 0 ${paddingPx}px; flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;`}>
-            {actions!.map(props => {
-              if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
-                return (
-                  <ButtonGroup>
-                    {(props as ButtonProps[]).map(p => <Button {...p} />)}
-                  </ButtonGroup>
-                );
-              } else {
-                return <Button {...(props as ButtonProps)} />;
-              }
-            })}
           </div>
         : null}
       <div css={css`
@@ -223,11 +237,49 @@ function ({ title, smallTitle, classification, actions, className, layout, child
       `}>
         {children}
       </div>
+
+      {hasActions
+        ? <div css={css`margin: 0 ${paddingPx}px; flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;`}>
+            {actions!.map(props => {
+              if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
+                return (
+                  <ButtonGroup>
+                    {(props as ButtonProps[]).map(p =>
+                      <Action {...p} />
+                    )}
+                  </ButtonGroup>
+                );
+              } else {
+                return <Action {...(props as ButtonProps)} />;
+              }
+            })}
+          </div>
+        : null}
     </div>
   );
 };
 
 
+export type ActionProps = ButtonProps & { popup?: JSX.Element };
+/** Mostly a button, but with an optional popup. */
+const Action: React.FC<ActionProps> = function ({ popup, ...props }) {
+  const btn = <BaseButton
+    {...props}
+    intent={props.disabled ? undefined : props.intent}
+    onClick={props.disabled ? undefined : props.onClick}
+    disabled={props.active ? false : props.disabled}
+  />;
+
+  if (popup && !props.disabled) {
+    return (
+      <Popover content={popup} placement="top">
+        {btn}
+      </Popover>
+    );
+  } else {
+    return btn;
+  }
+};
 export const CardInGrid: React.FC<Record<never, never>> = function ({ children }) {
   return (
     <Card
