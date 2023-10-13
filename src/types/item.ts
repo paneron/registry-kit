@@ -66,7 +66,7 @@ interface ExternalSource extends AbstractItemSource {
 }
 type RegisterItemSource = PaneronRegisterItemSource | ExternalSource
 
-export interface RegisterItem<P extends Payload> {
+export interface RegisterItem<P extends Payload = Payload> {
   id: string // UUID
 
   status: ItemStatus
