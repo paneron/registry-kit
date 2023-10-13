@@ -3,21 +3,15 @@
 
 import React, { useContext, useState, useMemo, memo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
-import styled from '@emotion/styled';
 import {
-  Button, ButtonGroup,
+  Button, type ButtonProps,
   Card,
   Classes,
-  FormGroup as BaseFormGroup,
-  ControlGroup,
-  InputGroup,
   NonIdealState,
   UL,
-  H5,
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { normalizeObject } from '@riboseinc/paneron-extension-kit/util';
-import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import useSingleRegisterItemData from '../../hooks/useSingleRegisterItemData';
 import useItemClassConfig from '../../hooks/useItemClassConfig';
@@ -35,7 +29,8 @@ import { BrowserCtx } from '../../BrowserCtx';
 import {
   RegisterHelmet as Helmet,
   maybeEllipsizeString,
-  TabContentsWithActions,
+  TabContentsWithHeader,
+  type TabContentsWithHeaderProps,
 } from '../../util';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
@@ -128,19 +123,21 @@ memo(function ({ uri }) {
 
 
 export const ItemDetail: React.VoidFunctionComponent<{
-  item: RegisterItem<any>
+  item: RegisterItem
   itemRef: InternalItemReference
   itemClass: ItemClassConfiguration<any>
   className?: string
-  inProposalWithID?: string
-}> = memo(function ({ item, itemRef, itemClass, className, inProposalWithID }) {
+  compactHeader?: boolean
+}> = memo(function ({ item, itemRef, itemClass, className, compactHeader }) {
   const { subregisters, activeChangeRequestID: globallyActiveCRID } = useContext(BrowserCtx);
 
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
   const { updateObjects, makeRandomID, performOperation, isBusy } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
 
-  const [ editedClarification, setEditedClarification ] = useState<RegisterItem<any>["data"] | null>(null);
+  const [ editedItemData, setEditedItemData ] = useState<RegisterItem["data"] | null>(null);
+
+  const itemDataHasChanges = JSON.stringify(editedItemData) !== JSON.stringify(item.data);
 
   //const [ diffMode, setDiffMode ] = useState<boolean>(false);
   // TODO: Implement diff mode
@@ -148,9 +145,21 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   const itemPath = itemRefToItemPath(itemRef);
 
+  /** Proposal for the current item. */
   const proposal = ((activeCR && activeCR.items[itemPath])
     ? activeCR.items[itemPath]
     : null) ?? null;
+
+  // It’s superseded (whether in current proposal or not)
+  const isSuperseded = item.status === 'superseded';
+  // Item is valid, proposal is editable, and no change to this item is proposed yet
+  const canBeSuperseded = (activeCRIsEditable && !proposal && !editedItemData && item.status === 'valid');
+  // This item is being superseded in active proposal
+  // XXX: May be redundant with `isSuperseded`?
+  const isBeingSuperseded = (proposal?.type === 'amendment' && proposal.amendmentType === 'supersession');
+
+  // Editing is possible for additions and clarifications.
+  //const itemDataCanBeEdited = activeCRIsEditable && proposal && proposal.type !== 'amendment';
 
   const handleClearProposal = () => performProposalOperation('clearing draft proposal', null);
   const handleRetire = () => performProposalOperation('proposing retirement of an item', {
@@ -170,13 +179,13 @@ export const ItemDetail: React.VoidFunctionComponent<{
     await performProposalOperation('proposing clarification', {
       type: 'clarification',
     });
-    setEditedClarification(null);
+    setEditedItemData(null); // XXX: Redundant?
   };
   const handleEditAddition = async () => {
     await performProposalOperation('editing proposed addition', {
       type: 'addition',
     });
-    setEditedClarification(null);
+    setEditedItemData(null); // XXX: Redundant?
   };
 
   async function performProposalOperation(summary: string, proposal: ChangeProposal | null) {
@@ -190,7 +199,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
     if (!activeCRIsEditable || !updateObjects || !isRegisterItem(item)) {
       throw new Error("Proposal isn’t editable")
     }
-    if (proposal && proposal?.type !== 'amendment' && !editedClarification) {
+    if (proposal && proposal?.type !== 'amendment' && !editedItemData) {
       throw new Error("Missing item data");
     }
     await updateObjects({
@@ -199,16 +208,18 @@ export const ItemDetail: React.VoidFunctionComponent<{
         // TODO: We are sure it’s editable already, but casting should be avoided
         activeCR as any,
         { [itemPath]: proposal },
-        ((proposal && proposal?.type !== 'amendment') && editedClarification)
-          ? { [itemPath]: { ...item, data: editedClarification } }
+        ((proposal && proposal?.type !== 'amendment') && editedItemData)
+          ? { [itemPath]: { ...item, data: editedItemData } }
           : {},
       ),
       // We need this because updateCRObjectChangeset
       // omits oldValue for item data payloads.
       _dangerouslySkipValidation: true,
     });
+    setEditedItemData(null);
+    setIsEditingProposal(false);
   }, [
-    editedClarification,
+    editedItemData,
     activeCRIsEditable,
     itemPath,
     item,
@@ -218,7 +229,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   // TODO: Very similar to `handleAdd()` in Browse sidebar menu; refactor?
   const handleProposeLikeThis = useCallback(async function _handleProposeLikeThis(): Promise<void> {
-    if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR || !itemClass || !isRegisterItem(item)) {
+    if (!updateObjects || !makeRandomID || !activeCRIsEditable || !activeCR) {
       throw new Error("Unable to create item: likely current proposal is not editable or dataset is read-only");
     }
     const { classID, subregisterID } = itemRef;
@@ -256,15 +267,17 @@ export const ItemDetail: React.VoidFunctionComponent<{
     Object.entries(activeCR?.items ?? {}).flat().map(i => JSON.stringify(i)).toString(),
     item ? JSON.stringify(normalizeObject(item)) : item,
   ]);
-  let details: JSX.Element;
 
-  if (editedClarification !== null && activeCRIsEditable) {
+  const ListItemView = itemClass.views.listItemView;
+
+  let details: JSX.Element;
+  if (editedItemData !== null && activeCRIsEditable) {
     const EditView = itemClass.views.editView;
     details = (
       <EditView
-        itemData={editedClarification}
+        itemData={editedItemData}
         itemRef={itemRef}
-        onChange={!isBusy ? setEditedClarification : undefined}
+        onChange={!isBusy ? setEditedItemData : undefined}
       />
     );
 
@@ -280,162 +293,215 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   console.debug("Rendering RegisterItem view");
 
-  //const canAmend = activeCR && itemData.status === 'valid';
-  const itemStatus =
-    <FormGroup inline label="status:" css={css`margin: 0;`}>
-      <ControlGroup fill>
-        <InputGroup
-          value={proposal?.type === 'amendment'
-            ? `${proposal.amendmentType} proposed`
-            : proposal?.type === 'addition'
-              ? "addition proposed"
-              : item.status}
-          intent={proposal?.type === 'amendment'
-            ? 'warning'
-            : proposal?.type === 'addition'
-              ? 'primary'
-              : item.status === 'valid'
-                ? 'success'
-                : undefined}
-          leftIcon={proposal && (proposal.type === 'amendment' || proposal.type === 'addition')
-            ? 'asterisk'
-            : item.status === 'valid'
-              ? 'tick'
-              : item.status === 'invalid'
-                ? 'ban-circle'
-                : 'warning-sign'}
-          readOnly
-        />
-        {activeCRIsEditable && !editedClarification
-          ? <>
-              {proposal?.type === 'addition'
-                ? <Button
-                      intent="warning"
-                      title="Remove the proposal to add this new item."
-                      disabled={isBusy}
-                      onClick={handleClearProposal}>
-                    Remove proposed addition
-                  </Button>
-                : null}
-              {proposal?.type === 'amendment'
-                ? <Button
-                      intent="warning"
-                      title={`Remove amendment (${proposal.amendmentType}) for this item from current proposal.`}
-                      disabled={isBusy}
-                      onClick={handleClearProposal}>
-                    Clear proposed amendment
-                  </Button>
-                : !proposal && item.status === 'valid'
-                  ? <ButtonGroup>
-                      <Button
-                          intent="primary"
-                          disabled={isBusy}
-                          onClick={handleRetire}>
-                        Retire
-                      </Button>
-                      <Button
-                          intent="primary"
-                          disabled={isBusy}
-                          onClick={handleInvalidate}>
-                        Invalidate
-                      </Button>
-                    </ButtonGroup>
-                  : null}
-            </>
+  const supersedingItemRefs =
+    proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
+      ? proposal.supersedingItemIDs.
+        map(id => ({
+          itemID: id,
+          // Superseding items are always of the same class
+          classID: itemClass.meta.id,
+          // Superseding items are always in the same subregister
+          subregisterID: itemRef.subregisterID,
+        }))
+      : (item.supersededBy ?? []);
+  const supersedingItemRefsCacheKey = supersedingItemRefs.map(i => JSON.stringify(i)).toString();
+  const supersedingItems = useMemo(() => {
+    return (
+      <RelatedItems
+        availableClassIDs={[itemClass.meta.id]}
+        itemRefs={supersedingItemRefs}
+        onChange={!isBusy && (isBeingSuperseded || canBeSuperseded)
+          ? (items) => items.length > 0
+              ? handleSupersedeWith(items.map(ref => ref.itemID))
+              : handleClearProposal()
+          : undefined}
+      />
+    );
+  }, [
+    isBusy, handleSetProposal, performOperation,
+    supersedingItemRefsCacheKey,
+    itemClass.meta.id,
+  ]);
+
+  const classification: TabContentsWithHeaderProps['classification'] = useMemo(() => {
+    const classification: TabContentsWithHeaderProps['classification'] = [{
+      icon: 'document',
+      children: <>
+        Register item
+        {itemRef.subregisterID
+          ? <span title="Subregister"> in {subregisters?.[itemRef.subregisterID]?.title ?? itemRef.subregisterID}</span>
           : null}
-      </ControlGroup>
-    </FormGroup>;
+      </>,
+      tooltip: {
+        icon: 'info-sign',
+        content: <>
+          <UL css={css`margin: 0;`}>
+            <li>Class ID: {itemClass.meta.id}</li>
+            <li>Subregister ID: {itemRef.subregisterID ?? 'N/A'}</li>
+            <li>UUID: {itemRef.itemID}</li>
+          </UL>
+        </>,
+      },
+    }, {
+      children: itemClass.meta.title,
+      tooltip: {
+        icon: 'info-sign',
+        content: <>
+          {itemClass.meta.description ?? "No description is provided for this register item class."}
+        </>,
+      },
+    }];
 
-  // It’s superseded (whether in current proposal or not)
-  const isSuperseded = item.status === 'superseded';
-  // Item is valid, proposal is editable, and no change to this item is proposed yet
-  const canBeSuperseded = (activeCRIsEditable && !proposal && !editedClarification && item.status === 'valid');
-  // This item is being superseded in active proposal
-  // XXX: May be redundant with `isSuperseded`?
-  const isBeingSuperseded = (proposal?.type === 'amendment' && proposal.amendmentType === 'supersession');
+    const supersedingItemsTooltip = {
+      icon: 'info-sign',
+      content: supersedingItems,
+    } as const;
 
-  const supersedingItems = isSuperseded || canBeSuperseded || isBeingSuperseded
-    ? <FormGroup inline label="superseded by: " css={css`margin: 0;`}>
-        <RelatedItems
-          availableClassIDs={[itemClass.meta.id]}
-          itemRefs={proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
-            ? proposal.supersedingItemIDs.
-              map(id => ({
-                itemID: id,
-                // Superseding items are always of the same class
-                classID: itemClass.meta.id,
-                // Superseding items are always in the same subregister
-                subregisterID: itemRef.subregisterID,
-              }))
-            : (item.supersededBy ?? [])}
-          onChange={!isBusy && activeCRIsEditable && (
-            (proposal?.type === 'amendment' && proposal.amendmentType === 'supersession') ||
-            (!proposal && item.status === 'valid'))
-            ? (items) => items.length > 0
-                ? handleSupersedeWith(items.map(ref => ref.itemID))
-                : handleClearProposal()
-            : undefined}
-        />
-      </FormGroup>
-    : null;
+    classification.push({
+      children: item.status,
+      intent: item.status === 'valid'
+        ? 'success'
+        : undefined,
+      icon: item.status === 'invalid'
+        ? 'ban-circle'
+        : item.status === 'retired'
+          ? 'warning-sign'
+          : 'tick',
+      tooltip: isSuperseded
+        ? supersedingItemsTooltip
+        : undefined,
+    });
 
-  const clarificationHasChanges = JSON.stringify(editedClarification) !== JSON.stringify(item.data);
+    if (proposal) {
+      classification.push({
+        children: proposal.type === 'amendment'
+          ? `${proposal.amendmentType} proposed`
+          : proposal.type === 'addition'
+            ? "addition proposed"
+            : proposal.type === 'clarification'
+              ? "clarification proposed"
+              : "(unknown proposal type)",
+        intent: proposal.type === 'amendment'
+          ? 'warning'
+          : proposal.type === 'addition' || proposal.type === 'clarification'
+            ? 'primary'
+            : undefined,
+        icon: 'asterisk',
+        tooltip: canBeSuperseded || isBeingSuperseded
+          ? supersedingItemsTooltip
+          : undefined,
+      });
+    }
 
-  const clarificationAction = (
-    (proposal && proposal?.type !== 'amendment')
-    || (activeCRIsEditable && !proposal && item.status === 'valid'))
-    ? <FormGroup inline label={`${proposal?.type ?? "clarification"}: `} css={css`margin: 0;`}>
-        {activeCRIsEditable
-          ? <ButtonGroup>
-              {editedClarification
-                ? <>
-                    <Button
-                        intent={clarificationHasChanges ? "primary" : undefined}
-                        // TODO(perf): this is expensive if renders are frequent…
-                        disabled={!clarificationHasChanges || isBusy}
-                        onClick={(!proposal || proposal?.type === 'clarification')
-                          ? handleClarify
-                          : handleEditAddition}>
-                      Save
-                    </Button>
-                    <Button onClick={() => setEditedClarification(null)}>Do not save</Button>
-                  </>
-                : <>
-                    <Button
-                        disabled={diffMode || isBusy}
-                        intent="primary"
-                        outlined
-                        onClick={() => setEditedClarification(item.data)}>
-                      {!proposal ? "Clarify" : "Edit"}
-                    </Button>
-                    {proposal?.type === 'clarification'
-                      ? <>
-                          <Button
-                              disabled={diffMode || isBusy || proposal?.type !== 'clarification'}
-                              intent="warning"
-                              onClick={handleClearProposal}>
-                            Clear
-                          </Button>
-                        </>
-                      : null}
-                  </>}
-            </ButtonGroup>
-          : <Button disabled>
-              {proposal?.type === 'clarification' ? "Clarified" : "Added"} in active proposal
-            </Button>}
-      </FormGroup>
-    : null;
+    return classification;
+  }, [
+    proposal?.type, item.status,
+    isSuperseded, canBeSuperseded, isBeingSuperseded,
+  ]);
 
-  const proposeLikeThis = activeCRIsEditable && !editedClarification
-    ? <Button
-          title="Propose a new item in current proposal, using this item as template."
-          icon='plus'
-          disabled={isBusy}
-          outlined
-          onClick={performOperation('duplicating item', handleProposeLikeThis)}>
-        Propose another like this
-      </Button>
-    : null;
+  const [ isEditingProposal, setIsEditingProposal ] = useState(false);
+  const actions = useMemo(() => {
+    const actions: TabContentsWithHeaderProps['actions'] = [];
+
+    const isEditingItemData = editedItemData !== null;
+    const itemHasProposal = proposal !== null;
+    //const canPropose = activeCRIsEditable && item.status === 'valid' && !isBusy;
+    const itemIsProposable = item.status === 'valid';
+
+    if (activeCRIsEditable) {
+      actions.push({
+        children: "Propose another item like this",
+        icon: 'duplicate',
+        disabled: isBusy,
+        onClick: performOperation(
+          'adding duplicate item to current propposal',
+          handleProposeLikeThis),
+        //title="Propose a new item in current proposal, using this item as template."
+      });
+
+      const saveEditedItemDataButton: ButtonProps = {
+        intent: 'primary',
+        disabled: isBusy || !itemDataHasChanges,
+        onClick: (!proposal || proposal.type === 'clarification')
+          ? handleClarify
+          : handleEditAddition,
+        children: "Save changes",
+      };
+
+      if (itemIsProposable) {
+        if (itemHasProposal) {
+          const proposeBtn: ButtonProps = {
+            children: `Edit the ${proposal.type === 'amendment' ? proposal.amendmentType : proposal.type} proposal for this item`,
+            icon: 'edit',
+            active: isEditingProposal,
+            disabled: isBusy,
+            onClick: () => {
+              if (isEditingProposal) {
+                setIsEditingProposal(false);
+                setEditedItemData(null);
+                if (proposal && proposal.type !== 'amendment') {
+                }
+              } else {
+                setIsEditingProposal(true);
+                if (proposal && proposal.type !== 'amendment') {
+                  setEditedItemData(item.data);
+                }
+              }
+            },
+          };
+          if (isEditingProposal) {
+            actions.push([proposeBtn, {
+              intent: 'warning',
+              disabled: isBusy,
+              onClick: handleClearProposal,
+              icon: 'trash',
+              children: `Remove proposal`,
+            }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
+          } else {
+            actions.push(proposeBtn);
+          }
+        } else {
+          const proposeBtn: ButtonProps = {
+            children: "Propose to change this item",
+            icon: 'lightbulb',
+            active: isEditingProposal,
+            disabled: isBusy,
+            onClick: () => setIsEditingProposal(v => !v),
+          };
+          if (isEditingProposal) {
+            const proposalGroup = [proposeBtn, {
+              disabled: isBusy || itemHasProposal,
+              onClick: handleRetire,
+              children: "Retire",
+            }, {
+              disabled: isBusy || itemHasProposal,
+              onClick: handleInvalidate,
+              children: "Invalidate",
+            }, {
+              disabled: isBusy || diffMode,
+              active: isEditingItemData,
+              onClick: () => setEditedItemData(d => d === null ? item.data : null),
+              children: "Clarify",
+            }];
+            if (isEditingItemData) {
+              proposalGroup.push(saveEditedItemDataButton);
+            }
+            actions.push(proposalGroup);
+          } else {
+            actions.push(proposeBtn);
+          }
+        }
+      }
+    }
+    // TODO: diff view
+
+    return actions;
+  }, [
+    isBusy, proposal?.type, proposal === null,
+    activeCRIsEditable, editedItemData === null, itemDataHasChanges,
+    isEditingProposal,
+    performOperation, handleSetProposal,
+  ]);
 
   // If there’s a CR context without active CR,
   // or active CR isn’t the same as the one in CR context,
@@ -455,42 +521,16 @@ export const ItemDetail: React.VoidFunctionComponent<{
     : `${itemClass.meta.title ?? 'register item'} #${item.id}`;
 
   return (
-    <TabContentsWithActions
-      actions={<>
-        <FormGroup
-            inline
-            labelInfo={<HelpTooltip
-              icon='info-sign'
-              content={<>
-                <H5>{itemClass.meta.title}</H5>
-                {itemClass.meta.description ?? "No description is provided for this register item class."}
-                <UL>
-                  <li>Class ID: {itemClass.meta.id}</li>
-                  <li>Subregister ID: {itemRef.subregisterID ?? 'N/A'}</li>
-                  <li>UUID: {itemRef.itemID}</li>
-                </UL>
-              </>}
-            />}
-            label={<>
-              <strong>{itemClass.meta.title}</strong>
-              {itemRef.subregisterID
-                ? <span title="Subregister"> in {subregisters?.[itemRef.subregisterID]?.title ?? itemRef.subregisterID}</span>
-                : null}
-            </>}
-            css={css`margin: 0; .bp4-form-content { display: flex; flex-flow: row wrap; gap: 10px; }`}>
-          {itemStatus}
-          {supersedingItems}
-          {clarificationAction}
-          {proposeLikeThis}
-        </FormGroup>
-      </>}
-      main={
-        <Card css={css`position: absolute; inset: ${inProposalWithID ? '0' : '10px'}; overflow-y: auto;`}>
-          <Helmet><title>{windowTitle}</title></Helmet>
-          {details}
-        </Card>
-      }
-    />
+    <TabContentsWithHeader
+      smallTitle={compactHeader}
+      title={<ListItemView itemRef={itemRef} itemData={item.data} />}
+      classification={compactHeader ? undefined : classification}
+      actions={actions}>
+      <Card css={css`position: absolute; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
+        <Helmet><title>{windowTitle}</title></Helmet>
+        {details}
+      </Card>
+    </TabContentsWithHeader>
   );
 });
 
@@ -515,11 +555,3 @@ export default {
   main: MaybeItemDetail,
   title: ItemTitle,
 };
-
-
-const FormGroup = styled(BaseFormGroup)`
-  margin: 0;
-  label.bp4-label {
-    white-space: nowrap;
-  }
-`;

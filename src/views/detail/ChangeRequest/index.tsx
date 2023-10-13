@@ -10,7 +10,6 @@ import {
   Colors,
   NonIdealState,
   Spinner,
-  H5,
   UL,
   Tag,
   Divider,
@@ -19,6 +18,7 @@ import {
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
+import { JSONStringifyNormalized } from '@riboseinc/paneron-extension-kit/util';
 import { BrowserCtx } from '../../BrowserCtx';
 import { crPathToCRID, crIDToCRPath } from '../../itemPathUtils';
 import {
@@ -30,7 +30,8 @@ import { type SomeCR, type Proposed, hadBeenProposed, isDisposed } from '../../.
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { Protocols } from '../../protocolRegistry';
 import {
-  TabContentsWithActions,
+  TabContentsWithHeader,
+  type TabContentsWithHeaderProps,
   RegisterHelmet as Helmet,
   maybeEllipsizeString,
   Datestamp,
@@ -144,162 +145,158 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
     crItemMemo,
   ]);
 
+  const classification = useMemo(() => {
+    const classification: TabContentsWithHeaderProps["classification"] = [];
+    classification.push({
+      icon: 'lightbulb',
+      children: "Proposal",
+      tooltip: {
+        icon: 'info-sign',
+        content: <UL css={css`margin: 0;`}><li>Proposal ID: {cr.id}</li></UL>,
+      },
+    });
+    classification.push({
+      children: cr.state?.replaceAll('-', ' ') || 'N/A',
+      tooltip: {
+        icon: 'history',
+        content: <UL css={css`margin: 0;`}>
+          <li>Edited: <Datestamp date={cr.timeEdited} /></li>
+          <li>Proposed: {hadBeenProposed(cr) ? <Datestamp date={cr.timeProposed} /> : 'not yet'}</li>
+          <li>Disposed: {isDisposed(cr) ? <Datestamp date={cr.timeDisposed} /> : 'not yet'}</li>
+        </UL>,
+      },
+      intent: cr.state === 'accepted'
+        ? 'success'
+        : cr.state === 'returned-for-clarification'
+          ? 'warning'
+          : cr.state === 'withdrawn' || cr.state === 'rejected'
+            ? 'danger'
+            : cr.state === 'draft'
+              ? undefined
+              : 'primary',
+    });
+    return classification;
+  }, [JSONStringifyNormalized(cr)]);
+
+  const actions = useMemo(() => {
+    const actions: TabContentsWithHeaderProps["actions"] = [];
+    const handleChangeActiveStatus = !anotherIsActive && setActiveChangeRequestID
+      ? ((active: boolean) => active
+          ? setActiveChangeRequestID?.(cr.id)
+          : setActiveChangeRequestID?.(null)
+        )
+      : undefined;
+    //const htmlTitle = anotherIsActive
+    //  ? "You are in another proposal so you can’t enter this one. "
+    //  : canEdit && !isActive
+    //    ? "Enter proposal to preview or add to proposed changes. "
+    //    : !isActive
+    //      ? "Enter proposal to preview the register as proposed."
+    //      : "You’re previewing the register with this proposal applied."
+    if (handleChangeActiveStatus && isActive) {
+      actions.push({
+        children: "Exit proposal",
+        intent: 'warning',
+        disabled: !handleChangeActiveStatus,
+        onClick: () => handleChangeActiveStatus?.(false)
+        //title: htmlTitle,
+      });
+    } else {
+      actions.push({
+        children: "Work on this proposal",
+        intent: 'primary',
+        disabled: !handleChangeActiveStatus,
+        onClick: () => handleChangeActiveStatus?.(true)
+        //title: htmlTitle,
+      });
+    }
+    return actions;
+  }, [isActive, anotherIsActive]);
+
   return (
-    <TabContentsWithActions
-      className={className}
-      actions={<>
-        <FormGroup
-            inline
-            labelInfo={<HelpTooltip
-              icon='info-sign'
-              content={<UL><li>Proposal ID: {cr.id}</li></UL>}
-            />}
-            label={<strong>Proposal</strong>}
-            css={css`margin: 0; .bp4-form-content { display: flex; flex-flow: row wrap; gap: 10px; }`}>
-          <CRActivation
-            isActive={isActive}
-            htmlTitle={anotherIsActive
-            ? "You are in another proposal so you can’t enter this one. "
-            : canEdit && !isActive
-              ? "Enter proposal to preview or add to proposed changes. "
-              : !isActive
-                ? "Enter proposal to preview the register as proposed."
-                : "You’re previewing the register with this proposal applied."}
-            onChangeActiveStatus={!anotherIsActive && setActiveChangeRequestID
-              ? ((active) => active
-                  ? setActiveChangeRequestID?.(cr.id)
-                  : setActiveChangeRequestID?.(null)
-                )
-              : undefined}
-          />
-        </FormGroup>
-      </>}
-      main={
-        <div
-            css={css`
-              display: flex;
-              flex-flow: row wrap;
-              padding: 10px;
-              gap: 10px;
-              align-content: flex-start;
-              align-items: flex-start;
-            `}
-            className={className}>
-          {helmet}
+    <TabContentsWithHeader
+        className={className}
+        title={maybeEllipsizeString(cr.justification, 70)}
+        classification={classification}
+        layout="card-grid"
+        actions={actions}>
 
-          <Card elevation={0} css={css`
-            flex: 100%;
-            background: ${Colors.LIGHT_GRAY3};
-            padding: 11px;
-            display: flex;
-            min-height: 70vh;
-          `}>
-            {proposals}
-          </Card>
+      {helmet}
 
-          <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
+      <Card elevation={0} css={css`
+        flex: 100%;
+        background: ${Colors.LIGHT_GRAY3};
+        padding: 0;
+        display: flex;
+        min-height: 70vh;
+      `}>
+        {proposals}
+      </Card>
 
-            {crStakeholder
-              ? <div>
-                  Author: <RegisterStakeholderListItem
-                    stakeholder={crStakeholder}
-                    isCurrentUser={authorIsCurrentUser || undefined}
-                  />
-                </div>
-              : null}
+      <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
 
-            <Divider />
-            <div>
-              Register&nbsp;version before&nbsp;proposal: <strong>{cr.registerVersion ?? 'N/A'}</strong>
-              &ensp;
-              {cr.registerVersion === registerMetadata?.version?.id
-                ? <Tag css={css`display: inline;`} intent='success' minimal round>
-                    current
-                    {" "}
-                    <HelpTooltip intent='success' content={<>
-                      Published version of the register
-                      {" "}
-                      had not changed since this proposal started.
-                    </>} />
-                  </Tag>
-                : <Tag css={css`display: inline;`} intent='warning' minimal round>
-                    not current
-                    {" "}
-                    <HelpTooltip intent='warning' icon='warning-sign' content={<>
-                      Register is currently at version <strong>{registerMetadata?.version?.id ?? 'N/A'}</strong>,
-                      {" "}
-                      which is different from version proposal author may have had in mind.
-                      {" "}
-                      It is recommended that proposed changes are reviewed to avoid unintentionally
-                      {" "}
-                      undoing a prior change.
-                    </>} />
-                  </Tag>}
+        {crStakeholder
+          ? <div>
+              Author: <RegisterStakeholderListItem
+                stakeholder={crStakeholder}
+                isCurrentUser={authorIsCurrentUser || undefined}
+              />
             </div>
-            <Divider />
-            <div>Edited: <Datestamp date={cr.timeEdited} /></div>
-            <Divider />
-            <div>Proposed: {hadBeenProposed(cr) ? <Datestamp date={cr.timeProposed} /> : 'not yet'}</div>
-            <Divider />
-            <div>Disposed: {isDisposed(cr) ? <Datestamp date={cr.timeDisposed} /> : 'not yet'}</div>
-            <Divider />
+          : null}
 
-            <H5>
-              {cr.state?.replaceAll('-', ' ') || 'N/A'}
-            </H5>
+        <Divider />
+        <div>
+          Register&nbsp;version before&nbsp;proposal: <strong>{cr.registerVersion ?? 'N/A'}</strong>
+          &ensp;
+          {cr.registerVersion === registerMetadata?.version?.id
+            ? <Tag css={css`display: inline;`} intent='success' minimal round>
+                current
+                {" "}
+                <HelpTooltip intent='success' content={<>
+                  Published version of the register
+                  {" "}
+                  had not changed since this proposal started.
+                </>} />
+              </Tag>
+            : <Tag css={css`display: inline;`} intent='warning' minimal round>
+                not current
+                {" "}
+                <HelpTooltip intent='warning' icon='warning-sign' content={<>
+                  Register is currently at version <strong>{registerMetadata?.version?.id ?? 'N/A'}</strong>,
+                  {" "}
+                  which is different from version proposal author may have had in mind.
+                  {" "}
+                  It is recommended that proposed changes are reviewed to avoid unintentionally
+                  {" "}
+                  undoing a prior change.
+                </>} />
+              </Tag>}
+        </div>
+      </Card>
+
+      <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
+        {getPastTransitions(cr).map(([key, el], idx) =>
+          <React.Fragment key={key}>
+            {idx !== 0 ? <Divider /> : null}
+            <FormGroup label={`${key}:`}>
+              <div
+                  css={css`white-space: pre-wrap;`}
+                  className={Classes.RUNNING_TEXT}>
+                {el}
+              </div>
+            </FormGroup>
+          </React.Fragment>
+        )}
+      </Card>
+
+      {canTransition
+        ? <Card elevation={3} css={css`flex: 30%; padding: 11px;`}>
+            <TransitionOptions cr={cr} />
           </Card>
-
-          <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
-            {getPastTransitions(cr).map(([key, el], idx) =>
-              <React.Fragment key={key}>
-                {idx !== 0 ? <Divider /> : null}
-                <FormGroup label={`${key}:`}>
-                  <div
-                      css={css`white-space: pre-wrap;`}
-                      className={Classes.RUNNING_TEXT}>
-                    {el}
-                  </div>
-                </FormGroup>
-              </React.Fragment>
-            )}
-          </Card>
-
-          {canTransition
-            ? <Card elevation={3} css={css`flex: 30%; padding: 11px;`}>
-                <TransitionOptions cr={cr} />
-              </Card>
-            : null}
-        </div>}
-    />
+        : null}
+    </TabContentsWithHeader>
   );
 });
-
-
-const CRActivation: React.FC<{
-  isActive: boolean;
-  htmlTitle?: string;
-
-  /** Labels for the “activate” and “deactivate” buttons. */
-  labels?: { activate?: string, deactivate?: string };
-
-  onChangeActiveStatus?: (newStatus: boolean) => void;
-}> = function ({ isActive, htmlTitle, labels, onChangeActiveStatus }) {
-  return onChangeActiveStatus && isActive
-    ? <Button
-          title={htmlTitle}
-          intent="warning"
-          disabled={!onChangeActiveStatus}
-          onClick={() => onChangeActiveStatus?.(false)}>
-        {labels?.deactivate ?? "Exit proposal"}
-      </Button>
-    : <Button
-          title={htmlTitle}
-          intent={onChangeActiveStatus ? 'primary' : undefined}
-          disabled={!onChangeActiveStatus}
-          onClick={() => onChangeActiveStatus?.(true)}>
-        {labels?.activate ?? "Work on this proposal"}
-      </Button>;
-};
 
 
 const CRTitle: React.FC<{ uri: string }> = memo(function ({ uri }) {

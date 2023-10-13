@@ -168,7 +168,7 @@ const Proposals: React.FC<{
 
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
-        <div>
+        <div css={css`padding: 11px;`}>
           <ControlGroup>
             <Switch
               checked={showDiff}
@@ -299,6 +299,7 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
         item={item}
         itemClass={itemClass}
         key={JSON.stringify(itemRef)}
+        compactHeader
       />
 
   return <div css={css`position: absolute; inset: 0; display: flex; flex-flow: column;`}>
