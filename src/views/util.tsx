@@ -293,14 +293,15 @@ function ({ title, smallTitle, classification, actions, className, layout, child
 };
 
 
-export type ActionProps = ButtonProps & { popup?: JSX.Element };
+export type ActionProps = ButtonProps & ({ popup?: JSX.Element, tooltip?: string });
 /** Mostly a button, but with an optional popup. */
-const Action: React.FC<ActionProps> = function ({ popup, ...props }) {
+const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
   const btn = <BaseButton
     {...props}
     intent={props.disabled ? undefined : props.intent}
     onClick={props.disabled ? undefined : props.onClick}
     disabled={props.active ? false : props.disabled}
+    title={tooltip}
   />;
 
   if (popup && !props.disabled) {
