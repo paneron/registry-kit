@@ -3,7 +3,7 @@
 
 import { jsx, css } from '@emotion/react';
 import React, { useContext, useMemo, useState } from 'react';
-import { Button, ButtonGroup, ButtonProps, Dialog } from '@blueprintjs/core';
+import { Button, ButtonGroup, ButtonProps, Drawer } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
   type InternalItemReference,
@@ -229,13 +229,13 @@ const RelatedItemSelectionDialog: React.FC<{
     : undefined;
 
   return (
-    <Dialog
+    <Drawer
         isOpen={isOpen}
         onClose={onClose}
         enforceFocus={false}
         style={{ padding: '0', width: 'unset' }}>
       <Search
-        style={{ height: '90vh', width: '90vw' }}
+        style={{ height: '100vh', width: '80vw', minWidth: '500px', maxWidth: '100vw' }}
         availableClassIDs={availableClassIDs}
         implicitCriteria={implicitCriteria}
         stateName="superseding-item-selector-search"
@@ -244,7 +244,7 @@ const RelatedItemSelectionDialog: React.FC<{
           onClose();
         }}
       />
-    </Dialog>
+    </Drawer>
   );
 }
 
