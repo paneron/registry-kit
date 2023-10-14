@@ -35,7 +35,8 @@ const InlineDiff: React.FC<{
   return <VisualDiff
     left={left}
     right={right}
-    renderChange={AnnotatedChange} />;
+    renderChange={AnnotatedChange}
+  />;
 }, (prevProps, nextProps) =>
   JSON.stringify(prevProps.item2) === JSON.stringify(nextProps.item2) &&
   JSON.stringify(prevProps.item1) === JSON.stringify(nextProps.item1)
