@@ -83,7 +83,7 @@ const Proposals: React.FC<{
 
   const firstProposal: string | undefined = Object.keys(proposals)[0];
 
-  // Effective selected proposal
+  /** Effective selected proposal. */
   const selectedProposal: string | undefined =
     ((_selectedProposal && proposals[_selectedProposal]) ? _selectedProposal : null)
     ?? firstProposal
@@ -97,8 +97,7 @@ const Proposals: React.FC<{
   }, [firstProposal, _selectedProposal, proposals]);
 
   const selectedItemRef = useItemRef(subregisters !== undefined, selectedProposal);
-
-  // Data for proposed items
+  /** Paths of register items in proposal. */
   const proposedItemPaths = Object.entries(proposals).map(([itemPath, proposal]) => {
     if (proposal.type === 'clarification' || proposal.type === 'addition') {
       return itemPath;
@@ -106,11 +105,13 @@ const Proposals: React.FC<{
       return undefined;
     }
   }).filter(s => s !== undefined) as string[];
+
+  /** Proposed data of register items in proposal. */
   const proposedItemDataReq = useRegisterItemData({
     itemPaths: proposedItemPaths,
   });
 
-  // Data for pre-existing items
+  /** Pre-existing data of register items in proposal. */
   const currentItemDataReq = useRegisterItemData({
     itemPaths: Object.keys(proposals),
     ignoreActiveCR: true,
@@ -123,7 +124,10 @@ const Proposals: React.FC<{
     ((itemPath: string) => proposedItemDataReq.value[itemPath] ?? null),
     [proposedItemDataReq.value]);
 
+  /** Current register item (if any) corresponding to selected proposal. */
   const selectedItemCurrent = getCurrentItem(selectedProposal);
+
+  /** Proposed register item corresponding to selected proposal. */
   const selectedItemProposed = getProposedItem(selectedProposal);
 
   const handleItemSelect = useCallback(
