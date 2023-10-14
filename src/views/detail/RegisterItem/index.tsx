@@ -450,12 +450,13 @@ export const ItemDetail: React.VoidFunctionComponent<{
             },
           };
           if (isEditingProposal) {
+            const willDiscardItemData = proposal && proposal?.type !== 'amendment';
             actions.push([proposeBtn, {
-              intent: 'warning',
-              disabled: isBusy,
+              disabled: isBusy || itemDataHasChanges,
               onClick: handleClearProposal,
               icon: 'trash',
               children: `Remove proposal`,
+              intent: willDiscardItemData ? 'danger' : 'warning',
             }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
           } else {
             actions.push(proposeBtn);
@@ -483,7 +484,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
               onClick: () => setEditedItemData(d => d === null ? item.data : null),
               children: "Clarify",
             }];
-            if (isEditingItemData) {
+            if (isEditingItemData && itemDataHasChanges) {
               proposalGroup.push(saveEditedItemDataButton);
             }
             actions.push(proposalGroup);
