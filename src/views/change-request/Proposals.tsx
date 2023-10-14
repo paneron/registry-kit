@@ -180,60 +180,56 @@ const Proposals: React.FC<{
       : undefined;
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
-        <div css={css`padding: 11px;`}>
-          {proposalCount > 0
-            ? <ButtonGroup fill>
-                {haveSelectedItem
-                  ? <>
-                      <Button
-                        disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
-                        icon='locate'
-                        onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
-                        css={css`flex-shrink: 0;`}
-                        title="Open selected item in a new tab (not applicable to proposed additions)"
-                      />
-                      <Button
-                        active={preferDiff}
-                        onClick={() => setPreferDiff(v => !v)}
-                        // Diffing only makes sense for clarifications.
-                        // Additions are entire new items, and for amendments
-                        // item data is unchanged.
-                        disabled={!canShowDiff}
-                        icon="changes"
-                        title="Annotate proposed clarifications for this item"
-                        css={css`margin-right: 1em !important; flex-shrink: 0;`}
-                      />
-                      {/*
-                      <Switch
-                        checked={preferDiff && showOnlyChanged}
-                        disabled={!preferDiff}
-                        onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
-                        label="Show clarified properties only"
-                      />
-                      */}
-                    </>
-                  : null}
-                <ClassNames>
-                  {(({ css: css2 }) =>
-                    <Select<ChangeProposalItem>
-                        filterable={false}
-                        itemsEqual={stringifiedJSONEqual}
-                        menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
-                        activeItem={activeItem}
-                        items={allItems}
-                        popoverProps={{ minimal: true }}
-                        fill
-                        itemRenderer={ChangeProposalItemView}
-                        onItemSelect={handleItemSelect}>
-                      <Button rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`} fill>
-                        {selectedItemSummary}
-                      </Button>
-                    </Select>
-                  )}
-                </ClassNames>
-              </ButtonGroup>
-            : null}
-        </div>
+        {proposalCount > 0
+          ? <ButtonGroup css={css`margin: 5px 0 0 5px;`}>
+              {haveSelectedItem
+                ? <>
+                    <Button
+                      disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+                      icon='locate'
+                      onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
+                      title="Open selected item in a new tab (not applicable to proposed additions)"
+                    />
+                    <Button
+                      active={preferDiff}
+                      onClick={() => setPreferDiff(v => !v)}
+                      // Diffing only makes sense for clarifications.
+                      // Additions are entire new items, and for amendments
+                      // item data is unchanged.
+                      disabled={!canShowDiff}
+                      icon="changes"
+                      title="Annotate proposed clarifications for this item"
+                    />
+                    {/*
+                    <Switch
+                      checked={preferDiff && showOnlyChanged}
+                      disabled={!preferDiff}
+                      onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
+                      label="Show clarified properties only"
+                    />
+                    */}
+                  </>
+                : null}
+              <ClassNames>
+                {(({ css: css2 }) =>
+                  <Select<ChangeProposalItem>
+                      filterable={false}
+                      itemsEqual={stringifiedJSONEqual}
+                      menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
+                      activeItem={activeItem}
+                      items={allItems}
+                      popoverProps={{ minimal: true }}
+                      fill
+                      itemRenderer={ChangeProposalItemView}
+                      onItemSelect={handleItemSelect}>
+                    <Button rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
+                      {selectedItemSummary}
+                    </Button>
+                  </Select>
+                )}
+              </ClassNames>
+            </ButtonGroup>
+          : null}
         {haveSelectedItem
           ? <div css={css`position: relative; flex: 1;`}>
               <BrowserCtx.Provider value={proposalBrowserCtx}>
