@@ -455,7 +455,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
               disabled: isBusy || itemDataHasChanges,
               onClick: handleClearProposal,
               icon: 'trash',
-              children: `Remove proposal`,
+              children: "Remove",
               intent: willDiscardItemData ? 'danger' : 'warning',
             }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
           } else {
