@@ -215,8 +215,38 @@ function ({ title, smallTitle, classification, actions, className, layout, child
         overflow-y: auto;
 
         ${layout === undefined
-          ? `> :only-child { position: absolute; inset: 0 }`
-          : 'padding: 10px;'}
+          ? `
+              > :only-child { position: absolute; inset: 0 }
+              box-shadow: black 0 0 20px -10px;
+            `
+          : `
+              padding: 0 10px;
+              &::after, &::before {
+                pointer-events: none;
+                content: " ";
+                display: block;
+                position: sticky;
+                width: 100%;
+                height: 1px;
+                background: ${Colors.GRAY5};
+                .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
+                z-index: 10;
+              }
+              &::before {
+                top: 0;
+                box-shadow: ${Colors.GRAY5} 0 -20px 20px 20px;
+                .bp4-dark & {
+                  box-shadow: ${Colors.DARK_GRAY2} 0 -20px 20px 20px;
+                }
+              }
+              &::after {
+                bottom: 0;
+                box-shadow: ${Colors.GRAY5} 0 20px 20px 20px;
+                .bp4-dark & {
+                  box-shadow: ${Colors.DARK_GRAY2} 0 20px 20px 20px;
+                }
+              }
+            `}
 
         ${layout === 'scrollable' || layout === 'card-grid'
           ? `
