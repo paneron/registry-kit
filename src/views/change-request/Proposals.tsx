@@ -3,7 +3,6 @@
 
 import React, { useContext, useEffect, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
-import styled from '@emotion/styled';
 import {
   ControlGroup,
   ButtonGroup,
@@ -34,7 +33,7 @@ import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../types/proposal';
 import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
 import { useItemRef, itemPathToItemRef } from '../itemPathUtils';
 import useItemClassConfig from '../hooks/useItemClassConfig';
-import StructuredDiff from '../diffing/StructuredDiff';
+import { InlineDiffGeneric } from '../diffing/InlineDiff';
 import { ItemDetail } from '../detail/RegisterItem';
 
 
@@ -56,7 +55,10 @@ const Proposals: React.FC<{
 }> = function ({ proposals, className }) {
   const [ _selectedProposal, selectProposal ] = useState<string | null>(null);
   const [ showDiff, setShowDiff ] = useState(false);
-  const [ showOnlyChanged, setShowOnlyChanged ] = useState(true);
+
+  // TODO: Temporarily unsupported
+  // (limitations of current change annotation implementation)
+  //const [ showOnlyChanged, setShowOnlyChanged ] = useState(true);
 
   const outerBrowserCtx = useContext(BrowserCtx);
   const { jumpTo, subregisters, useRegisterItemData } = outerBrowserCtx;
@@ -177,15 +179,21 @@ const Proposals: React.FC<{
             <Switch
               checked={showDiff}
               onChange={evt => setShowDiff(evt.currentTarget.checked)}
-              label="View source"
+              // Diffing only makes sense for clarifications.
+              // Additions are entire new items, and for amendments
+              // item data is unchanged.
+              disabled={proposals[selectedProposal]?.type !== 'clarification'}
+              label="Annotate clarifications"
               css={css`margin-right: 1em !important`}
             />
+            {/*
             <Switch
               checked={showDiff && showOnlyChanged}
               disabled={!showDiff}
               onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
               label="Show clarified properties only"
             />
+            */}
           </ControlGroup>
           <ButtonGroup>
             <Button
@@ -296,11 +304,10 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
   }
 
   const view: JSX.Element = showDiff
-    ? <MaximizedStructuredDiff
-        item1={itemBefore?.data ?? ITEM_DATA_PLACEHOLDER}
-        item2={item.data}
-        showUnchanged={!showOnlyChanged}
-        css={css`background: white; border-radius: 2.5px; padding: 10px 0; margin: 10px 0;`}
+    ? <InlineDiffGeneric
+        item1={itemBefore ?? {}}
+        item2={item}
+        css={css`position: absolute; inset: 0; background: white; padding: 10px 0; overflow: auto;`}
         className={Classes.ELEVATION_2}
       />
     : <ItemDetail
@@ -375,12 +382,6 @@ const invalidation: ProposalViewConfig<Invalidation> = {
 }
 
 
-const MaximizedStructuredDiff = styled(StructuredDiff)`
-  position: absolute;
-  inset: 0;
-`;
-
-
 type ProposalOrAmendmentType =
   | Exclude<typeof PROPOSAL_TYPES[number], 'amendment'>
   | typeof AMENDMENT_TYPES[number];
@@ -405,6 +406,3 @@ function getProposalIcon(proposal: ChangeProposal): IconName {
 
 
 export default Proposals;
-
-
-const ITEM_DATA_PLACEHOLDER = {} as const;
