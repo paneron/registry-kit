@@ -526,7 +526,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
       title={<ListItemView itemRef={itemRef} itemData={item.data} />}
       classification={compactHeader ? undefined : classification}
       actions={actions}>
-      <Card css={css`position: absolute; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
+      <Card css={css`position: absolute; border-radius: 0; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
         <Helmet><title>{windowTitle}</title></Helmet>
         {details}
       </Card>
