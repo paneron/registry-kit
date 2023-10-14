@@ -1,12 +1,10 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect, useState, useCallback, memo, useMemo } from 'react';
+import React, { useContext, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import {
-  ControlGroup,
   ButtonGroup,
-  Switch,
   Button,
   Classes,
   MenuItem,
@@ -53,8 +51,8 @@ const Proposals: React.FC<{
   proposals: Drafted['items']
   className?: string
 }> = function ({ proposals, className }) {
-  const [ _selectedProposal, selectProposal ] = useState<string | null>(null);
-  const [ showDiff, setShowDiff ] = useState(false);
+  const [ selectedProposal, selectProposal ] = useState<string | null>(null);
+  const [ preferDiff, setPreferDiff ] = useState(false);
 
   // TODO: Temporarily unsupported
   // (limitations of current change annotation implementation)
@@ -83,22 +81,6 @@ const Proposals: React.FC<{
     jumpTo: handleCRJump,
   })), [handleCRJump, outerBrowserCtx]);
 
-  const firstProposal: string | undefined = Object.keys(proposals)[0];
-
-  /** Effective selected proposal. */
-  const selectedProposal: string | undefined =
-    ((_selectedProposal && proposals[_selectedProposal]) ? _selectedProposal : null)
-    ?? firstProposal
-    ?? undefined;
-
-  // Force select available proposal
-  useEffect(() => {
-    if (firstProposal && (_selectedProposal === null || !proposals[_selectedProposal])) {
-      selectProposal(firstProposal ?? null);
-    }
-  }, [firstProposal, _selectedProposal, proposals]);
-
-  const selectedItemRef = useItemRef(subregisters !== undefined, selectedProposal);
   /** Paths of register items in proposal. */
   const proposedItemPaths = Object.entries(proposals).map(([itemPath, proposal]) => {
     if (proposal.type === 'clarification' || proposal.type === 'addition') {
@@ -127,10 +109,12 @@ const Proposals: React.FC<{
     [proposedItemDataReq.value]);
 
   /** Current register item (if any) corresponding to selected proposal. */
-  const selectedItemCurrent = getCurrentItem(selectedProposal);
+  const selectedItemCurrent = selectedProposal ? getCurrentItem(selectedProposal) : null;
 
   /** Proposed register item corresponding to selected proposal. */
-  const selectedItemProposed = getProposedItem(selectedProposal);
+  const selectedItemProposed = selectedProposal ? getProposedItem(selectedProposal) : null;
+
+  const selectedItemRef = useItemRef(subregisters !== undefined, selectedProposal);
 
   const handleItemSelect = useCallback(
     ((item: ChangeProposalItem) => selectProposal(item.itemPath)),
@@ -158,53 +142,65 @@ const Proposals: React.FC<{
     })).filter(cpi => cpi.item !== null)
   ), [proposals, getCurrentItem, getProposedItem]);
 
-  if (
+  const haveSelectedItem =
     selectedProposal
     && selectedItemRef
     && proposals[selectedProposal]
-    && !currentItemDataReq.isUpdating
-    && !proposedItemDataReq.isUpdating
-  ) {
-    const selectedItemSummary = <ProposalSummary
-      itemRef={selectedItemRef}
-      item={(selectedItemProposed ?? selectedItemCurrent)!}
-      itemBefore={selectedItemCurrent ?? undefined}
-      proposal={proposals[selectedProposal]}
-    />;
+    && (selectedItemProposed || selectedItemCurrent);
 
+  const canShowDiff: boolean = haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
+    ? true
+    : false;
+  const showDiff = canShowDiff && preferDiff;
+
+  if (!currentItemDataReq.isUpdating && !proposedItemDataReq.isUpdating) {
+    const selectedItemSummary = haveSelectedItem
+      ? <ProposalSummary
+          itemRef={selectedItemRef}
+          item={(selectedItemProposed ?? selectedItemCurrent)!}
+          itemBefore={selectedItemCurrent ?? undefined}
+          proposal={proposals[selectedProposal]}
+        />
+      : <>Select item…</>;
+    const icon = haveSelectedItem
+      ? getProposalIcon(proposals[selectedProposal])
+      : undefined;
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
         <div css={css`padding: 11px;`}>
-          <ControlGroup>
-            <Switch
-              checked={showDiff}
-              onChange={evt => setShowDiff(evt.currentTarget.checked)}
-              // Diffing only makes sense for clarifications.
-              // Additions are entire new items, and for amendments
-              // item data is unchanged.
-              disabled={proposals[selectedProposal]?.type !== 'clarification'}
-              label="Annotate clarifications"
-              css={css`margin-right: 1em !important`}
-            />
-            {/*
-            <Switch
-              checked={showDiff && showOnlyChanged}
-              disabled={!showDiff}
-              onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
-              label="Show clarified properties only"
-            />
-            */}
-          </ControlGroup>
-          <ButtonGroup>
-            <Button
-                disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
-                icon='locate'
-                onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
-                title="Open selected item in a new tab (not applicable to proposed additions)">
-              Reveal in registry
-            </Button>
-            {Object.keys(proposals).length > 1
-              ? <ClassNames>
+          {Object.keys(proposals).length > 1
+            ? <ButtonGroup fill>
+                {haveSelectedItem
+                  ? <>
+                      <Button
+                        disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+                        icon='locate'
+                        onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
+                        css={css`flex-shrink: 0;`}
+                        title="Open selected item in a new tab (not applicable to proposed additions)"
+                      />
+                      <Button
+                        active={preferDiff}
+                        onClick={() => setPreferDiff(v => !v)}
+                        // Diffing only makes sense for clarifications.
+                        // Additions are entire new items, and for amendments
+                        // item data is unchanged.
+                        disabled={!canShowDiff}
+                        icon="changes"
+                        title="Annotate proposed clarifications for this item"
+                        css={css`margin-right: 1em !important; flex-shrink: 0;`}
+                      />
+                      {/*
+                      <Switch
+                        checked={preferDiff && showOnlyChanged}
+                        disabled={!preferDiff}
+                        onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
+                        label="Show clarified properties only"
+                      />
+                      */}
+                    </>
+                  : null}
+                <ClassNames>
                   {(({ css: css2 }) =>
                     <Select<ChangeProposalItem>
                         filterable={false}
@@ -216,35 +212,31 @@ const Proposals: React.FC<{
                         fill
                         itemRenderer={ChangeProposalItemView}
                         onItemSelect={handleItemSelect}>
-                      <Button rightIcon="chevron-down" icon={getProposalIcon(proposals[selectedProposal])}>
+                      <Button rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`} fill>
                         {selectedItemSummary}
                       </Button>
                     </Select>
                   )}
                 </ClassNames>
-              : <Button
-                    fill
-                    alignText="left"
-                    icon={getProposalIcon(proposals[selectedProposal])}
-                    rightIcon="chevron-down">
-                  {selectedItemSummary}
-                </Button>}
-          </ButtonGroup>
+              </ButtonGroup>
+            : null}
         </div>
-        <div css={css`position: relative; flex: 1;`}>
-          <BrowserCtx.Provider value={proposalBrowserCtx}>
-            <ErrorBoundary viewName="Proposal detail">
-              <ProposalDetail
-                itemRef={selectedItemRef}
-                showDiff={showDiff}
-                showOnlyChanged={showOnlyChanged}
-                item={(selectedItemProposed ?? selectedItemCurrent)!}
-                itemBefore={selectedItemCurrent ?? undefined}
-                proposal={proposals[selectedProposal]}
-              />
-            </ErrorBoundary>
-          </BrowserCtx.Provider>
-        </div>
+        {haveSelectedItem
+          ? <div css={css`position: relative; flex: 1;`}>
+              <BrowserCtx.Provider value={proposalBrowserCtx}>
+                <ErrorBoundary viewName="Proposal detail">
+                  <ProposalDetail
+                    itemRef={selectedItemRef}
+                    showDiff={showDiff}
+                    //showOnlyChanged={showOnlyChanged}
+                    item={(selectedItemProposed ?? selectedItemCurrent)!}
+                    itemBefore={selectedItemCurrent ?? undefined}
+                    proposal={proposals[selectedProposal]}
+                  />
+                </ErrorBoundary>
+              </BrowserCtx.Provider>
+            </div>
+          : null}
       </div>
     );
   } else {
