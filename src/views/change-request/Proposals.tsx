@@ -275,8 +275,13 @@ const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
 
 interface ProposalProps<P extends ChangeProposal> {
   proposal: P
+
+  /** Highlight changes. */
   showDiff?: boolean
+
+  /** In diff mode, only show changed data. (Provisional.) */
   showOnlyChanged?: boolean
+
   itemRef: InternalItemReference
   item: RegisterItem<Payload>
   itemBefore: P extends Clarification ? RegisterItem<Payload> : undefined
