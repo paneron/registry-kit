@@ -455,6 +455,11 @@ export const ItemDetail: React.VoidFunctionComponent<{
               onClick: handleClearProposal,
               icon: 'trash',
               children: "Remove",
+              tooltip: [
+                `NOTE: Discarding this proposal `,
+                `will discard ${proposal.type === 'addition' ? "new" : "changes to"} item’s data `,
+                'you provided as part of the proposal.',
+              ].join(''),
               intent: proposal.type !== 'amendment' ? 'danger' : 'warning',
             }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
           } else {
