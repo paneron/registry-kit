@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
 import VisualDiff from 'react-visual-diff';
-import { InternalItemReference, RegisterItem, Payload } from '../../types/item';
+import type { InternalItemReference, RegisterItem, Payload } from '../../types/item';
 import { ItemDetailView } from '../../types/views';
 import AnnotatedChange from '../AnnotatedChange';
 

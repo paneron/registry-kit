@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react';
 import React, { useRef, useEffect } from 'react';
 import { Colors } from '@blueprintjs/core'
 import { annotate } from 'rough-notation';
-import { RoughAnnotation, RoughAnnotationConfig } from 'rough-notation/lib/model';
+import type { RoughAnnotation, RoughAnnotationConfig } from 'rough-notation/lib/model';
 
 
 function annotateChange(
