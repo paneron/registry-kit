@@ -1,8 +1,10 @@
 import React from 'react';
 import { makeExtension } from '@riboseinc/paneron-extension-kit';
 import type { Extension } from '@riboseinc/paneron-extension-kit/types';
+import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
 import type { ExtensionMakerProps } from '@riboseinc/paneron-extension-kit/types/extension-maker';
 import type { RegistryViewProps } from './types';
+import type { ItemClassConfiguration } from './types/views';
 import datasetInitializer from './migrations/initial';
 import { RegistryView } from './views';
 
@@ -14,6 +16,21 @@ export type RegistryExtensionMaker =
 
 export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
   const { name } = opts;
+
+  for (const cls of Object.values(opts.itemClassConfiguration)) {
+    for (const [viewID, view] of Object.entries(cls.views)) {
+      const View = view as any;
+      if (View) {
+        cls.views[viewID as keyof ItemClassConfiguration<any>["views"]] = function WrappedRegisterItemView(...props) {
+          return (
+            <ErrorBoundary viewName={`Detail view for ${cls.meta.title}`}>
+              <View {...props} inline={viewID === 'listItemView'} />
+            </ErrorBoundary>
+          );
+        };
+      }
+    }
+  }
 
   const mainView: ExtensionMakerProps["mainView"] = function _RegistryView () {
     return (
