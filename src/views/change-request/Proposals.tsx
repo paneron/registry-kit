@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useCallback, memo, useMemo } from 'react';
+import React, { useEffect, useContext, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import {
   ButtonGroup,
@@ -39,7 +39,7 @@ interface ChangeProposalItem {
   itemPath: string
   itemRef: InternalItemReference
   proposal: ChangeProposal
-  item: RegisterItem<Payload>
+  item: RegisterItem<Payload> | null
   itemBefore: RegisterItem<Payload> | undefined
 }
 function stringifiedJSONEqual(i1: any, i2: any): boolean {
@@ -139,7 +139,7 @@ const Proposals: React.FC<{
       item: (getProposedItem(itemPath) ?? getCurrentItem(itemPath))! ?? null,
       itemBefore: undefined,
       itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
-    })).filter(cpi => cpi.item !== null)
+    }))
   ), [proposals, getCurrentItem, getProposedItem]);
 
   const haveSelectedItem =
@@ -147,6 +147,19 @@ const Proposals: React.FC<{
     && selectedItemRef
     && proposals[selectedProposal]
     && (selectedItemProposed || selectedItemCurrent);
+
+  const proposalCount = Object.keys(proposals).length;
+
+  useEffect(() => {
+    if (!selectedProposal) {
+      const firstProposal = Object.keys(proposals)[0];
+      if (firstProposal) {
+        if (getCurrentItem(firstProposal) || getProposedItem(firstProposal)) {
+          selectProposal(firstProposal);
+        }
+      }
+    }
+  }, [proposalCount, selectedProposal, getCurrentItem, getProposedItem]);
 
   const canShowDiff: boolean = haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
     ? true
@@ -168,7 +181,7 @@ const Proposals: React.FC<{
     return (
       <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
         <div css={css`padding: 11px;`}>
-          {Object.keys(proposals).length > 1
+          {proposalCount > 0
             ? <ButtonGroup fill>
                 {haveSelectedItem
                   ? <>
@@ -251,25 +264,35 @@ const Proposals: React.FC<{
 
 const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
 (item, { handleClick, modifiers, query }) => {
-  const proposalConfig = 
-    item.proposal.type === 'amendment'
-      ? PROPOSAL_VIEWS[item.proposal.amendmentType]
-      : PROPOSAL_VIEWS[item.proposal.type];
-  const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
-  return (
-    <MenuItem
-      active={modifiers.active}
-      disabled={modifiers.disabled}
-      labelElement={<>
-        <ProposalTypeLabel {...item} />
-        {" "}
-        <HelpTooltip content={<>Proposed to be {proposalConfig.hint}</>} />
-      </>}
-      key={item.itemPath}
+  if (item.item !== null) {
+    const i = item as ChangeProposalItem & { item: RegisterItem<any> };
+    const proposalConfig = 
+      item.proposal.type === 'amendment'
+        ? PROPOSAL_VIEWS[item.proposal.amendmentType]
+        : PROPOSAL_VIEWS[item.proposal.type];
+    const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
+    return (
+      <MenuItem
+        active={modifiers.active}
+        disabled={modifiers.disabled}
+        labelElement={<>
+          <ProposalTypeLabel {...i} />
+          {" "}
+          <HelpTooltip content={<>Proposed to be {proposalConfig.hint}</>} />
+        </>}
+        key={item.itemPath}
+        onClick={handleClick}
+        icon={getProposalIcon(item.proposal)}
+        text={<ProposalSummary {...i} />} />
+    );
+  } else {
+    return <MenuItem
+      disabled
+      icon="heart-broken"
       onClick={handleClick}
-      icon={getProposalIcon(item.proposal)}
-      text={<ProposalSummary {...item} />} />
-  );
+      text={`Broken proposal entry at path ${item.itemPath}`}
+    />
+  }
 };
 
 
