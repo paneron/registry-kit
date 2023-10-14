@@ -136,8 +136,33 @@ export const ItemDetail: React.VoidFunctionComponent<{
   const { spawnTab } = useContext(TabbedWorkspaceContext);
 
   const [ editedItemData, setEditedItemData ] = useState<RegisterItem["data"] | null>(null);
-
   const itemDataHasChanges = JSON.stringify(editedItemData) !== JSON.stringify(item.data);
+
+  // Gather views
+  const ListItemView = itemClass.views.listItemView;
+  let details: JSX.Element;
+  if (editedItemData !== null && activeCRIsEditable) {
+    const EditView = itemClass.views.editView;
+    details = (
+      <EditView
+        itemData={editedItemData}
+        itemRef={itemRef}
+        onChange={!isBusy ? setEditedItemData : undefined}
+      />
+    );
+  } else {
+    const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
+    details = (
+      <DetailView
+        itemRef={itemRef}
+        itemData={item.data}
+      />
+    );
+  }
+
+  console.debug("Rendering RegisterItem view");
+
+  const [ isEditingProposal, setIsEditingProposal ] = useState(false);
 
   //const [ diffMode, setDiffMode ] = useState<boolean>(false);
   // TODO: Implement diff mode
@@ -268,31 +293,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
     item ? JSON.stringify(normalizeObject(item)) : item,
   ]);
 
-  const ListItemView = itemClass.views.listItemView;
-
-  let details: JSX.Element;
-  if (editedItemData !== null && activeCRIsEditable) {
-    const EditView = itemClass.views.editView;
-    details = (
-      <EditView
-        itemData={editedItemData}
-        itemRef={itemRef}
-        onChange={!isBusy ? setEditedItemData : undefined}
-      />
-    );
-
-  } else {
-    const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
-    details = (
-      <DetailView
-        itemRef={itemRef}
-        itemData={item.data}
-      />
-    );
-  }
-
-  console.debug("Rendering RegisterItem view");
-
   const supersedingItemRefs =
     proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
       ? proposal.supersedingItemIDs.
@@ -399,7 +399,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
     isSuperseded, canBeSuperseded, isBeingSuperseded,
   ]);
 
-  const [ isEditingProposal, setIsEditingProposal ] = useState(false);
   const actions = useMemo(() => {
     const actions: TabContentsWithHeaderProps['actions'] = [];
 
