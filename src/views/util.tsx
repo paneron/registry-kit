@@ -201,7 +201,9 @@ function ({ title, smallTitle, classification, actions, className, layout, child
           `}>
             {classification!.map(p =>
               <Tag
+                minimal
                 {...p}
+                large={!smallTitle}
                 rightIcon={p.tooltip
                   ? <HelpTooltip {...p.tooltip} />
                   : undefined}

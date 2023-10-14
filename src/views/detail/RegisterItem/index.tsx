@@ -386,7 +386,8 @@ export const ItemDetail: React.VoidFunctionComponent<{
           : proposal.type === 'addition' || proposal.type === 'clarification'
             ? 'primary'
             : undefined,
-        icon: 'asterisk',
+        icon: 'lightbulb',
+        minimal: false,
         tooltip: canBeSuperseded || isBeingSuperseded
           ? supersedingItemsTooltip
           : undefined,
@@ -528,7 +529,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
     <TabContentsWithHeader
       smallTitle={compactHeader}
       title={<ListItemView itemRef={itemRef} itemData={item.data} />}
-      classification={compactHeader ? undefined : classification}
+      classification={classification}
       actions={actions}>
       <Card css={css`position: absolute; border-radius: 0; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
         <Helmet><title>{windowTitle}</title></Helmet>
