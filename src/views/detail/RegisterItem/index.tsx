@@ -450,13 +450,12 @@ export const ItemDetail: React.VoidFunctionComponent<{
             },
           };
           if (isEditingProposal) {
-            const willDiscardItemData = proposal && proposal?.type !== 'amendment';
             actions.push([proposeBtn, {
-              disabled: isBusy || itemDataHasChanges,
+              disabled: isBusy || (itemDataHasChanges && proposal.type !== 'amendment'),
               onClick: handleClearProposal,
               icon: 'trash',
               children: "Remove",
-              intent: willDiscardItemData ? 'danger' : 'warning',
+              intent: proposal.type !== 'amendment' ? 'danger' : 'warning',
             }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
           } else {
             actions.push(proposeBtn);
