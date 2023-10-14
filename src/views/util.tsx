@@ -239,7 +239,10 @@ function ({ title, smallTitle, classification, actions, className, layout, child
       </div>
 
       {hasActions
-        ? <div css={css`margin: 0 ${paddingPx}px; flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;`}>
+        ? <div css={css`
+            margin: 0 ${paddingPx}px;
+            flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;
+          `}>
             {actions!.map(props => {
               if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
                 return (
