@@ -8,7 +8,7 @@ export const StakeholderRole = {
   Submitter: 'submitter',
 } as const;
 
-type StakeholderRoleType = typeof StakeholderRole[keyof typeof StakeholderRole];
+export type StakeholderRoleType = typeof StakeholderRole[keyof typeof StakeholderRole];
 
 export const STAKEHOLDER_ROLES = Object.values(StakeholderRole) as StakeholderRoleType[];
 
