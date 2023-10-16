@@ -449,7 +449,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
       if (itemIsProposable) {
         if (itemHasProposal) {
           const proposeBtn: ButtonProps = {
-            children: `Edit the ${proposal.type === 'amendment' ? proposal.amendmentType : proposal.type} proposal for this item`,
+            children: `Edit ${proposal.type === 'amendment' ? proposal.amendmentType : proposal.type} proposal for this item`,
             icon: 'edit',
             active: isEditingProposal,
             disabled: isBusy,
