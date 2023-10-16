@@ -9,15 +9,18 @@ import {
   Classes,
   NonIdealState,
   UL,
+  Colors,
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { normalizeObject } from '@riboseinc/paneron-extension-kit/util';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
+import type { HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import useSingleRegisterItemData from '../../hooks/useSingleRegisterItemData';
 import useItemClassConfig from '../../hooks/useItemClassConfig';
 import { Protocols } from '../../protocolRegistry';
 import {
   type ChangeProposal,
+  type Supersession,
   type RegisterItem,
   type InternalItemReference,
   type ItemClassConfiguration,
@@ -31,6 +34,7 @@ import {
   maybeEllipsizeString,
   TabContentsWithHeader,
   type TabContentsWithHeaderProps,
+  type ActionProps,
 } from '../../util';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
@@ -293,7 +297,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
     item ? JSON.stringify(normalizeObject(item)) : item,
   ]);
 
-  const supersedingItemRefs =
+  const proposedSupersedingItemRefs =
     proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
       ? proposal.supersedingItemIDs.
         map(id => ({
@@ -303,25 +307,18 @@ export const ItemDetail: React.VoidFunctionComponent<{
           // Superseding items are always in the same subregister
           subregisterID: itemRef.subregisterID,
         }))
-      : (item.supersededBy ?? []);
+      : undefined;
+  const supersedingItemRefs = proposedSupersedingItemRefs ?? item.supersededBy ?? [];
   const supersedingItemRefsCacheKey = supersedingItemRefs.map(i => JSON.stringify(i)).toString();
-  const supersedingItems = useMemo(() => {
-    return (
+  const supersedingItemsTooltip: HelpTooltipProps = useMemo(() => ({
+    icon: 'info-sign',
+    content: 
       <RelatedItems
+        css={css`background-color: ${Colors.LIGHT_GRAY3}; padding: 5px;`}
         availableClassIDs={[itemClass.meta.id]}
         itemRefs={supersedingItemRefs}
-        onChange={!isBusy && (isBeingSuperseded || canBeSuperseded)
-          ? (items) => items.length > 0
-              ? handleSupersedeWith(items.map(ref => ref.itemID))
-              : handleClearProposal()
-          : undefined}
-      />
-    );
-  }, [
-    isBusy, handleSetProposal, performOperation,
-    supersedingItemRefsCacheKey,
-    itemClass.meta.id,
-  ]);
+      />,
+  }), [supersedingItemRefsCacheKey, itemClass.meta.id]);
 
   const classification: TabContentsWithHeaderProps['classification'] = useMemo(() => {
     const classification: TabContentsWithHeaderProps['classification'] = [{
@@ -351,11 +348,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
         </>,
       },
     }];
-
-    const supersedingItemsTooltip = {
-      icon: 'info-sign',
-      content: supersedingItems,
-    } as const;
 
     classification.push({
       children: item.status,
@@ -396,8 +388,11 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
     return classification;
   }, [
-    proposal?.type, item.status,
+    proposal?.type,
+    itemClass.meta.id,
+    item.status,
     isSuperseded, canBeSuperseded, isBeingSuperseded,
+    supersedingItemsTooltip,
   ]);
 
   const actions = useMemo(() => {
@@ -428,6 +423,29 @@ export const ItemDetail: React.VoidFunctionComponent<{
         children: "Save changes",
       };
 
+      const supersedingItemRefs =
+        proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
+          ? proposal.supersedingItemIDs.
+            map(id => ({
+              itemID: id,
+              // Superseding items are always of the same class
+              classID: itemClass.meta.id,
+              // Superseding items are always in the same subregister
+              subregisterID: itemRef.subregisterID,
+            }))
+          : [];
+      const supersedingItems = (
+        <RelatedItems
+          availableClassIDs={[itemClass.meta.id]}
+          itemRefs={supersedingItemRefs}
+          onChange={!isBusy
+            ? (items) => items.length > 0
+                ? handleSupersedeWith(items.map(ref => ref.itemID))
+                : handleClearProposal()
+            : undefined}
+        />
+      );
+
       if (itemIsProposable) {
         if (itemHasProposal) {
           const proposeBtn: ButtonProps = {
@@ -450,7 +468,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
             },
           };
           if (isEditingProposal) {
-            actions.push([proposeBtn, {
+            const editActions: ActionProps[] = [{
               disabled: isBusy || (itemDataHasChanges && proposal.type !== 'amendment'),
               onClick: handleClearProposal,
               icon: 'trash',
@@ -461,7 +479,17 @@ export const ItemDetail: React.VoidFunctionComponent<{
                 'you provided as part of the proposal.',
               ].join(''),
               intent: proposal.type !== 'amendment' ? 'danger' : 'warning',
-            }, ...(isEditingItemData ? [saveEditedItemDataButton] : [])]);
+            }];
+            if (isEditingItemData) {
+              editActions.push(saveEditedItemDataButton);
+            } else if (proposal.type === 'amendment' && proposal.amendmentType === 'supersession') {
+              editActions.push({
+                disabled: isBusy,
+                children: "Specify superseding items",
+                popup: <div css={css`padding: 10px;`}>{supersedingItems}</div>,
+              });
+            }
+            actions.push([proposeBtn, ...editActions]);
           } else {
             actions.push(proposeBtn);
           }
@@ -483,6 +511,10 @@ export const ItemDetail: React.VoidFunctionComponent<{
               onClick: handleInvalidate,
               children: "Invalidate",
             }, {
+              disabled: isBusy || itemHasProposal || isEditingItemData,
+              popup: supersedingItems,
+              children: "Supersede",
+            }, {
               disabled: isBusy || diffMode,
               active: isEditingItemData,
               onClick: () => setEditedItemData(d => d === null ? item.data : null),
@@ -502,8 +534,11 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
     return actions;
   }, [
-    isBusy, proposal?.type, proposal === null,
-    activeCRIsEditable, editedItemData === null, itemDataHasChanges,
+    isBusy,
+    itemClass.meta.id,
+    proposal === null, proposal?.type, (proposal as Supersession)?.supersedingItemIDs?.toString(),
+    activeCRIsEditable,
+    editedItemData === null, itemDataHasChanges,
     isEditingProposal,
     performOperation, handleSetProposal,
   ]);
