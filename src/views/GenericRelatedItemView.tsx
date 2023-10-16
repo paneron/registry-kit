@@ -3,20 +3,17 @@
 
 import { jsx, css } from '@emotion/react';
 import React, { useContext, useMemo, useState } from 'react';
-import { Button, ButtonGroup, ButtonProps, Drawer } from '@blueprintjs/core';
+import { Button, ButtonGroup, ButtonProps } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
-  type InternalItemReference,
   type RelatedItemClassConfiguration,
   isRegisterItem,
 } from '../types';
 import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
 import { isDrafted } from '../types/cr';
-import Search from './sidebar/Search';
-import { itemPathToItemRef } from './itemPathUtils';
-import type { Criterion, CriteriaGroup } from './FilterCriteria/models';
 import { Protocols } from './protocolRegistry';
+import ItemSearchDrawer from './ItemDrawer';
 
 
 const DUMMY_REF = {
@@ -193,60 +190,16 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
       )}
 
       {onChange
-        ? <RelatedItemSelectionDialog
+        ? <ItemSearchDrawer
             isOpen={selectDialogState}
             onClose={() => setSelectDialogState(false)}
-            onChange={onChange}
+            onChooseItem={onChange}
             availableClassIDs={classIDs}
           />
         : null}
     </ButtonGroup>
   );
 };
-
-
-const RelatedItemSelectionDialog: React.FC<{
-  isOpen: boolean
-  onClose: () => void
-  onChange: (itemRef: InternalItemReference) => void
-  availableClassIDs: string[]
-}> = function ({
-  isOpen, onClose, onChange,
-  availableClassIDs,
-}) {
-  const { subregisters } = useContext(BrowserCtx);
-
-  const classCriteria: Criterion[] = availableClassIDs.map(clsID => ({
-    key: 'item-class',
-    query: `objPath.indexOf(\"/${clsID}/\") >= 0`,
-  }));
-
-  const implicitCriteria: CriteriaGroup | undefined = classCriteria.length > 0
-    ? {
-        require: 'any',
-        criteria: classCriteria,
-      }
-    : undefined;
-
-  return (
-    <Drawer
-        isOpen={isOpen}
-        onClose={onClose}
-        enforceFocus={false}
-        style={{ padding: '0', width: 'unset' }}>
-      <Search
-        style={{ height: '100vh', width: '80vw', minWidth: '500px', maxWidth: '100vw' }}
-        availableClassIDs={availableClassIDs}
-        implicitCriteria={implicitCriteria}
-        stateName="superseding-item-selector-search"
-        onOpenItem={(itemPath) => {
-          onChange(itemPathToItemRef(subregisters !== undefined, itemPath));
-          onClose();
-        }}
-      />
-    </Drawer>
-  );
-}
 
 
 export default GenericRelatedItemView;
