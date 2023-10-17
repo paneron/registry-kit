@@ -15,8 +15,8 @@ import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 
 const Summary: React.FC<{
   cr: SomeCR
-  currentStakeholder: RegisterStakeholder
-  registerMetadata: Register
+  currentStakeholder?: RegisterStakeholder
+  registerMetadata?: Register
 }> = function ({ cr, currentStakeholder, registerMetadata }) {
 
   const crStakeholder = (registerMetadata?.stakeholders ?? []).
@@ -28,7 +28,9 @@ const Summary: React.FC<{
         ? <div>
             Author: <RegisterStakeholderListItem
               stakeholder={crStakeholder}
-              isCurrentUser={isCreatedBy(currentStakeholder, cr) || undefined}
+              isCurrentUser={(currentStakeholder
+                ? isCreatedBy(currentStakeholder, cr)
+                : false) || undefined}
             />
           </div>
         : null}

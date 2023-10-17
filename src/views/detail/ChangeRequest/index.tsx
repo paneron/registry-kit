@@ -23,6 +23,7 @@ import {
 import Proposals from '../../change-request/Proposals';
 import TransitionOptions from '../../change-request/TransitionOptions';
 import PastTransitions from '../../change-request/PastTransitions';
+import Summary from '../../change-request/Summary';
 import { type SomeCR, type Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
 import {
@@ -89,6 +90,8 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
   const {
     activeChangeRequestID,
     setActiveChangeRequestID,
+    stakeholder,
+    registerMetadata,
   } = useContext(BrowserCtx);
 
   const helmet = useMemo((() =>
@@ -221,7 +224,11 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
-
+        <Summary
+          cr={cr}
+          currentStakeholder={stakeholder}
+          registerMetadata={registerMetadata ?? undefined}
+        />
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
