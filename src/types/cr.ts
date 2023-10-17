@@ -94,7 +94,7 @@ export interface Base<S extends StateType = StateType>
 
 
 export function isCreatedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
-  return stakeholder.gitServerUsername === cr.submittingStakeholderGitServerUsername;
+  return stakeholder.gitServerUsername?.trim() !== '' && stakeholder.gitServerUsername === cr.submittingStakeholderGitServerUsername;
 }
 
 /** Whether given `cr` can be edited (as in, items changed) by specified stakeholder. */
