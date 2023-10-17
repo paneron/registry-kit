@@ -17,7 +17,7 @@ export interface ChangeRequestContextSpec {
   changeRequest?: CR | null
 
   /**
-   * Current user can edit the contents of this CR.
+   * Current user is eligible to edit the contents of this CR.
    * Always false if `changeRequest` is not defined or `null`.
    */
   canEdit: boolean

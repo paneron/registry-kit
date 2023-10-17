@@ -97,6 +97,7 @@ export function isCreatedBy(stakeholder: RegisterStakeholder, cr: Base): boolean
   return stakeholder.gitServerUsername === cr.submittingStakeholderGitServerUsername;
 }
 
+/** Whether given `cr` can be edited (as in, items changed) by specified stakeholder. */
 export function canBeEditedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
   return isCreatedBy(stakeholder, cr) && isEditableState(cr.state);
 }
