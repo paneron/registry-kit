@@ -6,14 +6,12 @@ import { jsx, css } from '@emotion/react';
 import {
   Button,
   Card,
-  FormGroup,
   Colors,
   NonIdealState,
   Spinner,
   UL,
   Tag,
   Divider,
-  Classes,
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
@@ -26,6 +24,8 @@ import {
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
+import TransitionOptions from '../../change-request/TransitionOptions';
+import PastTransitions from '../../change-request/PastTransitions';
 import { type SomeCR, type Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { Protocols } from '../../protocolRegistry';
@@ -36,7 +36,6 @@ import {
   maybeEllipsizeString,
   Datestamp,
 } from '../../util';
-import { TransitionOptions, getPastTransitions, getTransitions } from './transitions';
 
 
 const View: React.VoidFunctionComponent<{ uri: string }> =
@@ -53,7 +52,7 @@ memo(function ({ uri }) {
 const MaybeChangeRequest: React.VoidFunctionComponent<{ uri: string }> =
 memo(function ({ uri }) {
   const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
-  const { changeRequest: cr, canEdit } = useContext(ChangeRequestContext);
+  const { changeRequest: cr, canTransition } = useContext(ChangeRequestContext);
   const handleAfterDelete = useCallback(
     (() => closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`)),
     [closeTabWithURI]);
@@ -61,7 +60,7 @@ memo(function ({ uri }) {
   return (cr
     ? <ChangeRequestDetails
         cr={cr}
-        canEdit={canEdit}
+        canTransition={canTransition}
         css={css`
           position: absolute;
           inset: 0;
@@ -84,10 +83,10 @@ memo(function ({ uri }) {
 
 const ChangeRequestDetails: React.VoidFunctionComponent<{
   cr: SomeCR,
-  canEdit: boolean,
+  canTransition: boolean,
   afterDelete?: () => void,
   className?: string,
-}> = memo(function ({ cr, canEdit, afterDelete, className }) {
+}> = memo(function ({ cr, canTransition, afterDelete, className }) {
   const { performOperation, updateTree } = useContext(DatasetContext);
   const {
     registerMetadata,
@@ -104,7 +103,6 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
   const isActive = activeChangeRequestID === cr.id;
   const anotherIsActive = activeChangeRequestID && activeChangeRequestID !== cr.id;
-  const canTransition = stakeholder && getTransitions(cr, stakeholder).length > 0;
 
   const crStakeholder = (registerMetadata?.stakeholders ?? []).
     find(s => s.gitServerUsername === cr.submittingStakeholderGitServerUsername);
@@ -275,18 +273,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
-        {getPastTransitions(cr).map(([key, el], idx) =>
-          <React.Fragment key={key}>
-            {idx !== 0 ? <Divider /> : null}
-            <FormGroup label={`${key}:`}>
-              <div
-                  css={css`white-space: pre-wrap;`}
-                  className={Classes.RUNNING_TEXT}>
-                {el}
-              </div>
-            </FormGroup>
-          </React.Fragment>
-        )}
+        <PastTransitions cr={cr} />
       </Card>
 
       {canTransition

@@ -8,11 +8,11 @@ import { Tooltip2 as Tooltip } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { BrowserCtx } from '../../BrowserCtx';
-import type { RegisterItem, RegisterStakeholder, Supersession } from '../../../types';
-import { itemPathInCR, crIDToCRPath } from '../../itemPathUtils';
-import * as CR from '../../../types/cr';
-import { proposalsToObjectChangeset } from '../../change-request/objectChangeset';
+import { BrowserCtx } from '../BrowserCtx';
+import type { RegisterItem, RegisterStakeholder, Supersession } from '../../types';
+import { itemPathInCR, crIDToCRPath } from '../itemPathUtils';
+import * as CR from '../../types/cr';
+import { proposalsToObjectChangeset } from '../change-request/objectChangeset';
 
 
 interface State {
@@ -244,47 +244,6 @@ function ({ cr, className }) {
 };
 
 
-export function getPastTransitions(cr: CR.Base): [key: string, el: JSX.Element][] {
-  const els: [key: string, el: JSX.Element][] = [];
-  if (CR.hasSubmitterInput(cr)) {
-    els.push(['Submitter’s justification', <>{cr.justification}</>]);
-  }
-  if (CR.hasRegisterManagerInput(cr)) {
-    els.push(['Register manager’s notes', <>{cr.registerManagerNotes}</>]);
-  }
-  if (CR.hasControlBodyInput(cr)) {
-    els.push(['Control body decision', <>{cr.controlBodyNotes}</>]);
-  }
-  if (CR.hasAppealRequest(cr)) {
-    els.push(['Reason for appeal', <>{cr.appealReason}</>]);
-  }
-  if (CR.hasRegisterOwnerInput(cr)) {
-    els.push(['Register owner notes', <>{cr.registerOwnerNotes}</>]);
-  }
-  return els;
-}
-
-//export const PastTransitions: React.FC<{ cr: CR.Base }> = function ({ cr }) {
-//  const els: JSX.Element[] = [];
-//  if (CR.hasSubmitterInput(cr)) {
-//    els.push(<SubmitterInputWidget value={cr} />);
-//  }
-//  if (CR.hasRegisterManagerInput(cr)) {
-//    els.push(<RegisterManagerNotesWidget value={cr} />);
-//  }
-//  if (CR.hasControlBodyInput(cr)) {
-//    els.push(<ControlBodyNotesWidget value={cr} />);
-//  }
-//  if (CR.hasAppealRequest(cr)) {
-//    els.push(<AppealRequestWidget value={cr} />);
-//  }
-//  if (CR.hasRegisterOwnerInput(cr)) {
-//    els.push(<RegisterOwnerNotesWidget value={cr} />);
-//  }
-//  return <>{els}</>;
-//}
-
-
 type PossibleTransitionForCR<CR extends CR.Base> = [
   targetState: CR.StateType,
   cfg: CR.TransitionConfig<CR, CR.SomeCR, any>,
@@ -294,7 +253,7 @@ type PossibleTransitionForCR<CR extends CR.Base> = [
  * Returns a list of transitions
  * that can be performed on given CR by given stakeholder.
  */
-export function getTransitions<CR extends CR.Base>(
+function getTransitions<CR extends CR.Base>(
   cr: CR,
   stakeholder: RegisterStakeholder,
 ): PossibleTransitionForCR<CR>[] {
@@ -307,6 +266,15 @@ export function getTransitions<CR extends CR.Base>(
   } else {
     return [];
   }
+}
+
+
+/**
+ * Returns true if given CR can be transitioned
+ * *and* given stakeholder is eligible to transition it.
+ */
+export function canBeTransitionedBy(stakeholder: RegisterStakeholder, cr: CR.SomeCR) {
+  return getTransitions(cr, stakeholder).length > 0;
 }
 
 
@@ -624,3 +592,6 @@ const TRANSITIONS: CR.Transitions = {
     },
   },
 } as const;
+
+
+export default TransitionOptions;

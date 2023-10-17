@@ -6,6 +6,7 @@ import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { type SomeCR as CR, canBeEditedBy } from '../../types/cr';
 import { BrowserCtx } from '../BrowserCtx';
+import { canBeTransitionedBy } from './TransitionOptions';
 
 
 export interface ChangeRequestContextSpec {
@@ -20,11 +21,18 @@ export interface ChangeRequestContextSpec {
    * Always false if `changeRequest` is not defined or `null`.
    */
   canEdit: boolean
+
+  /**
+   * Current user is eligible to transition the contents of this CR.
+   * Always false if `changeRequest` is not defined or `null`.
+   */
+  canTransition: boolean
 }
 
 export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec>({
   changeRequest: null,
   canEdit: false,
+  canTransition: false,
 });
 
 export const ChangeRequestContextProvider: React.FC<{
@@ -48,9 +56,16 @@ export const ChangeRequestContextProvider: React.FC<{
       ? true
       : false;
 
+  const canTransition = changeRequest
+    && stakeholder
+    && canBeTransitionedBy(stakeholder, changeRequest)
+      ? true
+      : false;
+
   const ctx: ChangeRequestContextSpec = useMemo((() => ({
     changeRequest,
     canEdit,
+    canTransition,
   })), [changeRequest, canEdit]);
 
   return (
