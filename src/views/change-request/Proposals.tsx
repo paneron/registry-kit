@@ -327,7 +327,7 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
         itemClass={itemClass}
         key={JSON.stringify(itemRef)}
         compactHeader
-      />
+      />;
 
   return <div css={css`position: absolute; inset: 0; display: flex; flex-flow: column;`}>
     {view}
