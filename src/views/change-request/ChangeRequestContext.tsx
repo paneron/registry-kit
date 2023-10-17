@@ -39,6 +39,7 @@ export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec
   changeRequest: null,
   canEdit: false,
   canTransition: false,
+  canDelete: false,
 });
 
 export const ChangeRequestContextProvider: React.FC<{
