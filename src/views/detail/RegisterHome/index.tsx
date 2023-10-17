@@ -90,7 +90,7 @@ function () {
           stakeholder!.gitServerUsername!,
           getObjectData,
           async function findObjects(predicate: string) {
-            const result = (await getMapReducedData({
+            const result = await getMapReducedData({
               chains: {
                 _: {
                   mapFunc: `
@@ -101,7 +101,7 @@ function () {
                   `,
                 },
               },
-            }));
+            });
             // NOTE: map returns an empty object if there’re no items,
             // but we promise to return a list.
             if (!Array.isArray(result._)) {
