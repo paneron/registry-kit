@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react';
 import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { type SomeCR as CR, canBeEditedBy } from '../../types/cr';
+import { type SomeCR as CR, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
 import { BrowserCtx } from '../BrowserCtx';
 import { canBeTransitionedBy } from './TransitionOptions';
 
@@ -27,6 +27,12 @@ export interface ChangeRequestContextSpec {
    * Always false if `changeRequest` is not defined or `null`.
    */
   canTransition: boolean
+
+  /**
+   * Current user is eligible to delete this CR.
+   * Always false if `changeRequest` is not defined or `null`.
+   */
+  canDelete: boolean
 }
 
 export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec>({
@@ -62,10 +68,17 @@ export const ChangeRequestContextProvider: React.FC<{
       ? true
       : false;
 
+  const canDelete = changeRequest
+    && stakeholder
+    && canBeDeletedBy(stakeholder, changeRequest)
+      ? true
+      : false;
+
   const ctx: ChangeRequestContextSpec = useMemo((() => ({
     changeRequest,
     canEdit,
     canTransition,
+    canDelete,
   })), [changeRequest, canEdit]);
 
   return (

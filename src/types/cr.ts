@@ -102,6 +102,11 @@ export function canBeEditedBy(stakeholder: RegisterStakeholder, cr: Base): boole
   return isCreatedBy(stakeholder, cr) && isEditableState(cr.state);
 }
 
+/** Whether given `cr` can be deleted by given stakeholder. */
+export function canBeDeletedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
+  return isCreatedBy(stakeholder, cr) && isEditableState(cr.state);
+}
+
 
 /** Proposal structure for single-file proposal import format. */
 export interface ImportableCR {

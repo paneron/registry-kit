@@ -10,11 +10,8 @@ import {
   NonIdealState,
   Spinner,
   UL,
-  Tag,
-  Divider,
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { JSONStringifyNormalized } from '@riboseinc/paneron-extension-kit/util';
 import { BrowserCtx } from '../../BrowserCtx';
@@ -27,7 +24,6 @@ import Proposals from '../../change-request/Proposals';
 import TransitionOptions from '../../change-request/TransitionOptions';
 import PastTransitions from '../../change-request/PastTransitions';
 import { type SomeCR, type Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
-import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { Protocols } from '../../protocolRegistry';
 import {
   TabContentsWithHeader,
@@ -52,7 +48,7 @@ memo(function ({ uri }) {
 const MaybeChangeRequest: React.VoidFunctionComponent<{ uri: string }> =
 memo(function ({ uri }) {
   const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
-  const { changeRequest: cr, canTransition } = useContext(ChangeRequestContext);
+  const { changeRequest: cr, canDelete, canTransition } = useContext(ChangeRequestContext);
   const handleAfterDelete = useCallback(
     (() => closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`)),
     [closeTabWithURI]);
@@ -61,6 +57,7 @@ memo(function ({ uri }) {
     ? <ChangeRequestDetails
         cr={cr}
         canTransition={canTransition}
+        canDelete={canDelete}
         css={css`
           position: absolute;
           inset: 0;
@@ -84,13 +81,12 @@ memo(function ({ uri }) {
 const ChangeRequestDetails: React.VoidFunctionComponent<{
   cr: SomeCR,
   canTransition: boolean,
+  canDelete: boolean,
   afterDelete?: () => void,
   className?: string,
-}> = memo(function ({ cr, canTransition, afterDelete, className }) {
+}> = memo(function ({ cr, canTransition, canDelete, afterDelete, className }) {
   const { performOperation, updateTree } = useContext(DatasetContext);
   const {
-    registerMetadata,
-    stakeholder,
     activeChangeRequestID,
     setActiveChangeRequestID,
   } = useContext(BrowserCtx);
@@ -104,26 +100,19 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
   const isActive = activeChangeRequestID === cr.id;
   const anotherIsActive = activeChangeRequestID && activeChangeRequestID !== cr.id;
 
-  const crStakeholder = (registerMetadata?.stakeholders ?? []).
-    find(s => s.gitServerUsername === cr.submittingStakeholderGitServerUsername);
-
-  const authorIsCurrentUser = (
-    stakeholder?.gitServerUsername &&
-    cr.submittingStakeholderGitServerUsername === stakeholder.gitServerUsername);
-
   const crItemEntries = Object.entries(cr.items).map(i => JSON.stringify(i));
   const hasItems = crItemEntries.length > 0;
   const crItemMemo = crItemEntries.toString();
 
   const handleDelete = useMemo((() =>
-    authorIsCurrentUser && updateTree && !isActive && !hasItems && !(cr as Proposed).timeProposed
+    canDelete && updateTree && !isActive && !hasItems && !(cr as Proposed).timeProposed
     ? performOperation('deleting proposal', async function handleDelete() {
         const subtreeRoot = crIDToCRPath(cr.id).replace('/main.yaml', '');
         await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove CR draft' });
         afterDelete?.();
       })
     : undefined
-  ), [isActive, hasItems, authorIsCurrentUser, cr.id, (cr as Proposed).timeProposed, afterDelete, updateTree]);
+  ), [isActive, hasItems, canDelete, cr.id, (cr as Proposed).timeProposed, afterDelete, updateTree]);
 
   const proposals = useMemo((() =>
     hasItems
@@ -233,43 +222,6 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
 
-        {crStakeholder
-          ? <div>
-              Author: <RegisterStakeholderListItem
-                stakeholder={crStakeholder}
-                isCurrentUser={authorIsCurrentUser || undefined}
-              />
-            </div>
-          : null}
-
-        <Divider />
-        <div>
-          Register&nbsp;version before&nbsp;proposal: <strong>{cr.registerVersion ?? 'N/A'}</strong>
-          &ensp;
-          {cr.registerVersion === registerMetadata?.version?.id
-            ? <Tag css={css`display: inline;`} intent='success' minimal round>
-                current
-                {" "}
-                <HelpTooltip intent='success' content={<>
-                  Published version of the register
-                  {" "}
-                  had not changed since this proposal started.
-                </>} />
-              </Tag>
-            : <Tag css={css`display: inline;`} intent='warning' minimal round>
-                not current
-                {" "}
-                <HelpTooltip intent='warning' icon='warning-sign' content={<>
-                  Register is currently at version <strong>{registerMetadata?.version?.id ?? 'N/A'}</strong>,
-                  {" "}
-                  which is different from version proposal author may have had in mind.
-                  {" "}
-                  It is recommended that proposed changes are reviewed to avoid unintentionally
-                  {" "}
-                  undoing a prior change.
-                </>} />
-              </Tag>}
-        </div>
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
