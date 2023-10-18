@@ -3,7 +3,7 @@
 
 import React, { useMemo, useContext } from 'react';
 //import { Helmet } from 'react-helmet';
-import { jsx } from '@emotion/react';
+import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { Menu, MenuItem, type MenuItemProps, NonIdealState, Spinner } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -16,13 +16,22 @@ import { Protocols } from '../../protocolRegistry';
 import { crIDToCRPath } from '../../itemPathUtils';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader, CardInGrid } from '../../util';
-import { CurrentProposal, NewProposal } from './Proposal';
+import {
+  // CurrentProposal,
+  // NewProposal,
+  Proposals,
+} from './Proposal';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { customViews, registerMetadata, stakeholder, offline, itemClasses, setActiveChangeRequestID } = useContext(BrowserCtx);
+  const {
+    customViews, registerMetadata, stakeholder,
+    // offline,
+    itemClasses,
+    setActiveChangeRequestID,
+  } = useContext(BrowserCtx);
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const {
     requestFileFromFilesystem,
@@ -144,62 +153,85 @@ function () {
     onClick: () => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`),
   })), [spawnTab, customViews]);
 
-  let proposalBlock = useMemo(() => {
-    if (activeCR) {
-      return <HomeBlock
-        View={CurrentProposal}
-        props={activeCR
-          ? { proposal: activeCR, stakeholder }
-          : activeCR}
-        actions={[{
-          text: "Exit proposal view",
-          onClick: () => setActiveChangeRequestID?.(null),
-          disabled: !setActiveChangeRequestID,
-        }]}
-      />;
-    } else {
-      const importAction: MenuItemProps = {
-        text: "Import proposal",
-        icon: 'import',
-        disabled: !canCreateCR,
-        onClick: handleImportProposal,
-      };
-      switch (stakeholder?.role) {
-        case 'submitter':
-        case 'owner':
-        case 'manager':
-        case 'control-body':
-          return <HomeBlock
-            View={NewProposal}
-            props={!offline && registerMetadata
-              ? {
-                  stakeholder,
-                  register: registerMetadata,
-                  onPropose: canCreateCR ? handleNewProposal : undefined,
-                }
-              : null}
-            actions={!offline && registerMetadata
-              ? [importAction]
-              : []}
-            error={offline
-              ? <>
-                  Because this repository is offline (no remote configured),
-                  and remote username is currently required for proposal,
-                  you cannot create proposals.
-                </>
-              : !registerMetadata
-                ? "Unable to retrieve register metadata"
-                : undefined}
-          />;
-        case undefined:
-        default:
-          return <HomeBlock
-            View={CurrentProposal}
-            props={null}
-            error="View view is not implemented yet"
-          />;
-      }
-    }
+  const proposalBlock = useMemo(() => {
+    return <HomeBlock
+      View={Proposals}
+      css={css`
+        display: flex; flex-flow: column nowrap;
+        ${activeCR
+          ? 'height: 300px; flex: 1;'
+          : 'height: 300px; width: 250px;'}
+        padding: 0;
+      `}
+      props={{
+        stakeholder,
+        activeCR,
+        onImportProposal: handleImportProposal,
+        onCreateProposal: handleNewProposal,
+        onExitProposal: setActiveChangeRequestID
+          ? () => setActiveChangeRequestID?.(null)
+          : undefined,
+        onEnterProposal: setActiveChangeRequestID
+          ? crid => { setActiveChangeRequestID?.(crid) }
+          : undefined,
+      }}
+    />
+
+    // if (activeCR) {
+    //   return <HomeBlock
+    //     View={CurrentProposal}
+    //     props={activeCR
+    //       ? { proposal: activeCR, stakeholder }
+    //       : activeCR}
+    //     actions={[{
+    //       text: "Exit proposal view",
+    //       onClick: () => setActiveChangeRequestID?.(null),
+    //       disabled: !setActiveChangeRequestID,
+    //     }]}
+    //   />;
+    // } else {
+    //   const importAction: MenuItemProps = {
+    //     text: "Import proposal",
+    //     icon: 'import',
+    //     disabled: !canCreateCR,
+    //     onClick: handleImportProposal,
+    //   };
+    //   switch (stakeholder?.role) {
+    //     case 'submitter':
+    //     case 'owner':
+    //     case 'manager':
+    //     case 'control-body':
+    //       return <HomeBlock
+    //         View={NewProposal}
+    //         props={!offline && registerMetadata
+    //           ? {
+    //               stakeholder,
+    //               register: registerMetadata,
+    //               onPropose: canCreateCR ? handleNewProposal : undefined,
+    //             }
+    //           : null}
+    //         actions={!offline && registerMetadata
+    //           ? [importAction]
+    //           : []}
+    //         error={offline
+    //           ? <>
+    //               Because this repository is offline (no remote configured),
+    //               and remote username is currently required for proposal,
+    //               you cannot create proposals.
+    //             </>
+    //           : !registerMetadata
+    //             ? "Unable to retrieve register metadata"
+    //             : undefined}
+    //       />;
+    //     case undefined:
+    //     default:
+    //       return <HomeBlock
+    //         View={CurrentProposal}
+    //         props={null}
+    //         error="View view is not implemented yet"
+    //       />;
+    //   }
+    // }
   }, [stakeholder, activeCR, canCreateCR, registerMetadata, setActiveChangeRequestID]);
 
   return (
@@ -235,17 +267,20 @@ interface HomeBlockProps<P extends Record<string, any>> {
   props: P | null | undefined,
   error?: string | JSX.Element,
   actions?: MenuItemProps[],
+  className?: string,
 }
 function HomeBlock<P extends Record<string, any>>(
-  { View, props, error, actions }: HomeBlockProps<P>
+  { View, props, error, actions, className }: HomeBlockProps<P>
 ) {
   return (
-    <CardInGrid>
-      {props
-        ? <View {...props} />
-        : props === undefined
-          ? <NonIdealState icon={<Spinner />} />
-          : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
+    <CardInGrid css={css`padding: 5px;`} className={className}>
+      <div css={css`position: relative; flex: 1;`}>
+        {props
+          ? <View {...props} />
+          : props === undefined
+            ? <NonIdealState icon={<Spinner />} />
+            : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
+      </div>
       {actions
         ? <Menu>
             {actions.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
