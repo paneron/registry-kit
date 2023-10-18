@@ -18,7 +18,6 @@ const Summary: React.FC<{
   currentStakeholder?: RegisterStakeholder
   registerMetadata?: Register
 }> = function ({ cr, currentStakeholder, registerMetadata }) {
-
   const crStakeholder = (registerMetadata?.stakeholders ?? []).
     find(s => s.gitServerUsername === cr.submittingStakeholderGitServerUsername);
 
