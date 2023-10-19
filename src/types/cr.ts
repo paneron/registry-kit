@@ -210,6 +210,10 @@ export interface SubmittedForControlBodyReview extends
   RegisterManagerInput,
   Base<typeof State.SUBMITTED_FOR_CONTROL_BODY_REVIEW> {}
 
+export function isSubmittedForControlBodyReview(cr: Base): cr is SubmittedForControlBodyReview {
+  return isInState(cr, State.SUBMITTED_FOR_CONTROL_BODY_REVIEW)
+}
+
 export interface ReturnedForClarificationByManager extends
   Omit<Proposed, 'state'>,
   RegisterManagerInput,
@@ -219,6 +223,10 @@ export interface ReturnedForClarificationByControlBody extends
   Omit<SubmittedForControlBodyReview, 'state'>,
   ControlBodyInput,
   Base<typeof State.RETURNED_FOR_CLARIFICATION> {}
+
+export function isReturnedForClarification(cr: Base): cr is (ReturnedForClarificationByManager | ReturnedForClarificationByControlBody) {
+  return isInState(cr, State.RETURNED_FOR_CLARIFICATION)
+}
 
 export interface Accepted extends
   Omit<SubmittedForControlBodyReview, 'state'>,
@@ -232,6 +240,9 @@ export interface Rejected extends
   Omit<SubmittedForControlBodyReview, 'state'>,
   ControlBodyInput,
   Base<typeof State.REJECTED> { timeDisposed: Date }
+export function isRejected(cr: Base): cr is Rejected {
+  return isInState(cr, State.REJECTED);
+}
 
 export interface Appealed extends
   Omit<Rejected, 'state' | 'timeDisposed'>,
@@ -245,6 +256,9 @@ export interface RejectionUpheld extends
   Omit<Appealed, 'state' | 'timeDisposed'>,
   RegisterOwnerInput,
   Base<typeof State.REJECTION_UPHELD_ON_APPEAL> { timeDisposed: Date }
+export function isRejectedOnAppeal(cr: Base): cr is RejectionUpheld {
+  return isInState(cr, State.REJECTION_UPHELD_ON_APPEAL);
+}
 
 export interface AcceptedOnAppeal extends
   Omit<Appealed, 'state' | 'timeDisposed'>,
@@ -257,6 +271,9 @@ export function isAcceptedOnAppeal(cr: Base): cr is AcceptedOnAppeal {
 export interface RejectedWithAppealWithdrawn extends
   Omit<Appealed, 'state' | 'timeDisposed'>,
   Base<typeof State.APPEAL_WITHDRAWN> { timeDisposed: Date }
+export function isRejectedWithAppealWithdrawn(cr: Base): cr is RejectedWithAppealWithdrawn {
+  return isInState(cr, State.APPEAL_WITHDRAWN);
+}
 
 
 
