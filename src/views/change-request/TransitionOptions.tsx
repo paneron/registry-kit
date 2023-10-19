@@ -166,6 +166,15 @@ export const TransitionOptions: React.FC<{
         ...(transitionCfg.func(cr, stateInput) as Omit<CR.SomeCR, 'state'>),
         state: transitionCfg.targetState,
       };
+      newCR.pastTransitions ||= [];
+      newCR.pastTransitions.push({
+        label: newCR.state,
+        timestamp: new Date(),
+        fromState: cr.state,
+        toState: newCR.state,
+        stakeholder,
+        input: stateInput,
+      });
       //console.debug("Transitioning CR", JSON.stringify(cr), JSON.stringify(newCR));
       const changeset: ObjectChangeset = {
         [crIDToCRPath(cr.id)]: {

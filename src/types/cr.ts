@@ -90,6 +90,18 @@ export interface Base<S extends StateType = StateType>
    * A link to external discussion.
    */
   externalDiscussionURI?: string;
+
+  pastTransitions?: TransitionEntry[];
+}
+
+
+export interface TransitionEntry {
+  timestamp: Date;
+  label: string;
+  fromState: StateType;
+  toState: StateType;
+  stakeholder: RegisterStakeholder;
+  input: StateInput;
 }
 
 
