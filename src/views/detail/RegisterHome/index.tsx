@@ -14,15 +14,12 @@ import { ChangeRequestContext } from '../../change-request/ChangeRequestContext'
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
 import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
-import { type SomeCR as CR } from '../../../types/cr';
+import { type SomeCR as CR, State } from '../../../types/cr';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader, CardInGrid } from '../../util';
-import {
-  // CurrentProposal,
-  Proposals,
-} from './Proposal';
+import { Proposals, ProposalHistoryAndTransition } from './Proposal';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
@@ -47,17 +44,17 @@ function () {
   const registerVersion = registerMetadata?.version;
 
   const getNewEmptyCRChangeset:
-  undefined | ((idea: string) => Promise<ObjectChangeset>) =
+  undefined | ((idea: string) => Promise<[ObjectChangeset, string]>) =
   useMemo(() => {
     if (makeRandomID && stakeholder && canCreateCR(stakeholder)) {
       return async function getNewEmptyCRChangeset (newIdea: string) {
         const crID = await makeRandomID();
-        return newCRObjectChangeset(
+        return [newCRObjectChangeset(
           crID,
           newIdea,
           registerVersion!,
           stakeholder!.gitServerUsername!,
-        );
+        ), crID];
       };
     } else {
       return undefined;
@@ -65,10 +62,10 @@ function () {
   }, [makeRandomID, stakeholder, registerVersion]);
 
   const getImportedCRChangeset:
-  undefined | (() => Promise<ObjectChangeset>) =
+  undefined | (() => Promise<[ObjectChangeset, string]>) =
   useMemo(() => {
     if (requestFileFromFilesystem && stakeholder && canImportCR(stakeholder)) {
-      return async function getImportedCRChangeset(): Promise<ObjectChangeset> {
+      return async function getImportedCRChangeset() {
         const data = await requestFileFromFilesystem({
           prompt: "Select one register proposal JSON file",
           filters: [
@@ -81,7 +78,7 @@ function () {
         }
         if (isImportableCR(fileData)) {
           try {
-            const changeset = await importedProposalToCRObjectChangeset(
+            const [changeset, crID] = await importedProposalToCRObjectChangeset(
               fileData,
               itemClasses,
               stakeholder!.gitServerUsername!,
@@ -107,7 +104,7 @@ function () {
                 return result._;
               },
             );
-            return changeset;
+            return [changeset, crID];
           } catch (e) {
             throw new Error("Error reading proposal data");
           }
@@ -121,22 +118,26 @@ function () {
   }, [getMapReducedData, requestFileFromFilesystem, getObjectData, stakeholder]);
 
   const [importCR, createCR] = useMemo(() => {
-    if (updateObjects) {
+    if (updateObjects && setActiveChangeRequestID) {
       return [
         getImportedCRChangeset
           ? performOperation('importing proposal', async function () {
+              const [objectChangeset, crID] = await getImportedCRChangeset(); 
               await updateObjects({
                 commitMessage: 'import proposal',
-                objectChangeset: await getImportedCRChangeset(),
+                objectChangeset,
               });
+              setActiveChangeRequestID(crID);
             })
           : undefined,
         getNewEmptyCRChangeset
           ? performOperation('creating blank proposal', async function (newIdea: string) {
+              const [objectChangeset, crID] = await getNewEmptyCRChangeset(newIdea);
               await updateObjects({
                 commitMessage: 'start new empty proposal',
-                objectChangeset: await getNewEmptyCRChangeset(newIdea),
+                objectChangeset,
               });
+              setActiveChangeRequestID(crID);
             })
           : undefined,
       ];
@@ -200,7 +201,10 @@ function () {
 
   const proposalBlocks: JSX.Element[] = useMemo(() => {
     const blocks: JSX.Element[] = [];
-    if (actionableProposals.find(p => p[1] && p[1].length > 0) || activeCR || importCR || createCR) {
+    if (
+      registerMetadata && (
+      actionableProposals.find(p => p[1] && p[1].length > 0) || activeCR || importCR || createCR)
+    ) {
       blocks.push(
         <HomeBlock
           View={Proposals}
@@ -212,7 +216,7 @@ function () {
           props={{
             stakeholder,
             activeCR,
-            register: registerMetadata || undefined,
+            register: registerMetadata,
             actionableProposals,
             onImport: importCR,
             onCreate: createCR,
@@ -227,20 +231,26 @@ function () {
         />
       );
     }
-    // if (activeCR) {
-    //   blocks.push(
-    //     <HomeBlock
-    //       View={ProposalStatus}
-    //       key="active proposal status"
-    //       description="Current proposal status"
-    //       props={{
-    //         activeCR,
-    //       }}
-    //     />
-    //   );
-    // }
+    if (activeCR) {
+      blocks.push(
+        <HomeBlock
+          View={ProposalHistoryAndTransition}
+          css={css`
+            padding: 0;
+            max-height: 300px; overflow-y: auto;
+            flex-basis: 20%; flex-grow: 1;
+          `}
+          key="active proposal status"
+          description="Current proposal status"
+          props={{
+            proposal: activeCR,
+            stakeholder,
+          }}
+        />
+      );
+    }
     return blocks;
-  }, [importCR, createCR, registerMetadata, stakeholder, activeCR, toJSONNormalized(actionableProposals)]);
+  }, [importCR, createCR, registerMetadata, stakeholder, activeCR, activeCR?.state, toJSONNormalized(actionableProposals)]);
 
     // if (activeCR) {
     //   return <HomeBlock
@@ -352,7 +362,7 @@ function HomeBlock<P extends Record<string, any>>(
         css={css`padding: 5px; display: flex; flex-flow: column nowrap;`}
         description={description}
         className={className}>
-      <div css={css`position: relative; flex: 1; padding: 5px;`}>
+      <div css={css`position: relative; flex: 1;`}>
         {props
           ? <View {...props} />
           : props === undefined
@@ -382,27 +392,69 @@ type ActionableProposalGroup = readonly [
 ];
 const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
 [
-  ['unsubmitted', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  ['my drafts', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
     if (stakeholder && stakeholder.gitServerUsername) {
-      const stakeholderUsername = stakeholder.gitServerUsername;
-      const stakeholderRole = stakeholder.role;
-      const stakeholderCondition = stakeholderRole !== 'submitter'
-        ? 'true'
-        : `obj.submittingStakeholderGitServerUsername === "${stakeholderUsername}"`
-      // Don’t show drafts in the list of pending proposals, unless it’s user’s own drafts.
-      const query = `(obj.state === "draft" || obj.state === "returned-for-clarification") && ${stakeholderCondition}`;
+      const stakeholderCondition = `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
+      const query = `(obj.state === "${State.DRAFT}" || obj.state === "${State.RETURNED_FOR_CLARIFICATION}") && (${stakeholderCondition})`;
       return query;
     } else {
       return 'false';
     }
   }],
-  ['pending manager review', new Set(['manager', 'control-body', 'owner']), function managerProposals() {
-    return 'false';
+  ['my rejected', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+    // Rejections are actionable because they can be appealed by the submitter.
+    if (stakeholder && stakeholder.gitServerUsername) {
+      const stakeholderCondition = `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
+      const query = `(obj.state === "${State.REJECTED}") && (${stakeholderCondition})`;
+      return query;
+    } else {
+      return 'false';
+    }
+  }],
+  ['everyone’s drafts or returned', new Set(['manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+    if (stakeholder && stakeholder.gitServerUsername) {
+      const stakeholderCondition = `obj.submittingStakeholderGitServerUsername !== "${stakeholder.gitServerUsername}"`;
+      const query = `(obj.state === "${State.DRAFT}" || obj.state === "${State.RETURNED_FOR_CLARIFICATION}") && (${stakeholderCondition})`;
+      return query;
+    } else {
+      return 'false';
+    }
+  }],
+  // ['latest reviewed', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  //   // TODO: Should filter only rejected perhaps?
+  //   // Approved/accepted proposals can be shown in another (public) area.
+  //   if (stakeholder && stakeholder.gitServerUsername) {
+  //     const stakeholderCondition = stakeholder?.role !== 'submitter'
+  //       ? 'true'
+  //       : `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
+  //     // Don’t show drafts in the list of pending proposals, unless it’s user’s own drafts.
+  //     const query = `(obj.state === "${State.ACCEPTED} || obj.state === "${State.REJECTED} || obj.state === "${State.REJECTION_UPHELD_ON_APPEAL}"") && ${stakeholderCondition}`;
+  //     return query;
+  //   } else {
+  //     return 'false';
+  //   }
+  //   // TODO: Implement limit
+  // }],
+  // ['latest withdrawn', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  //   if (stakeholder && stakeholder.gitServerUsername) {
+  //     const stakeholderCondition = stakeholder?.role !== 'submitter'
+  //       ? 'true'
+  //       : `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
+  //     // Don’t show drafts in the list of pending proposals, unless it’s user’s own drafts.
+  //     const query = `(obj.state === "${State.WITHDRAWN}" || obj.state === "${State.APPEAL_WITHDRAWN}") && ${stakeholderCondition}`;
+  //     return query;
+  //   } else {
+  //     return 'false';
+  //   }
+  //   // TODO: Implement limit
+  // }],
+  ['pending owner appeal review', new Set(['owner']), function ownerProposals() {
+    return `obj.state === "${State.APPEALED}"`;
   }],
   ['pending control body review', new Set(['control-body', 'owner']), function cbProposals() {
-    return 'false';
+    return `obj.state === "${State.SUBMITTED_FOR_CONTROL_BODY_REVIEW}"`;
   }],
-  ['pending owner review', new Set(['owner']), function ownerProposals() {
-    return 'false';
+  ['pending manager review', new Set(['manager', 'control-body', 'owner']), function managerProposals() {
+    return `obj.state === "${State.PROPOSED}"`;
   }],
 ] as const;

@@ -72,7 +72,7 @@ export async function importedProposalToCRObjectChangeset(
   importingStakeholderGitServerUsername: string,
   getObjectData: (opts: { objectPaths: string[] }) => Promise<{ data: ObjectDataset }>,
   findObjects: (predicate: string) => Promise<any[]>,
-): Promise<ObjectChangeset> {
+): Promise<[changeset: ObjectChangeset, id: string]> {
   const proposalDraft: Drafted = importableCR.proposalDraft;
   proposalDraft.submittingStakeholderGitServerUsername = importingStakeholderGitServerUsername;
   const crID = proposalDraft.id;
@@ -128,7 +128,7 @@ export async function importedProposalToCRObjectChangeset(
     };
   }
 
-  return changeset;
+  return [changeset, crID];
 }
 
 

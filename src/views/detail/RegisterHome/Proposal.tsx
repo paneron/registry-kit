@@ -2,36 +2,103 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import styled from '@emotion/styled';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
-  InputGroup,
+  FormGroup,
+  ControlGroup,
+  TextArea,
   PanelStack2 as PanelStack, type Panel,
   Menu, MenuDivider, MenuItem,
   Icon, Spinner,
   NonIdealState,
+  Colors,
 } from '@blueprintjs/core';
 
+import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { maybeEllipsizeString } from '../../util';
 import type {
   Register,
   RegisterStakeholder,
 } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import { canBeTransitionedBy } from '../../change-request/TransitionOptions';
+import TransitionOptions, { canBeTransitionedBy } from '../../change-request/TransitionOptions';
+import { getTransitionHistory } from '../../change-request/PastTransitions';
+import Summary from '../../change-request/Summary';
 
 
-export const CurrentProposal: React.VoidFunctionComponent<{
+const CurrentProposal: React.VoidFunctionComponent<{
   proposal: CR
   stakeholder?: RegisterStakeholder
+  register: Register
   className?: string
-}> = function ({ proposal, className }) {
+}> = function ({ stakeholder, register, proposal, className }) {
   return (
     <div className={className}>
-      {proposal.id}
+      <Summary cr={proposal} currentStakeholder={stakeholder} registerMetadata={register} />
     </div>
   );
 };
+
+
+export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
+  proposal: CR
+  stakeholder?: RegisterStakeholder
+  className?: string
+}> = function ({ stakeholder, proposal, className }) {
+  const pastTransitions = getTransitionHistory(proposal);
+  return (
+    <div className={className}>
+      <div>
+        {pastTransitions.map(([label, notes, color], idx) =>
+          <TransitionEntry
+            key={idx}
+            css={css`
+              background-color: ${color ? color : Colors.GRAY1};
+              &::before {
+                background-color: ${color ? color : Colors.GRAY1};
+              }
+              &:last-child {
+                font-weight: bold;
+              }
+            `}
+          >
+            {label}
+            {notes
+              ? <>&nbsp;<HelpTooltip icon="info-sign" content={notes} /></>
+              : undefined}
+          </TransitionEntry>
+        )}
+      </div>
+      <TransitionOptions
+        stakeholder={stakeholder}
+        cr={proposal}
+        css={css`padding: 10px;`}
+      />
+    </div>
+  );
+};
+
+
+const TransitionEntry = styled.div`
+  position: relative;
+  color: white;
+  padding: 10px;
+  margin-bottom: 1px;
+  &::before {
+    content: " ";
+    display: block;
+    overflow: hidden;
+    height: 10px;
+    width: 10px;
+    transform: rotate(45deg);
+    position: absolute;
+    bottom: -5px;
+    right: 20px;
+    z-index: 10;
+  }
+`;
 
 
 const NewProposal: React.VoidFunctionComponent<{
@@ -83,14 +150,16 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
 }> = function ({ stakeholder, actionableProposals, onEnterProposal }) {
   return (
     <>
-      {actionableProposals?.map(([groupLabel, proposals], idx) =>
+      {actionableProposals?.
+      filter(([, proposals]) => proposals && proposals.length > 0).
+      map(([groupLabel, proposals], idx) =>
         <React.Fragment key={idx}>
           <MenuDivider title={groupLabel} />
           {proposals !== undefined && proposals.length > 0
             ? proposals.map(cr =>
                 <MenuItem
                   key={cr.id}
-                  text={maybeEllipsizeString(cr.justification, 120)}
+                  text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
                   htmlTitle={cr.justification}
                   disabled={!onEnterProposal}
                   labelElement={<Icon
@@ -112,7 +181,7 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
 
 export const Proposals: React.VoidFunctionComponent<{
   stakeholder?: RegisterStakeholder
-  register?: Register
+  register: Register
   actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   activeCR?: CR | null
   onImport?: () => void
@@ -140,7 +209,7 @@ export const Proposals: React.VoidFunctionComponent<{
           {onImport
             ? <MenuItem onClick={onImport} text="Import proposal" icon="import" />
             : null}
-          {onCreate && register
+          {onCreate
             ? <MenuItem
                 onClick={() => setCreating(true)}
                 text="Create blank proposal"
@@ -184,10 +253,12 @@ export const Proposals: React.VoidFunctionComponent<{
         renderPanel: () =>
           <CurrentProposal
             proposal={activeCR}
+            stakeholder={stakeholder}
+            register={register}
             css={css`padding: 5px;`}
           />,
       });
-    } else if (creating && register) {
+    } else if (creating) {
       stack.push({
         title: "Start proposal",
         renderPanel: () =>
