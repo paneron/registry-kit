@@ -23,6 +23,12 @@ const Summary: React.FC<{
 
   return (
     <>
+      <div title="Justification for proposed changes">
+        {cr.justification}
+      </div>
+
+      <Divider />
+
       {crStakeholder
         ? <div>
             Author: <RegisterStakeholderListItem
@@ -35,6 +41,7 @@ const Summary: React.FC<{
         : null}
 
       <Divider />
+
       <div>
         Register&nbsp;version before&nbsp;proposal: <strong>{cr.registerVersion ?? 'N/A'}</strong>
         &ensp;
@@ -61,6 +68,12 @@ const Summary: React.FC<{
                 undoing a prior change.
               </>} />
             </Tag>}
+      </div>
+
+      <Divider />
+
+      <div>
+        Proposal UUID: {cr.id}
       </div>
     </>
   );
