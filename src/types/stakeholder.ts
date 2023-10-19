@@ -16,6 +16,31 @@ export function isStakeholderRole(val: string): val is StakeholderRoleType {
   return STAKEHOLDER_ROLES.indexOf(val as StakeholderRoleType) >= 0;
 }
 
+export function canCreateCR(stakeholder: RegisterStakeholder): boolean {
+  return (
+    [
+      StakeholderRole.Submitter,
+      StakeholderRole.Manager,
+      // TODO: Temporary, owners shouldn’t be capable of creating CRs normally:
+      StakeholderRole.Owner,
+    ].indexOf(stakeholder.role as any) >= 0 &&
+    // Must have a Git server username (current limitation)
+    // in order to be able to edit this proposal later.
+    stakeholder.gitServerUsername?.trim() !== '');
+}
+
+export function canImportCR(stakeholder: RegisterStakeholder): boolean {
+  return (
+    [
+      StakeholderRole.Manager,
+      // TODO: Temporary, owners shouldn’t be capable of importing CRs normally:
+      StakeholderRole.Owner,
+    ].indexOf(stakeholder.role as any) >= 0) &&
+    // Must have a Git server username (current limitation)
+    // in order to be able to edit this proposal later.
+    stakeholder.gitServerUsername?.trim() !== '';
+}
+
 /** “Abstract” register stakeholder type. */
 interface _RegisterStakeholder {
   role: StakeholderRoleType
