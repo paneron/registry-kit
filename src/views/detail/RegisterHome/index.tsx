@@ -44,11 +44,15 @@ function () {
 
   const registerVersion = registerMetadata?.version;
   const canCreateCR = (
+    // Must have commit access
+    updateObjects &&
+    makeRandomID &&
+    // Must be submitter (or manager) stakeholder
     stakeholder &&
     stakeholder.role &&
+    // Must have a Git server username (current limitation)
     stakeholder.gitServerUsername?.trim() !== '' &&
-    makeRandomID &&
-    updateObjects &&
+    // Register must have a version
     (registerVersion?.id ?? '').trim() !== '');
 
   async function createCR(justification: string): Promise<string> {
