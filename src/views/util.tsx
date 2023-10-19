@@ -316,11 +316,14 @@ const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
     return btn;
   }
 };
-export const CardInGrid: React.FC<Record<never, never>> = function ({ children }) {
+
+
+export const CardInGrid: React.FC<{ description: string, className?: string }> = function ({ description, className, children }) {
   return (
     <Card
         css={css`border-radius: 5px;`}
-        className={Classes.ELEVATION_3}>
+        title={description}
+        className={`${Classes.ELEVATION_3} ${className ?? ''}`}>
       {children}
     </Card>
   );
