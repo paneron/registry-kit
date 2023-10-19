@@ -3,7 +3,7 @@
 
 import React, { useContext, useEffect, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, RadioGroup, Radio, FormGroup, TextArea, TextAreaProps, Intent } from '@blueprintjs/core';
+import { Button, RadioGroup, Radio, FormGroup, TextArea, TextAreaProps, Intent, Colors } from '@blueprintjs/core';
 import { Tooltip2 as Tooltip } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
@@ -502,6 +502,20 @@ export const STATE_INTENT: { [key in CR.StateType]?: Intent } = {
   [CR.State.RETURNED_FOR_CLARIFICATION]: 'primary',
   [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: 'primary',
   [CR.State.APPEALED]: 'warning',
+};
+
+
+export const STATE_COLOR: { [key in CR.StateType]?: typeof Colors[keyof typeof Colors] } = {
+  [CR.State.PROPOSED]: Colors.BLUE1,
+  [CR.State.RETURNED_FOR_CLARIFICATION]: Colors.ORANGE2,
+  [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: Colors.BLUE1,
+
+  [CR.State.APPEALED]: Colors.ORANGE2,
+  [CR.State.REJECTED]: Colors.RED1,
+  [CR.State.REJECTION_UPHELD_ON_APPEAL]: Colors.RED1,
+
+  [CR.State.ACCEPTED]: Colors.GREEN1,
+  [CR.State.ACCEPTED_ON_APPEAL]: Colors.GREEN1,
 };
 
 
