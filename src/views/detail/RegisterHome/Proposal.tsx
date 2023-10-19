@@ -42,32 +42,36 @@ const NewProposal: React.VoidFunctionComponent<{
   const [ newProposalIdea, setNewProposalIdea ] = useState('');
 
   const handleNewProposal = useCallback(() => {
-    onCreateBlank?.(newProposalIdea);
-    setNewProposalIdea('');
-  }, [onCreateBlank]);
+    if (newProposalIdea.trim()) {
+      onCreateBlank?.(newProposalIdea);
+      setNewProposalIdea('');
+    } else {
+      throw new Error("Cannot create proposal: need some initial motivation for the change");
+    }
+  }, [newProposalIdea, onCreateBlank]);
 
   return (
-    <div className={className}>
-      <p>
-        Propose a change to version {register.version?.id ?? '(N/A)'}
-      </p>
-      <InputGroup
-        value={newProposalIdea || undefined}
-        placeholder="Your idea…"
-        title="Justification draft (you can change this later)"
-        onChange={evt => setNewProposalIdea(evt.currentTarget.value)}
-        rightElement={
-          <Button
-            small
+    <FormGroup
+        className={className}
+        label={<>Propose a change to version {register.version?.id ?? '(N/A)'};</>}>
+      <ControlGroup vertical>
+        <TextArea
+          value={newProposalIdea || undefined}
+          placeholder="Your idea…"
+          title="Justification draft (you can change this later)"
+          onChange={evt => setNewProposalIdea(evt.currentTarget.value)}
+        />
+        <Button
+            fill
             intent={newProposalIdea ? 'primary': undefined}
             disabled={!newProposalIdea.trim() || !onCreateBlank}
             title="A blank proposal will be created and opened in a new tab."
             onClick={handleNewProposal}
-            icon="tick"
-          />
-        }
-      />
-    </div>
+            icon="tick">
+          Create
+        </Button>
+      </ControlGroup>
+    </FormGroup>
   );
 };
 
