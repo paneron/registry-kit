@@ -53,7 +53,7 @@ const NewProposal: React.VoidFunctionComponent<{
   return (
     <FormGroup
         className={className}
-        label={<>Propose a change to version {register.version?.id ?? '(N/A)'};</>}>
+        label={<>Propose a change to version {register.version?.id ?? '(N/A)'}:</>}>
       <ControlGroup vertical>
         <TextArea
           value={newProposalIdea || undefined}
