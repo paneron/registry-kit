@@ -1,22 +1,21 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useState, useContext, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
   InputGroup,
   PanelStack2 as PanelStack, type Panel,
   Menu, MenuDivider, MenuItem,
-  Icon,
+  Icon, Spinner,
+  NonIdealState,
 } from '@blueprintjs/core';
 
-import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { maybeEllipsizeString } from '../../util';
 import type {
   Register,
   RegisterStakeholder,
-  StakeholderRoleType,
 } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
 import { canBeTransitionedBy } from '../../change-request/TransitionOptions';
@@ -35,18 +34,17 @@ export const CurrentProposal: React.VoidFunctionComponent<{
 };
 
 
-export const NewProposal: React.VoidFunctionComponent<{
-  stakeholder: RegisterStakeholder
+const NewProposal: React.VoidFunctionComponent<{
   register: Register
-  onPropose?: (idea: string) => void
+  onCreateBlank?: (idea: string) => void
   className?: string
-}> = function ({ stakeholder, register, onPropose, className }) {
+}> = function ({ register, onCreateBlank, className }) {
   const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
 
   const handleNewProposal = useCallback(() => {
-    onPropose?.(newProposalIdea);
+    onCreateBlank?.(newProposalIdea);
     setNewProposalIdea('');
-  }, [onPropose]);
+  }, [onCreateBlank]);
 
   return (
     <div className={className}>
@@ -62,7 +60,7 @@ export const NewProposal: React.VoidFunctionComponent<{
           <Button
             small
             intent={newProposalIdea ? 'primary': undefined}
-            disabled={!newProposalIdea.trim() || !onPropose}
+            disabled={!newProposalIdea.trim() || !onCreateBlank}
             title="A blank proposal will be created and opened in a new tab."
             onClick={handleNewProposal}
             icon="tick"
@@ -73,174 +71,146 @@ export const NewProposal: React.VoidFunctionComponent<{
   );
 };
 
-
-const CR_BASE_QUERY = 'objPath.indexOf("/proposals/") === 0 && objPath.endsWith("main.yaml")';
-const PROPOSALS_PER_ROLE:
-readonly (readonly [label: string, roles: Set<StakeholderRoleType>, queryGetter: (stakeholder?: RegisterStakeholder) => string])[] =
-[
-  ['unsubmitted', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
-    if (stakeholder && stakeholder.gitServerUsername) {
-      const stakeholderUsername = stakeholder.gitServerUsername;
-      const stakeholderRole = stakeholder.role;
-      const stakeholderCondition = stakeholderRole !== 'submitter'
-        ? 'true'
-        : `obj.submittingStakeholderGitServerUsername === "${stakeholderUsername}"`
-      // Don’t show drafts in the list of pending proposals, unless it’s user’s own drafts.
-      const query = `(obj.state === "draft" || obj.state === "returned-for-clarification") && ${stakeholderCondition}`;
-      return query;
-    } else {
-      return 'false';
-    }
-  }],
-  ['pending manager review', new Set(['manager', 'control-body', 'owner']), function managerProposals() {
-    return 'false';
-  }],
-  ['pending control body review', new Set(['control-body', 'owner']), function cbProposals() {
-    return 'false';
-  }],
-  ['pending owner review', new Set(['owner']), function ownerProposals() {
-    return 'false';
-  }],
-] as const;
-
-
-const ProposalList: React.VoidFunctionComponent<{
-  label: string
-  query: string
-  reqCounter: number
+const ActionableProposalItems: React.VoidFunctionComponent<{
   stakeholder?: RegisterStakeholder
+  actionableProposals: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   onEnterProposal?: (proposalID: string) => void
-}> = function ({ label, reqCounter, query, stakeholder, onEnterProposal }) {
-  const [ items, setItems ] = useState<CR[] | undefined>(undefined);
-  const loading = items === undefined;
-  const hasItems = items && items.length > 0;
-  const { getMapReducedData } = useContext(DatasetContext);
-
-  useEffect(() => {
-    setItems(undefined);
-    console.debug("TEST1");
-    let cancelled = false;
-    async function getItems () {
-      console.debug("TEST2");
-      const mapFunc = `
-        const objPath = key, obj = value;
-        if ((${CR_BASE_QUERY}) && (${query})) {
-          emit(obj);
-        }
-      `;
-      const result = await getMapReducedData({
-        chains: { _: { mapFunc } },
-      });
-      if (!Array.isArray(result._)) {
-        console.error("Weird result", result);
-      }
-      if (!cancelled) {
-        setItems(Array.isArray(result._) ? result._ : []);
-      }
-    };
-    setTimeout(getItems, 200);
-    return function cleanUp() { cancelled = true; };
-  }, [reqCounter, query, getMapReducedData]);
-
+}> = function ({ stakeholder, actionableProposals, onEnterProposal }) {
   return (
     <>
-      <MenuDivider title={label} />
-      {hasItems
-        ? items.map(cr =>
-            <MenuItem
-              key={cr.id}
-              text={maybeEllipsizeString(cr.justification, 40)}
-              htmlTitle={cr.justification}
-              disabled={!onEnterProposal}
-              labelElement={<Icon
-                icon={stakeholder && canBeTransitionedBy(stakeholder, cr)
-                  ? 'take-action'
-                  : undefined}
-              />}
-              onClick={() => onEnterProposal?.(cr.id)}
-            />
-          )
-        : loading
-          ? <MenuItem disabled text="Loading…" />
-          : <MenuItem disabled text="No proposals to show" />}
+      {actionableProposals?.map(([groupLabel, proposals], idx) =>
+        <React.Fragment key={idx}>
+          <MenuDivider title={groupLabel} />
+          {proposals !== undefined && proposals.length > 0
+            ? proposals.map(cr =>
+                <MenuItem
+                  key={cr.id}
+                  text={maybeEllipsizeString(cr.justification, 120)}
+                  htmlTitle={cr.justification}
+                  disabled={!onEnterProposal}
+                  labelElement={<Icon
+                    icon={stakeholder && canBeTransitionedBy(stakeholder, cr)
+                      ? 'take-action'
+                      : undefined}
+                  />}
+                  onClick={() => onEnterProposal?.(cr.id)}
+                />
+              )
+            : proposals === undefined
+              ? <MenuItem disabled text="Loading…" icon={<Spinner />} />
+              : <MenuItem disabled text="No pending proposals" icon="clean" />}
+        </React.Fragment>)}
     </>
-  );
-}
-
-const ProposalDashboard: React.VoidFunctionComponent<{
-  stakeholder?: RegisterStakeholder
-  reqCounter: number
-  onEnterProposal?: (proposalID: string) => void
-}> = function ({ stakeholder, reqCounter, onEnterProposal }) {
-  const items: JSX.Element[] = useMemo(() => {
-    const items: JSX.Element[] = [];
-    for (const [label, eligibleRoles, getQuery] of PROPOSALS_PER_ROLE) {
-      if (stakeholder?.role && eligibleRoles.has(stakeholder.role)) {
-        const query = getQuery(stakeholder);
-        items.push(<ProposalList
-          query={query}
-          stakeholder={stakeholder}
-          label={label}
-          reqCounter={reqCounter}
-          onEnterProposal={onEnterProposal}
-        />);
-      }
-    }
-    return items;
-  }, [stakeholder, onEnterProposal, reqCounter]);
-  return (
-    <Menu css={css`overflow-y: auto; background: none !important;`}>
-      {items}
-    </Menu>
   );
 }
 
 
 export const Proposals: React.VoidFunctionComponent<{
   stakeholder?: RegisterStakeholder
+  register?: Register
+  actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   activeCR?: CR | null
+  onImport?: () => void
+  onCreate?: (idea: string) => void
   onExitProposal?: () => void
   onEnterProposal?: (id: string) => void
-  onImportProposal?: () => void
-  onCreateProposal?: (idea: string) => void
+  onRefreshProposals?: () => void
   className?: string
-}> = function ({ stakeholder, activeCR, onEnterProposal, onExitProposal, className }) {
-  const [ reqCounter, setReqCounter ] = useState(1);
-
-  const stack = useMemo(() => {
-    const stack: Panel<any>[] = [{
-      title: activeCR
-        ? "Proposals"
-        : <>
-            Proposals
-            &nbsp;
-            <Button minimal small onClick={() => setReqCounter(c => c + 1)} icon="refresh" />
-          </>,
-      renderPanel: () =>
-        <ProposalDashboard
-          stakeholder={stakeholder}
-          onEnterProposal={onEnterProposal}
-          reqCounter={reqCounter}
-        />
-    }];
+}> = function ({
+  stakeholder,
+  activeCR,
+  register,
+  actionableProposals,
+  onImport, onCreate,
+  onEnterProposal, onExitProposal,
+  onRefreshProposals,
+  className,
+}) {
+  const [creating, setCreating] = useState(false);
+  const stack: Panel<any>[] = useMemo(() => {
+    const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
+    const stack = [];
+    const proposalMenu = hasActionable || onImport || onCreate
+      ? <Menu css={css`overflow-y: auto; background: none !important;`}>
+          {onImport
+            ? <MenuItem onClick={onImport} text="Import proposal" icon="import" />
+            : null}
+          {onCreate && register
+            ? <MenuItem
+                onClick={() => setCreating(true)}
+                text="Create blank proposal"
+                icon="add"
+              />
+            : null}
+          {hasActionable
+            ? <ActionableProposalItems
+                stakeholder={stakeholder}
+                actionableProposals={actionableProposals ?? []}
+                onEnterProposal={onEnterProposal}
+              />
+            : null}
+        </Menu>
+      : null;
+    if (proposalMenu) {
+      stack.push({
+        title: activeCR
+          ? "Proposals"
+          : <>
+              Proposals
+              {hasActionable && !creating && !activeCR
+                ? <>
+                    &nbsp;
+                    <Button
+                      minimal
+                      small
+                      onClick={onRefreshProposals}
+                      disabled={!onRefreshProposals}
+                      icon="refresh"
+                    />
+                  </>
+                : null}
+            </>,
+        renderPanel: () => proposalMenu,
+      });
+    }
     if (activeCR) {
       stack.push({
-        title: "Active proposal",
+        title: activeCR.justification.trim() || activeCR.id,
         renderPanel: () =>
           <CurrentProposal
             proposal={activeCR}
             css={css`padding: 5px;`}
-          />
+          />,
+      });
+    } else if (creating && register) {
+      stack.push({
+        title: "Start proposal",
+        renderPanel: () =>
+          <NewProposal
+            onCreateBlank={onCreate}
+            register={register}
+            css={css`padding: 5px;`}
+          />,
       });
     }
     return stack;
-  }, [activeCR, stakeholder, reqCounter]);
+  }, [
+    onCreate, onImport, onRefreshProposals, onEnterProposal,
+    creating, activeCR, register, stakeholder, actionableProposals
+  ]);
+
+  function handleClosePanel() {
+    setCreating(false);
+    onExitProposal?.();
+  }
 
   return <PanelStack
     css={css`position: absolute; inset: 0; .bp4-panel-stack-view { background: none; }`}
     renderActivePanelOnly
     className={className}
-    onClose={onExitProposal}
-    stack={stack}
+    onClose={handleClosePanel}
+    stack={stack.length > 0
+      ? stack
+      : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
   />;
 }
