@@ -53,6 +53,7 @@ const NewProposal: React.VoidFunctionComponent<{
   return (
     <FormGroup
         className={className}
+        css={css`overflow-y: auto;`}
         label={<>Propose a change to version {register.version?.id ?? '(N/A)'}:</>}>
       <ControlGroup vertical>
         <TextArea
