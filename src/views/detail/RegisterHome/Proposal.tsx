@@ -39,7 +39,7 @@ const NewProposal: React.VoidFunctionComponent<{
   onCreateBlank?: (idea: string) => void
   className?: string
 }> = function ({ register, onCreateBlank, className }) {
-  const [ newProposalIdea, setNewProposalIdea ] = useState<string>('');
+  const [ newProposalIdea, setNewProposalIdea ] = useState('');
 
   const handleNewProposal = useCallback(() => {
     onCreateBlank?.(newProposalIdea);
