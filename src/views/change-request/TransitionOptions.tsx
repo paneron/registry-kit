@@ -31,9 +31,12 @@ type Action =
   | { type: 'update-next-state-input'; payload: Record<string, any> }
 
 //export const TransitionOptions: C extends CR.Base ? C["state"] extends keyof CR.Transitions ? React.FC<{ cr: CR.Base }> : never : never = function ({ cr }) {
-export const TransitionOptions: React.FC<{ cr: CR.Base, className?: string }> =
-function ({ cr, className }) {
-  const { stakeholder, subregisters } = useContext(BrowserCtx);
+export const TransitionOptions: React.FC<{
+  stakeholder?: RegisterStakeholder
+  cr: CR.Base
+  className?: string
+}> = function ({ stakeholder, cr, className }) {
+  const { subregisters } = useContext(BrowserCtx);
   const {
     getObjectData,
     updateObjects,

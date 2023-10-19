@@ -237,7 +237,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
       {canTransition
         ? <Card elevation={3} css={css`flex: 30%; padding: 11px;`}>
-            <TransitionOptions cr={cr} />
+            <TransitionOptions stakeholder={stakeholder} cr={cr} />
           </Card>
         : null}
     </TabContentsWithHeader>
