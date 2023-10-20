@@ -50,27 +50,24 @@ export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
   const pastTransitions = getTransitionHistory(proposal);
   return (
     <div className={className}>
-      <div>
-        {pastTransitions.map(([label, notes, color], idx) =>
-          <TransitionEntry
-            key={idx}
+      {pastTransitions.map(([label, notes, color], idx) =>
+        <TransitionEntry
             css={css`
               background-color: ${color ? color : Colors.GRAY1};
               &::before {
                 background-color: ${color ? color : Colors.GRAY1};
               }
-              &:last-child {
-                font-weight: bold;
-              }
+              ${idx === pastTransitions.length - 1
+                ? 'font-weight: bold;'
+                : ''}
             `}
-          >
-            {label}
-            {notes
-              ? <>&nbsp;<HelpTooltip icon="info-sign" content={notes} /></>
-              : undefined}
-          </TransitionEntry>
-        )}
-      </div>
+            key={idx}>
+          {label}
+          {notes
+            ? <>&nbsp;<HelpTooltip icon="info-sign" content={notes} /></>
+            : undefined}
+        </TransitionEntry>
+      )}
       <TransitionOptions
         stakeholder={stakeholder}
         cr={proposal}
