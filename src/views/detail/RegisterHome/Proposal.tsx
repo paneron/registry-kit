@@ -45,8 +45,9 @@ const CurrentProposal: React.VoidFunctionComponent<{
 export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
   proposal: CR
   stakeholder?: RegisterStakeholder
+  onDelete?: () => void
   className?: string
-}> = function ({ stakeholder, proposal, className }) {
+}> = function ({ stakeholder, proposal, onDelete, className }) {
   const pastTransitions = getTransitionHistory(proposal);
   return (
     <div className={className}>
@@ -73,6 +74,16 @@ export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
         cr={proposal}
         css={css`padding: 10px;`}
       />
+      {onDelete
+        ? <Button
+              css={css`margin: 10px;`}
+              fill
+              disabled={!onDelete}
+              intent="danger"
+              onClick={onDelete}>
+            Delete this proposal
+          </Button>
+        : null}
     </div>
   );
 };
