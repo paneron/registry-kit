@@ -31,8 +31,6 @@ export function getTransitionHistory(cr: CR.Base):
 
     // Backward compatibility
 
-    els.push(['started', null, undefined]);
-
     if (CR.isProposed(cr)) {
       els.push(['proposed', <>{cr.justification}</>, Colors.BLUE2]);
     }
