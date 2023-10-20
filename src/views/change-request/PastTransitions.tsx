@@ -19,7 +19,7 @@ export function getTransitionHistory(cr: CR.Base):
     els.push(['started', null, undefined]);
 
     for (const entry of cr.pastTransitions) {
-      const input = entry.input?.toString()?.trim() || null;
+      const input = JSON.stringify(entry.input ?? {});
       els.push([
         entry.label,
         input ? <>{input}</> : null,
