@@ -34,35 +34,35 @@ export function getTransitionHistory(cr: CR.Base):
     els.push(['started', null, undefined]);
 
     if (CR.isProposed(cr)) {
-      els.push(['proposed', <>{cr.justification}</>, Colors.BLUE1]);
+      els.push(['proposed', <>{cr.justification}</>, Colors.BLUE2]);
     }
 
     if (CR.isSubmittedForControlBodyReview(cr)) {
-      els.push(['submitted for control body review', <>{cr.registerManagerNotes}</>, Colors.BLUE1]);
+      els.push(['submitted for control body review', <>{cr.registerManagerNotes}</>, Colors.BLUE2]);
     }
 
     if (CR.isReturnedForClarification(cr)) {
-      els.push(['returned for clarification', <>{cr.registerManagerNotes} <br /> {(cr as any).controlBodyNotes}</>, Colors.ORANGE1]);
+      els.push(['returned for clarification', <>{cr.registerManagerNotes} <br /> {(cr as any).controlBodyNotes}</>, Colors.ORANGE3]);
     }
 
     if (CR.isWithdrawn(cr)) {
       els.push(['withdrawn', null, undefined]);
     } else if (CR.isAccepted(cr)) {
-      els.push(['accepted', <>{cr.controlBodyNotes}</>, Colors.GREEN1]);
+      els.push(['accepted', <>{cr.controlBodyNotes}</>, Colors.GREEN2]);
     } else if (CR.isRejected(cr)) {
-      els.push(['rejected', <>{cr.controlBodyNotes}</>, Colors.RED1]);
+      els.push(['rejected', <>{cr.controlBodyNotes}</>, Colors.RED2]);
     }
 
     if (CR.isAppealed(cr)) {
-      els.push(['appealed', <>{cr.appealReason}</>, Colors.ORANGE1]);
+      els.push(['appealed', <>{cr.appealReason}</>, Colors.ORANGE3]);
     }
 
     if (CR.isRejectedWithAppealWithdrawn(cr)) {
       els.push(['appeal withdrawn', null, undefined]);
     } else if (CR.isAcceptedOnAppeal(cr)) {
-      els.push(['accepted on appeal', <>{cr.registerOwnerNotes}</>, Colors.GREEN1]);
+      els.push(['accepted on appeal', <>{cr.registerOwnerNotes}</>, Colors.GREEN2]);
     } else if (CR.isRejectedOnAppeal(cr)) {
-      els.push(['rejection upheld on appeal', <>{cr.registerOwnerNotes}</>, Colors.RED1]);
+      els.push(['rejection upheld on appeal', <>{cr.registerOwnerNotes}</>, Colors.RED2]);
     }
   }
 

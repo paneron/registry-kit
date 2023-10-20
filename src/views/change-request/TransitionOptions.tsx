@@ -506,16 +506,16 @@ export const STATE_INTENT: { [key in CR.StateType]?: Intent } = {
 
 
 export const STATE_COLOR: { [key in CR.StateType]?: typeof Colors[keyof typeof Colors] } = {
-  [CR.State.PROPOSED]: Colors.BLUE1,
-  [CR.State.RETURNED_FOR_CLARIFICATION]: Colors.ORANGE2,
-  [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: Colors.BLUE1,
+  [CR.State.PROPOSED]: Colors.BLUE2,
+  [CR.State.RETURNED_FOR_CLARIFICATION]: Colors.ORANGE3,
+  [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: Colors.BLUE2,
 
-  [CR.State.APPEALED]: Colors.ORANGE2,
-  [CR.State.REJECTED]: Colors.RED1,
-  [CR.State.REJECTION_UPHELD_ON_APPEAL]: Colors.RED1,
+  [CR.State.APPEALED]: Colors.ORANGE3,
+  [CR.State.REJECTED]: Colors.RED2,
+  [CR.State.REJECTION_UPHELD_ON_APPEAL]: Colors.RED2,
 
-  [CR.State.ACCEPTED]: Colors.GREEN1,
-  [CR.State.ACCEPTED_ON_APPEAL]: Colors.GREEN1,
+  [CR.State.ACCEPTED]: Colors.GREEN2,
+  [CR.State.ACCEPTED_ON_APPEAL]: Colors.GREEN2,
 };
 
 
