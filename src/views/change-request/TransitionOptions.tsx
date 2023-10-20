@@ -106,16 +106,22 @@ export const TransitionOptions: React.FC<{
   ), [stateRecalled, state.chosenNextState, transitions]);
 
   useEffect(() => {
-    if (stateRecalled && state.chosenNextState) {
-      if (!selectedTransitionCfg) {
-        dispatch({ type: 'unset-next-state' });
-      }
+    if (stateRecalled) {
+      dispatch({ type: 'unset-next-state' });
     }
-  }, [
-    stateRecalled,
-    state.chosenNextState,
-    selectedTransitionCfg,
-  ]);
+  }, [stateRecalled]);
+
+  //useEffect(() => {
+  //  if (stateRecalled && state.chosenNextState) {
+  //    if (!selectedTransitionCfg) {
+  //      dispatch({ type: 'unset-next-state' });
+  //    }
+  //  }
+  //}, [
+  //  stateRecalled,
+  //  state.chosenNextState,
+  //  selectedTransitionCfg,
+  //]);
 
   const [validatedStateInput, stateInputValidationErrors]:
   [CR.StateInput, undefined] | [undefined, string] =
