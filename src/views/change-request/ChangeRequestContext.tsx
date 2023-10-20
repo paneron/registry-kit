@@ -4,8 +4,9 @@
 import { jsx } from '@emotion/react';
 import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { type SomeCR as CR, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
+import { type SomeCR as CR, type Proposed, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
 import { BrowserCtx } from '../BrowserCtx';
+import { crIDToCRPath } from '../itemPathUtils';
 import { canBeTransitionedBy } from './TransitionOptions';
 
 
@@ -45,7 +46,7 @@ export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec
 export const ChangeRequestContextProvider: React.FC<{
   changeRequestID: string | null
 }> = function ({ changeRequestID, children }) {
-  const { useObjectData } = useContext(DatasetContext);
+  const { useObjectData, updateTree, performOperation } = useContext(DatasetContext);
   const { stakeholder } = useContext(BrowserCtx);
 
   const crPath = changeRequestID
@@ -75,12 +76,25 @@ export const ChangeRequestContextProvider: React.FC<{
       ? true
       : false;
 
+  const crItemEntries = Object.entries(changeRequest?.items ?? []).map(i => JSON.stringify(i));
+  const hasItems = crItemEntries.length > 0;
+
+  const deleteCR = useMemo((() =>
+    changeRequest?.id && canDelete && updateTree && !hasItems && !(changeRequest as Proposed).timeProposed
+    ? performOperation('deleting proposal', async function handleDelete() {
+        const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
+        await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove unproposed CR draft' });
+      })
+    : undefined
+  ), [hasItems, canDelete, changeRequest?.id, (changeRequest as Proposed)?.timeProposed, updateTree]);
+
   const ctx: ChangeRequestContextSpec = useMemo((() => ({
     changeRequest,
     canEdit,
     canTransition,
     canDelete,
-  })), [changeRequest, canEdit]);
+    deleteCR,
+  })), [changeRequest, canEdit, deleteCR, canDelete]);
 
   return (
     <ChangeRequestContext.Provider value={ctx}>

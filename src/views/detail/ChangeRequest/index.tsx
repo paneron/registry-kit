@@ -15,7 +15,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { JSONStringifyNormalized } from '@riboseinc/paneron-extension-kit/util';
 import { BrowserCtx } from '../../BrowserCtx';
-import { crPathToCRID, crIDToCRPath } from '../../itemPathUtils';
+import { crPathToCRID } from '../../itemPathUtils';
 import {
   ChangeRequestContextProvider,
   ChangeRequestContext,
@@ -24,7 +24,7 @@ import Proposals from '../../change-request/Proposals';
 import TransitionOptions from '../../change-request/TransitionOptions';
 import PastTransitions from '../../change-request/PastTransitions';
 import Summary from '../../change-request/Summary';
-import { type SomeCR, type Proposed, hadBeenProposed, isDisposed } from '../../../types/cr';
+import { type SomeCR, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
 import {
   TabContentsWithHeader,
@@ -49,22 +49,24 @@ memo(function ({ uri }) {
 const MaybeChangeRequest: React.VoidFunctionComponent<{ uri: string }> =
 memo(function ({ uri }) {
   const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
-  const { changeRequest: cr, canDelete, canTransition } = useContext(ChangeRequestContext);
-  const handleAfterDelete = useCallback(
-    (() => closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`)),
-    [closeTabWithURI]);
+  const { changeRequest: cr, canTransition, deleteCR } = useContext(ChangeRequestContext);
+  const handleDelete = useCallback(
+    (async () => {
+      await deleteCR?.();
+      closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`);
+    }),
+    [deleteCR, closeTabWithURI]);
 
   return (cr
     ? <ChangeRequestDetails
         cr={cr}
         canTransition={canTransition}
-        canDelete={canDelete}
+        onDelete={deleteCR ? handleDelete : undefined}
         css={css`
           position: absolute;
           inset: 0;
           overflow-y: auto;
         `}
-        afterDelete={handleAfterDelete}
       />
     : <NonIdealState
         icon={<Spinner />}
@@ -82,11 +84,9 @@ memo(function ({ uri }) {
 const ChangeRequestDetails: React.VoidFunctionComponent<{
   cr: SomeCR,
   canTransition: boolean,
-  canDelete: boolean,
-  afterDelete?: () => void,
+  onDelete?: () => void,
   className?: string,
-}> = memo(function ({ cr, canTransition, canDelete, afterDelete, className }) {
-  const { performOperation, updateTree } = useContext(DatasetContext);
+}> = memo(function ({ cr, canTransition, onDelete, className }) {
   const {
     activeChangeRequestID,
     setActiveChangeRequestID,
@@ -105,17 +105,6 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
   const crItemEntries = Object.entries(cr.items).map(i => JSON.stringify(i));
   const hasItems = crItemEntries.length > 0;
-  const crItemMemo = crItemEntries.toString();
-
-  const handleDelete = useMemo((() =>
-    canDelete && updateTree && !isActive && !hasItems && !(cr as Proposed).timeProposed
-    ? performOperation('deleting proposal', async function handleDelete() {
-        const subtreeRoot = crIDToCRPath(cr.id).replace('/main.yaml', '');
-        await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove CR draft' });
-        afterDelete?.();
-      })
-    : undefined
-  ), [isActive, hasItems, canDelete, cr.id, (cr as Proposed).timeProposed, afterDelete, updateTree]);
 
   const proposals = useMemo((() =>
     hasItems
@@ -123,17 +112,13 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       : <NonIdealState
           icon="clean"
           title="Nothing is proposed here yet."
-          description={handleDelete
-            ? <Button onClick={handleDelete}>
+          description={onDelete
+            ? <Button onClick={onDelete}>
                 Delete this CR draft
               </Button>
             : undefined}
         />
-  ), [
-    handleDelete,
-    hasItems,
-    crItemMemo,
-  ]);
+  ), [onDelete, hasItems]);
 
   const classification = useMemo(() => {
     const classification: TabContentsWithHeaderProps["classification"] = [];
