@@ -31,7 +31,7 @@ function () {
     itemClasses,
     setActiveChangeRequestID,
   } = useContext(BrowserCtx);
-  const { changeRequest: activeCR } = useContext(ChangeRequestContext);
+  const { changeRequest: activeCR, deleteCR } = useContext(ChangeRequestContext);
   const {
     requestFileFromFilesystem,
     makeRandomID,
@@ -245,6 +245,7 @@ function () {
           props={{
             proposal: activeCR,
             stakeholder,
+            onDelete: deleteCR,
           }}
         />
       );
