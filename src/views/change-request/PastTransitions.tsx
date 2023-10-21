@@ -62,6 +62,10 @@ export function getTransitionHistory(cr: CR.Base):
     } else if (CR.isRejectedOnAppeal(cr)) {
       els.push(['rejection upheld on appeal', <>{cr.registerOwnerNotes}</>, Colors.RED2]);
     }
+
+    if (els.length < 1) {
+      els.push(['started', null, undefined]);
+    }
   }
 
   return els;
