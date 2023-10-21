@@ -228,6 +228,14 @@ function () {
               ? crid => { setActiveChangeRequestID?.(crid) }
               : undefined,
           }}
+          actions={activeCR
+            ? [{
+                text: "Exit proposal",
+                onClick: setActiveChangeRequestID
+                  ? () => setActiveChangeRequestID?.(null)
+                  : undefined,
+              }]
+            : undefined}
         />
       );
     }
