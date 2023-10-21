@@ -199,8 +199,9 @@ function ({ title, smallTitle, classification, actions, className, layout, child
             flex-flow: row wrap;
             gap: ${paddingPx}px;
           `}>
-            {classification!.map(p =>
+            {classification!.map((p, idx) =>
               <Tag
+                key={idx}
                 minimal
                 {...p}
                 large={!smallTitle}
@@ -275,17 +276,17 @@ function ({ title, smallTitle, classification, actions, className, layout, child
             margin: 0 ${paddingPx}px;
             flex: 0; display: flex; flex-flow: row wrap; gap: ${paddingPx}px;
           `}>
-            {actions!.map(props => {
+            {actions!.map((props, idx) => {
               if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
                 return (
-                  <ButtonGroup>
+                  <ButtonGroup key={idx}>
                     {(props as ButtonProps[]).map(p =>
                       <Action {...p} />
                     )}
                   </ButtonGroup>
                 );
               } else {
-                return <Action {...(props as ButtonProps)} />;
+                return <Action key={idx} {...(props as ButtonProps)} />;
               }
             })}
           </div>
