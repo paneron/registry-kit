@@ -2,14 +2,35 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx } from '@emotion/react';
+import styled from '@emotion/styled';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
 import VisualDiff from 'react-visual-diff';
-import { UL } from '@blueprintjs/core';
-import { objectsHaveSameShape, normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
+import { OL } from '@blueprintjs/core';
+import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
+import { objectsHaveSameShape, normalizeObjectRecursively, isObject } from '@riboseinc/paneron-extension-kit/util';
 import type { InternalItemReference, RegisterItem, Payload } from '../../types/item';
 import { ItemDetailView } from '../../types/views';
 import AnnotatedChange from '../AnnotatedChange';
+
+
+const UnstyledOL = styled(OL)`
+  margin: 0 !important;
+  > li {
+    margin: 0 !important;
+  }
+  ::marker {
+    font-weight: bold;
+  }
+`;
+
+const ComplexDL = styled(DL)`
+  /* Within Blueprint’s running text container, we can get away with zero vertical padding. */
+  padding: 0 4px;
+  border: 1px solid rgba(125, 125, 125, 0.5);
+  border-radius: 0 0 15px 0;
+  margin: -1px -5px;
+`;
 
 
 const InlineDiff: React.FC<{
@@ -45,28 +66,71 @@ const InlineDiff: React.FC<{
 );
 
 
-export const Val: React.VoidFunctionComponent<{ val: any }> = function ({ val }) {
+function isNonEmpty(val: any): boolean {
   if (Array.isArray(val)) {
-    return <UL>
-      {val.map((v, idx) =>
-        <li key={idx}><Val val={v} /></li>
-      )}
-    </UL>;
+    return val.find(item => isNonEmpty(item)) !== undefined;
   } else if (isObject(val)) {
-    return <UL>
-      {Object.entries(val).sort().map(([key, val]) =>
-        <li key={key}><code>{key}</code>: <Val val={val} /></li>
-      )}
-    </UL>;
+    return Object.values(val).find(item => isNonEmpty(item)) !== undefined;
   } else {
-    return <code>{val?.toString() ?? '—'}</code>;
+    return val === 'string'
+      ? val.trim() !== ''
+      : val?.toString()?.trim() || `${val}`;
+  }
+}
+
+
+/** Renders given value in a recursive way. */
+export const Val: React.VoidFunctionComponent<{
+  val: any
+  /** Omit nulls, undefined and empty strings in nested values. */
+  hideEmpty?: boolean
+}> = function ({ val, hideEmpty }) {
+  if (Array.isArray(val)) {
+    const items = hideEmpty
+      ? val.filter(isNonEmpty)
+      : val;
+    return (
+      <UnstyledOL>
+        {items.map((v, idx) =>
+          <li key={idx}>
+            {isObject(val) ? <>&rarr;</> : null}
+            <Val val={v} hideEmpty={hideEmpty} />
+          </li>
+        )}
+      </UnstyledOL>
+    );
+
+  } else if (isObject(val)) {
+    const entries = hideEmpty
+      ? Object.entries(val).filter(([, v]) => isNonEmpty(v))
+      : Object.entries(val);
+    const numItems = entries.length;
+    const Comp = numItems > 1
+      ? ComplexDL
+      : DL;
+
+    return (
+      <Comp>
+        {entries.sort().map(([key, val]) =>
+          <div key={key}>
+            <dt>{key}{isObject(val) ? <> &rarr;</> : ': '}</dt>
+            <dd>
+              <Val val={val} hideEmpty={hideEmpty} />
+            </dd>
+          </div>
+        )}
+      </Comp>
+    );
+
+  } else {
+    const valString = typeof val === 'string'
+      ? val
+      : val?.toString() ?? '';
+    return typeof val === 'string'
+      ? <>{valString}</>
+      : <code>{valString.trim() || `${val}`}</code>;
   }
 };
-
-
-function isObject(val: unknown): val is Record<string, any> {
-  return val !== null && typeof val === 'object' && !Array.isArray(val);
-}
 
 
 export const InlineDiffGeneric: React.FC<{

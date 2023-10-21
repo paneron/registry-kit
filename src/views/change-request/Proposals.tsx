@@ -318,8 +318,8 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
     ? <InlineDiffGeneric
         item1={itemBefore ?? {}}
         item2={item}
-        css={css`position: absolute; inset: 0; background: white; padding: 10px 0; overflow: auto;`}
-        className={Classes.ELEVATION_2}
+        css={css`position: absolute; inset: 0; background: white; padding: 10px; overflow: auto;`}
+        className={`${Classes.ELEVATION_2} ${Classes.RUNNING_TEXT}`}
       />
     : <ItemDetail
         itemRef={itemRef}
