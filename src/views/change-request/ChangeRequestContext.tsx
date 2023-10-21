@@ -83,7 +83,11 @@ export const ChangeRequestContextProvider: React.FC<{
     changeRequest?.id && canDelete && updateTree && !hasItems && !(changeRequest as Proposed).timeProposed
     ? performOperation('deleting proposal', async function handleDelete() {
         const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
-        await updateTree({ subtreeRoot, newSubtreeRoot: null, commitMessage: 'remove unproposed CR draft' });
+        await updateTree({
+          subtreeRoot,
+          newSubtreeRoot: null,
+          commitMessage: 'remove unproposed CR draft',
+        });
       })
     : undefined
   ), [hasItems, canDelete, changeRequest?.id, (changeRequest as Proposed)?.timeProposed, updateTree]);
