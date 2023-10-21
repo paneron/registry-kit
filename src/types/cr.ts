@@ -116,7 +116,7 @@ export function canBeEditedBy(stakeholder: RegisterStakeholder, cr: Base): boole
 
 /** Whether given `cr` can be deleted by given stakeholder. */
 export function canBeDeletedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
-  return isCreatedBy(stakeholder, cr) && isEditableState(cr.state);
+  return isCreatedBy(stakeholder, cr) && isEditableState(cr.state) && Object.keys(cr.items).length < 1;
 }
 
 
