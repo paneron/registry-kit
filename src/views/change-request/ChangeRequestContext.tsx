@@ -34,6 +34,9 @@ export interface ChangeRequestContextSpec {
    * Always false if `changeRequest` is not defined or `null`.
    */
   canDelete: boolean
+
+  deleteCR?: () => Promise<void>
+
 }
 
 export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec>({
