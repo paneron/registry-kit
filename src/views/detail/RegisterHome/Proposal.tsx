@@ -132,7 +132,7 @@ const NewProposal: React.VoidFunctionComponent<{
         label={<>Propose a change to version {register.version?.id ?? '(N/A)'}:</>}>
       <ControlGroup vertical>
         <TextArea
-          value={newProposalIdea || undefined}
+          value={newProposalIdea ?? ''}
           placeholder="Your idea…"
           title="Justification draft (you can change this later)"
           onChange={evt => setNewProposalIdea(evt.currentTarget.value)}
