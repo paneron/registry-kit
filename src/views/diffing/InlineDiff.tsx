@@ -72,9 +72,9 @@ function isNonEmpty(val: any): boolean {
   } else if (isObject(val)) {
     return Object.values(val).find(item => isNonEmpty(item)) !== undefined;
   } else {
-    return val === 'string'
+    return val && (val === 'string'
       ? val.trim() !== ''
-      : val?.toString()?.trim() || `${val}`;
+      : val?.toString()?.trim?.() || `${val}`);
   }
 }
 
