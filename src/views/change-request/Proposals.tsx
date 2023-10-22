@@ -7,6 +7,7 @@ import {
   ButtonGroup,
   Button,
   Classes,
+  Colors,
   MenuItem,
   NonIdealState,
   IconName,
@@ -318,7 +319,13 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
     ? <InlineDiffGeneric
         item1={itemBefore ?? {}}
         item2={item}
-        css={css`position: absolute; inset: 0; background: white; padding: 10px; overflow: auto;`}
+        css={css`
+          position: absolute; inset: 0; padding: 10px; overflow: auto;
+          background-color: white;
+          .bp4-dark & {
+            background-color: ${Colors.DARK_GRAY2};
+          }
+        `}
         className={`${Classes.ELEVATION_2} ${Classes.RUNNING_TEXT}`}
       />
     : <ItemDetail
