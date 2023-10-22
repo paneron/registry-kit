@@ -66,32 +66,45 @@ const InlineDiff: React.FC<{
 );
 
 
+// /** Returns true if a value or any nested value within, recursively, is considered “not empty”. */
+// function isNonEmptyRecursive(val: any): boolean {
+//   if (Array.isArray(val)) {
+//     // TODO: Should really do this on arrays?
+//     return val.find(item => isNonEmptyRecursive(item)) !== undefined;
+//   } else if (isObject(val)) {
+//     return Object.values(val).find(item => isNonEmptyRecursive(item)) !== undefined;
+//   } else {
+//     return isNonEmpty(val);
+//   }
+// }
+
+
+/** Returns true if a value is considered “not empty”. */
 function isNonEmpty(val: any): boolean {
-  if (Array.isArray(val)) {
-    return val.find(item => isNonEmpty(item)) !== undefined;
-  } else if (isObject(val)) {
-    return Object.values(val).find(item => isNonEmpty(item)) !== undefined;
-  } else {
-    return val && (val === 'string'
-      ? val.trim() !== ''
-      : val?.toString()?.trim?.() || `${val}`);
-  }
+  return val && (typeof val === 'string'
+    ? val.trim() !== ''
+    : val?.toString()?.trim?.() || `${val}`);
 }
 
 
 /** Renders given value in a recursive way. */
 export const Val: React.VoidFunctionComponent<{
   val: any
-  /** Omit nulls, undefined and empty strings in nested values. */
+
+  /**
+   * Omit nulls, undefined and empty strings in object values.
+   *
+   * See `isNonEmpty()`.
+   *
+   * NOTE: Doesn’t work work well if you are annotating changed properties
+   * and one of the hidden properties was changed.
+   */
   hideEmpty?: boolean
 }> = function ({ val, hideEmpty }) {
   if (Array.isArray(val)) {
-    const items = hideEmpty
-      ? val.filter(isNonEmpty)
-      : val;
     return (
       <UnstyledOL>
-        {items.map((v, idx) =>
+        {val.map((v, idx) =>
           <li key={idx}>
             {isObject(val) ? <>&rarr;</> : null}
             <Val val={v} hideEmpty={hideEmpty} />
@@ -101,17 +114,23 @@ export const Val: React.VoidFunctionComponent<{
     );
 
   } else if (isObject(val)) {
+    const allEntries = Object.entries(val);
+
     const entries = hideEmpty
-      ? Object.entries(val).filter(([, v]) => isNonEmpty(v))
-      : Object.entries(val);
-    const numItems = entries.length;
-    const Comp = numItems > 1
+      ? allEntries.filter(([, v]) => isNonEmpty(v))
+      : allEntries;
+
+    const omittedCount = hideEmpty
+      ? allEntries.length - entries.length
+      : 0;
+
+    const Comp = entries.length > 1
       ? ComplexDL
       : DL;
 
     return (
       <Comp>
-        {entries.sort().map(([key, val]) =>
+        {(omittedCount > 1 ? entries : allEntries).sort().map(([key, val]) =>
           <div key={key}>
             <dt>{key}{isObject(val) ? <> &rarr;</> : ': '}</dt>
             <dd>
@@ -119,6 +138,12 @@ export const Val: React.VoidFunctionComponent<{
             </dd>
           </div>
         )}
+        {omittedCount > 1
+          ? <MetaDLRow>
+              <dt>empty properties omitted:</dt>
+              <dd><code>{omittedCount}</code></dd>
+            </MetaDLRow>
+          : null}
       </Comp>
     );
 
@@ -133,15 +158,35 @@ export const Val: React.VoidFunctionComponent<{
 };
 
 
+const MetaDLRow = styled.div`
+  opacity: 0.7;
+  > dt {
+    font-weight: normal;
+    font-style: italic;
+  }
+`
+
+
 export const InlineDiffGeneric: React.FC<{
   item1: Record<string, any>
   item2: Record<string, any>
+
+  /**
+   * Don’t show properties with empty values to save space.
+   *
+   * NOTE: WIP. Doesn’t work work well if one of the hidden properties was changed.
+   */
+  omitEmpty?: boolean
+
+  /** Omit unchanged properties (not supported yet). */
+  showOnlyChanged?: boolean
+
   className?: string
-}> = React.memo(function ({ item1, item2, className }) {
+}> = React.memo(function ({ item1, item2, omitEmpty, className }) {
   const left = 
-    <Val val={normalizeObjectRecursively(item1)} />;
+    <Val val={normalizeObjectRecursively(item1)} hideEmpty={omitEmpty} />;
   const right =
-    <Val val={normalizeObjectRecursively(item2)} />;
+    <Val val={normalizeObjectRecursively(item2)} hideEmpty={omitEmpty} />;
 
   return (
     <div className={className}>
