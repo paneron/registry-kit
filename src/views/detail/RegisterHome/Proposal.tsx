@@ -72,26 +72,45 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
 }> = function ({ pastTransitions, isFinal }) {
   return (
     <>
-      {pastTransitions.map(([label, notes, color], idx) =>
+      {pastTransitions.map(({ label, stakeholder, toState, input, timestamp }, idx) =>
         <TransitionEntry
             css={css`
-              background-color: ${color ? color : Colors.GRAY1};
-              &::before {
-                background-color: ${color ? color : Colors.GRAY1};
-              }
+              background-color: ${STATE_COLOR[toState] ?? Colors.GRAY1};
+              position: sticky;
+              top: ${idx * 3}px;
+              z-index: 1;
               ${idx === pastTransitions.length - 1
                 ? `
                     font-weight: bold;
                     ${isFinal
-                      ? '&::before { display: none; }'
+                      ? `
+                          &::before {
+                            ${transitionEntryDecorativeMarkerFinal}
+                          }
+                        `
                       : ''}
                   `
                 : ''}
+                ${idx === 0
+                  ? `
+                      &::before {
+                        ${transitionEntryDecorativeMarkerInitial}
+                      }
+                    `
+                  : ''}
             `}
             key={idx}>
           {label}
-          {notes
-            ? <>&nbsp;<HelpTooltip icon="info-sign" content={notes} /></>
+          {input
+            ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
+                {stakeholder
+                  ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
+                  : null}
+                {timestamp
+                  ? timestamp.toISOString()
+                  : null}
+                <span>{JSON.stringify(input)}</span>
+              </div>} /></>
             : undefined}
         </TransitionEntry>
       )}
@@ -100,22 +119,64 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
 };
 
 
+/**
+ * Style rules for pseudo-element that contains decorative marker line with a circle.
+ */
+const transitionEntryDecorativeMarker = `
+  content: " ";
+  background: white;
+  display: block;
+  overflow: hidden;
+  z-index: 1;
+  position: absolute;
+  left: 22px;
+
+  transform: translateX(-50%);
+  top: 0;
+  width: 2px;
+  bottom: 0;
+`;
+
+/**
+ * Style rules for pseudo-element that contains decorative marker line with a circle.
+ */
+const transitionEntryDecorativeMarkerInitial = `
+  top: 50%;
+`;
+
+/**
+ * Style rules for pseudo-element that contains decorative marker line with a circle.
+ */
+const transitionEntryDecorativeMarkerFinal = `
+  bottom: 50%;
+`;
+
+
 const TransitionEntry = styled.div`
   position: relative;
   color: white;
   padding: 10px;
+  padding-left: 42px;
   margin-bottom: 1px;
-  &::before {
+
+  &::after {
     content: " ";
+    background: white;
     display: block;
     overflow: hidden;
-    height: 10px;
-    width: 10px;
-    transform: rotate(45deg);
+    z-index: 1;
     position: absolute;
-    bottom: -5px;
-    right: 20px;
-    z-index: 10;
+    left: 22px;
+
+    transform: translateX(-50%) translateY(-50%);
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+  }
+
+  &::before {
+    ${transitionEntryDecorativeMarker}
   }
 `;
 
