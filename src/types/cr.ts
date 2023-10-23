@@ -96,8 +96,10 @@ export interface Base<S extends StateType = StateType>
 
 
 export interface TransitionEntry {
-  timestamp: Date;
+  /** Verb in past tense. */
   label: string;
+
+  timestamp: Date;
   fromState: StateType;
   toState: StateType;
   stakeholder: RegisterStakeholder;
