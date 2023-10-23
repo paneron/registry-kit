@@ -165,7 +165,7 @@ function TransitionOptions<C extends CR.SomeCR>
       };
       newCR.pastTransitions ||= [];
       newCR.pastTransitions.push({
-        label: newCR.state,
+        label: transitionCfg.title,
         timestamp: new Date(),
         fromState: cr.state,
         toState: newCR.state,
