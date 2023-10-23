@@ -3,13 +3,12 @@
 
 import React from 'react';
 import { jsx, css } from '@emotion/react';
-import { Tag, Classes } from '@blueprintjs/core';
+import { Tag } from '@blueprintjs/core';
 
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
-import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 
 import type { Register } from '../../types/register';
-import { isCreatedBy, type SomeCR, type Proposed } from '../../types/cr';
+import { isCreatedBy, type SomeCR } from '../../types/cr';
 import type { RegisterStakeholder } from '../../types/stakeholder';
 import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 
@@ -18,18 +17,12 @@ const Summary: React.FC<{
   cr: SomeCR
   currentStakeholder?: RegisterStakeholder
   registerMetadata?: Register
-  className?: string
-}> = function ({ cr, currentStakeholder, registerMetadata, className }) {
+}> = function ({ cr, currentStakeholder, registerMetadata }) {
   const crStakeholder = (registerMetadata?.stakeholders ?? []).
     find(s => s.gitServerUsername === cr.submittingStakeholderGitServerUsername);
 
   return (
-    <DL className={`${className ?? ''} ${Classes.RUNNING_TEXT}`}>
-      <div title="Justification for proposed changes">
-        <dt>{(cr as Proposed).timeProposed ? "Justification": "Personal draft label"}</dt>
-        <dd>{cr.justification.trim() || "(N/A)"}</dd>
-      </div>
-
+    <>
       {crStakeholder
         ? <div>
             <dt>Author:</dt>
@@ -81,7 +74,7 @@ const Summary: React.FC<{
         <dt>Proposal&nbsp;ID:</dt>
         <dd><code css={css`white-space: nowrap;`}>{cr.id}</code></dd>
       </div>
-    </DL>
+    </>
   );
 };
 
