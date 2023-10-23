@@ -15,23 +15,28 @@ import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../..
 import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
 import { type SomeCR as CR, State } from '../../../types/cr';
+import { canBeTransitionedBy } from '../../change-request/TransitionOptions';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader, CardInGrid } from '../../util';
-import { Proposals, ProposalHistoryAndTransition } from './Proposal';
+import { Proposals, CurrentProposal } from './Proposal';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
 function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const {
-    customViews, registerMetadata, stakeholder,
+    //customViews,
+    registerMetadata, stakeholder,
     // offline,
     itemClasses,
     setActiveChangeRequestID,
   } = useContext(BrowserCtx);
-  const { changeRequest: activeCR, deleteCR } = useContext(ChangeRequestContext);
+  const {
+    changeRequest: activeCR,
+    deleteCR,
+  } = useContext(ChangeRequestContext);
   const {
     requestFileFromFilesystem,
     makeRandomID,
@@ -191,27 +196,29 @@ function () {
     return function cleanUp() { cancelled = true; };
   }, [stakeholder, reqCounter, getMapReducedData]);
 
-  const customActions = useMemo(() => customViews.map(cv => ({
-    key: cv.id,
-    text: cv.label,
-    title: cv.description,
-    icon: cv.icon,
-    onClick: () => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`),
-  })), [spawnTab, customViews]);
+  // TODO: Move to action bar
+  // const customActions = useMemo(() => customViews.map(cv => ({
+  //   key: cv.id,
+  //   text: cv.label,
+  //   title: cv.description,
+  //   icon: cv.icon,
+  //   onClick: () => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`),
+  // })), [spawnTab, customViews]);
 
-  const proposalBlocks: JSX.Element[] = useMemo(() => {
-    const blocks: JSX.Element[] = [];
+  const proposalBlock = useMemo(() => {
     if (
       registerMetadata && (
       actionableProposals.find(p => p[1] && p[1].length > 0) || activeCR || importCR || createCR)
     ) {
-      blocks.push(
+      return (
         <HomeBlock
           View={Proposals}
           key="proposal dashboard"
           description="Actionable proposals"
           css={css`
-            height: 300px; flex-basis: 20%; flex-grow: 1;
+            height: 300px;
+            flex-basis: calc(50% - 10px);
+            flex-grow: 1;
           `}
           props={{
             stakeholder,
@@ -230,36 +237,45 @@ function () {
           }}
           actions={activeCR
             ? [{
+                text: "Export proposal",
+                onClick: () => void 0,
+                icon: 'export',
+                disabled: true,
+              }, {
                 text: "Exit proposal",
+                icon: 'log-out',
+                intent: 'danger',
                 onClick: setActiveChangeRequestID
                   ? () => setActiveChangeRequestID?.(null)
                   : undefined,
               }]
-            : undefined}
+            : [{
+                text: "Create blank proposal",
+                onClick: () => void 0,
+                icon: 'add',
+                disabled: true,
+                intent: actionableProposals.length < 1
+                  ? 'primary'
+                  : undefined,
+              }, {
+                text: "Import proposal",
+                onClick: importCR,
+                icon: 'import',
+                intent: actionableProposals.length < 1
+                  ? 'primary'
+                  : undefined,
+              }]}
         />
       );
+    } else {
+      return null;
     }
-    if (activeCR) {
-      blocks.push(
-        <HomeBlock
-          View={ProposalHistoryAndTransition}
-          css={css`
-            padding: 0;
-            max-height: 300px; overflow-y: auto;
-            flex-basis: 20%; flex-grow: 1;
-          `}
-          key="active proposal status"
-          description="Current proposal status"
-          props={{
-            proposal: activeCR,
-            stakeholder,
-            onDelete: deleteCR,
-          }}
-        />
-      );
-    }
-    return blocks;
-  }, [importCR, createCR, registerMetadata, stakeholder, activeCR, activeCR?.state, toJSONNormalized(actionableProposals)]);
+  }, [
+    importCR, createCR,
+    registerMetadata, stakeholder,
+    activeCR?.id,
+    toJSONNormalized(actionableProposals),
+  ]);
 
     // if (activeCR) {
     //   return <HomeBlock
@@ -317,36 +333,88 @@ function () {
     //   }
     // }
 
+  const activeCRBlock = useMemo(() => {
+    if (activeCR && registerMetadata) {
+      return (
+        <HomeBlock
+          View={CurrentProposal}
+          description="Active proposal"
+          props={{ proposal: activeCR, stakeholder, register: registerMetadata }}
+          css={css`
+            height: 300px;
+            flex-basis: calc(50% - 10px);
+            flex-grow: 1;
+          `}
+          actions={
+            stakeholder && canBeTransitionedBy(stakeholder, activeCR)
+              ? [/*{
+                  // Action is taken from within the widget.
+                  text: "Take action",
+                  onClick: () => void 0,
+                  icon: 'take-action',
+                  intent: 'primary',
+                }*/]
+              : deleteCR
+                ? [{
+                    text: "Delete this proposal",
+                    onClick: deleteCR,
+                    icon: 'delete',
+                    intent: 'danger',
+                  }]
+                : undefined}
+        />
+      );
+    } else {
+      return null;
+    }
+  }, [activeCR, registerMetadata, deleteCR, stakeholder]);
+
+  const registerMetaBlock = useMemo(() => {
+    if (!activeCRBlock && stakeholder) {
+      return (
+        <HomeBlock
+          View={MetaSummary}
+          description="Register summary"
+          props={registerMetadata
+            ? { register: registerMetadata, stakeholder }
+            : registerMetadata}
+          error={registerMetadata === null
+            ? "Failed to load register metadata"
+            : undefined}
+          css={css`
+            height: 300px;
+            flex-basis: calc(50% - 10px);
+            flex-grow: 1;
+          `}
+          actions={[{
+            text: "View or edit register metadata",
+            onClick: () => spawnTab(Protocols.REGISTER_META),
+            icon: 'properties',
+          }]}
+        />
+      );
+    } else {
+      return null;
+    }
+  }, [activeCRBlock, registerMetadata, stakeholder]);
+
   return (
     <TabContentsWithHeader
         title={registerMetadata?.name ?? 'Register'}
         layout="card-grid">
 
-      <HomeBlock
-        View={MetaSummary}
-        description="Register summary"
-        props={registerMetadata
-          ? { register: registerMetadata, stakeholder }
-          : registerMetadata}
-        error={registerMetadata === null ? "Failed to load register metadata" : undefined}
-        css={css`height: 300px`}
-        actions={[{
-          text: "View or edit register metadata",
-          onClick: () => spawnTab(Protocols.REGISTER_META),
-          icon: "properties",
-        }]}
-      />
+      {activeCRBlock ?? registerMetaBlock}
 
-      {customActions.length > 0
+      {proposalBlock}
+
+      {/* TODO: Move to action bar customActions.length > 0
         ? <HomeBlock
             description="Custom actions"
             View={() => <></>}
             props={{}}
             actions={customActions}
           />
-        : null}
-
-      {proposalBlocks}
+        : null*/}
 
     </TabContentsWithHeader>
   );
@@ -368,10 +436,16 @@ function HomeBlock<P extends Record<string, any>>(
 ) {
   return (
     <CardInGrid
-        css={css`padding: 5px; display: flex; flex-flow: column nowrap;`}
+        css={css`
+          padding: 5px;
+          display: flex; flex-flow: column nowrap;
+          transition:
+            width .5s linear,
+            height .5s linear;
+        `}
         description={description}
         className={className}>
-      <div css={css`position: relative; flex: 1;`}>
+      <div css={css`position: relative; flex: 1; flex-grow: 1; flex-shrink: 0; overflow-y: auto;`}>
         {props
           ? <View {...props} />
           : props === undefined
@@ -379,7 +453,7 @@ function HomeBlock<P extends Record<string, any>>(
             : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
       </div>
       {actions
-        ? <Menu css={css`background: none !important;`}>
+        ? <Menu css={css`background: none !important; flex-shrink: 0;`}>
             {actions.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
           </Menu>
         : null}

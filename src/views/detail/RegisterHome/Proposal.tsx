@@ -9,13 +9,15 @@ import {
   FormGroup,
   ControlGroup,
   TextArea,
-  PanelStack2 as PanelStack, type Panel,
+  //PanelStack2 as PanelStack, type Panel,
   Menu, MenuDivider, MenuItem,
   Icon, Spinner,
-  NonIdealState,
+  //NonIdealState,
   Colors,
+  Classes,
 } from '@blueprintjs/core';
 
+import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { maybeEllipsizeString } from '../../util';
 import type {
@@ -23,34 +25,53 @@ import type {
   RegisterStakeholder,
 } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import TransitionOptions, { canBeTransitionedBy } from '../../change-request/TransitionOptions';
-import { getTransitionHistory } from '../../change-request/PastTransitions';
+import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../change-request/TransitionOptions';
+import { getTransitionHistory, type TransitionHistoryEntry } from '../../change-request/PastTransitions';
 import Summary from '../../change-request/Summary';
 
 
-const CurrentProposal: React.VoidFunctionComponent<{
+export const CurrentProposal: React.VoidFunctionComponent<{
   proposal: CR
-  stakeholder?: RegisterStakeholder
   register: Register
+  stakeholder?: RegisterStakeholder
   className?: string
 }> = function ({ stakeholder, register, proposal, className }) {
+  const transitions = stakeholder ? getTransitions(proposal, stakeholder) : [];
+
   return (
     <div className={className}>
-      <Summary cr={proposal} currentStakeholder={stakeholder} registerMetadata={register} />
+      <DL className={Classes.RUNNING_TEXT} css={css`padding: 10px;`}>
+        <div>
+          <dt>Viewing proposal:</dt>
+          <dd>“{proposal.justification.trim() || '(justification N/A)'}”</dd>
+        </div>
+        <Summary
+          cr={proposal}
+          currentStakeholder={stakeholder}
+          registerMetadata={register}
+        />
+      </DL>
+      <TransitionsAndStatus
+        pastTransitions={getTransitionHistory(proposal)}
+        isFinal={isFinalState(proposal.state)}
+      />
+      <TransitionOptions
+        stakeholder={stakeholder}
+        transitions={transitions}
+        cr={proposal}
+        css={css`padding: 10px;`}
+      />
     </div>
   );
 };
 
 
-export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
-  proposal: CR
-  stakeholder?: RegisterStakeholder
-  onDelete?: () => void
-  className?: string
-}> = function ({ stakeholder, proposal, onDelete, className }) {
-  const pastTransitions = getTransitionHistory(proposal);
+export const TransitionsAndStatus: React.VoidFunctionComponent<{
+  pastTransitions: TransitionHistoryEntry[]
+  isFinal?: boolean
+}> = function ({ pastTransitions, isFinal }) {
   return (
-    <div className={className}>
+    <>
       {pastTransitions.map(([label, notes, color], idx) =>
         <TransitionEntry
             css={css`
@@ -59,7 +80,12 @@ export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
                 background-color: ${color ? color : Colors.GRAY1};
               }
               ${idx === pastTransitions.length - 1
-                ? 'font-weight: bold;'
+                ? `
+                    font-weight: bold;
+                    ${isFinal
+                      ? '&::before { display: none; }'
+                      : ''}
+                  `
                 : ''}
             `}
             key={idx}>
@@ -69,22 +95,7 @@ export const ProposalHistoryAndTransition: React.VoidFunctionComponent<{
             : undefined}
         </TransitionEntry>
       )}
-      <TransitionOptions
-        stakeholder={stakeholder}
-        cr={proposal}
-        css={css`padding: 10px;`}
-      />
-      {onDelete
-        ? <Button
-              css={css`margin: 10px;`}
-              fill
-              disabled={!onDelete}
-              intent="danger"
-              onClick={onDelete}>
-            Delete this proposal
-          </Button>
-        : null}
-    </div>
+    </>
   );
 };
 
@@ -109,7 +120,7 @@ const TransitionEntry = styled.div`
 `;
 
 
-const NewProposal: React.VoidFunctionComponent<{
+export const NewProposal: React.VoidFunctionComponent<{
   register: Register
   onCreateBlank?: (idea: string) => void
   className?: string
@@ -152,10 +163,11 @@ const NewProposal: React.VoidFunctionComponent<{
 };
 
 const ActionableProposalItems: React.VoidFunctionComponent<{
-  stakeholder?: RegisterStakeholder
   actionableProposals: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
+  stakeholder?: RegisterStakeholder
   onEnterProposal?: (proposalID: string) => void
-}> = function ({ stakeholder, actionableProposals, onEnterProposal }) {
+  activeCR?: CR
+}> = function ({ stakeholder, actionableProposals, activeCR, onEnterProposal }) {
   return (
     <>
       {actionableProposals?.
@@ -167,6 +179,8 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
             ? proposals.map(cr =>
                 <MenuItem
                   key={cr.id}
+                  selected={activeCR && cr.id === activeCR?.id}
+                  active={activeCR && cr.id === activeCR?.id}
                   text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
                   htmlTitle={cr.justification}
                   disabled={!onEnterProposal}
@@ -201,100 +215,111 @@ export const Proposals: React.VoidFunctionComponent<{
 }> = function ({
   stakeholder,
   activeCR,
-  register,
+  //register,
   actionableProposals,
-  onImport, onCreate,
-  onEnterProposal, onExitProposal,
-  onRefreshProposals,
+  //onImport,
+  //onCreate,
+  onEnterProposal,
+  //onExitProposal,
+  //onRefreshProposals,
   className,
 }) {
-  const [creating, setCreating] = useState(false);
-  const stack: Panel<any>[] = useMemo(() => {
-    const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
-    const stack = [];
-    const proposalMenu = hasActionable || onImport || onCreate
-      ? <Menu css={css`overflow-y: auto; background: none !important;`}>
-          {onImport
-            ? <MenuItem onClick={onImport} text="Import proposal" icon="import" />
-            : null}
-          {onCreate
-            ? <MenuItem
-                onClick={() => setCreating(true)}
-                text="Create blank proposal"
-                icon="add"
-              />
-            : null}
-          {hasActionable
-            ? <ActionableProposalItems
-                stakeholder={stakeholder}
-                actionableProposals={actionableProposals ?? []}
-                onEnterProposal={onEnterProposal}
-              />
-            : null}
-        </Menu>
+  //const [creating, setCreating] = useState(false);
+  const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
+  const proposalMenuItems: JSX.Element | null = useMemo(() => {
+    return hasActionable
+      ? <ActionableProposalItems
+          stakeholder={stakeholder}
+          actionableProposals={actionableProposals ?? []}
+          onEnterProposal={onEnterProposal}
+          activeCR={activeCR ?? undefined}
+        />
       : null;
-    if (proposalMenu) {
-      stack.push({
-        title: activeCR
-          ? "Proposals"
-          : <>
-              Proposals
-              {hasActionable && !creating && !activeCR
-                ? <>
-                    &nbsp;
-                    <Button
-                      minimal
-                      small
-                      onClick={onRefreshProposals}
-                      disabled={!onRefreshProposals}
-                      icon="refresh"
-                    />
-                  </>
-                : null}
-            </>,
-        renderPanel: () => proposalMenu,
-      });
-    }
-    if (activeCR) {
-      stack.push({
-        title: activeCR.justification.trim() || activeCR.id,
-        renderPanel: () =>
-          <CurrentProposal
-            proposal={activeCR}
-            stakeholder={stakeholder}
-            register={register}
-            css={css`padding: 5px;`}
-          />,
-      });
-    } else if (creating) {
-      stack.push({
-        title: "Start proposal",
-        renderPanel: () =>
-          <NewProposal
-            onCreateBlank={onCreate}
-            register={register}
-            css={css`padding: 5px;`}
-          />,
-      });
-    }
-    return stack;
-  }, [
-    onCreate, onImport, onRefreshProposals, onEnterProposal,
-    creating, activeCR, register, stakeholder, actionableProposals
-  ]);
+  }, [onEnterProposal, activeCR, hasActionable, stakeholder, actionableProposals]);
 
-  function handleClosePanel() {
-    setCreating(false);
-    onExitProposal?.();
-  }
+  return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
+    {proposalMenuItems}
+  </Menu>
 
-  return <PanelStack
-    css={css`position: absolute; inset: 0; .bp4-panel-stack-view { background: none; }`}
-    renderActivePanelOnly
-    className={className}
-    onClose={handleClosePanel}
-    stack={stack.length > 0
-      ? stack
-      : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
-  />;
+  // const stack: Panel<any>[] = useMemo(() => {
+  //   const stack = [];
+  //   const proposalMenu = proposalMenuItems || onImport || onCreate
+  //     ? <Menu css={css`overflow-y: auto; background: none !important;`}>
+  //         {onImport
+  //           ? <MenuItem onClick={onImport} text="Import proposal" icon="import" />
+  //           : null}
+  //         {onCreate
+  //           ? <MenuItem
+  //               onClick={() => setCreating(true)}
+  //               text="Create blank proposal"
+  //               icon="add"
+  //             />
+  //           : null}
+  //         {proposalMenuItems}
+  //       </Menu>
+  //     : null;
+  //   if (proposalMenu) {
+  //     stack.push({
+  //       title: activeCR
+  //         ? "Proposals"
+  //         : <>
+  //             Proposals
+  //             {hasActionable && !creating && !activeCR
+  //               ? <>
+  //                   &nbsp;
+  //                   <Button
+  //                     minimal
+  //                     small
+  //                     onClick={onRefreshProposals}
+  //                     disabled={!onRefreshProposals}
+  //                     icon="refresh"
+  //                   />
+  //                 </>
+  //               : null}
+  //           </>,
+  //       renderPanel: () => proposalMenu,
+  //     });
+  //   }
+  //   if (activeCR) {
+  //     stack.push({
+  //       title: activeCR.justification.trim() || activeCR.id,
+  //       renderPanel: () =>
+  //         <CurrentProposal
+  //           proposal={activeCR}
+  //           stakeholder={stakeholder}
+  //           register={register}
+  //           css={css`padding: 5px;`}
+  //         />,
+  //     });
+  //   } else if (creating) {
+  //     stack.push({
+  //       title: "Start proposal",
+  //       renderPanel: () =>
+  //         <NewProposal
+  //           onCreateBlank={onCreate}
+  //           register={register}
+  //           css={css`padding: 5px;`}
+  //         />,
+  //     });
+  //   }
+  //   return stack;
+  // }, [
+  //   onCreate, onImport, onRefreshProposals,
+  //   creating, activeCR, register, stakeholder, proposalMenuItems
+  // ]);
+
+  // function handleClosePanel() {
+  //   setCreating(false);
+  //   onExitProposal?.();
+  // }
+
+  // return <PanelStack
+  //   css={css`position: absolute; inset: 0; .bp4-panel-stack-view { background: none; }`}
+  //   renderActivePanelOnly
+  //   className={className}
+  //   onClose={handleClosePanel}
+  //   stack={stack.length > 0
+  //     ? stack
+  //     : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
+  // />;
 }
