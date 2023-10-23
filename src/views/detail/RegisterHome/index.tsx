@@ -452,9 +452,9 @@ function HomeBlock<P extends Record<string, any>>(
             ? <NonIdealState icon={<Spinner />} />
             : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
       </div>
-      {actions
+      {(actions?.length ?? 0) > 0
         ? <Menu css={css`background: none !important; flex-shrink: 0;`}>
-            {actions.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
+            {actions!.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}
           </Menu>
         : null}
     </CardInGrid>
