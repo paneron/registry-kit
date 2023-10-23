@@ -49,7 +49,7 @@ const Summary: React.FC<{
           Register&nbsp;version before&nbsp;proposal:
         </dt>
         <dd>
-          <strong>{cr.registerVersion ?? 'N/A'}</strong>
+          {cr.registerVersion ?? 'N/A'}
           &ensp;
           {cr.registerVersion === registerMetadata?.version?.id
             ? <Tag css={css`display: inline;`} intent='success' minimal round>
