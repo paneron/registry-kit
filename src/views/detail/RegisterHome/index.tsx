@@ -424,11 +424,19 @@ export default RegisterHome;
 
 
 interface HomeBlockProps<P extends Record<string, any>> {
-  View: React.VoidFunctionComponent<P>,
   description: string,
+  View: React.VoidFunctionComponent<P>,
+
+  /** Props to pass the `View`. */
   props: P | null | undefined,
+
+  /** Shown if `props` is `null`. */
   error?: string | JSX.Element,
+
+  /** Shown beneath `View`. */
   actions?: MenuItemProps[],
+
+  /** Applies to wrapper card div. */
   className?: string,
 }
 function HomeBlock<P extends Record<string, any>>(
