@@ -16,20 +16,20 @@ const MetaSummary: React.VoidFunctionComponent<{
   return (
     <DL className={Classes.RUNNING_TEXT} css={css`padding: 10px;`}>
       <div>
-        <dt>Viewing version:</dt>
+        <dt>Viewing&nbsp;version:</dt>
         <dd>{register.version?.id ?? 'N/A'}</dd>
       </div>
       <div>
-        <dt>Register name:</dt>
+        <dt>Register&nbsp;name:</dt>
         <dd>{register.name}</dd>
       </div>
       <div>
-        <dt>Content summary:</dt>
+        <dt>Content&nbsp;summary:</dt>
         <dd>{register.contentSummary || 'N/A'}</dd>
       </div>
       {register.operatingLanguage
         ? <div>
-            <dt>Operating language:</dt>
+            <dt>Operating&nbsp;language:</dt>
             <dd>
               <Val val={normalizeObjectRecursively(register.operatingLanguage)} />
             </dd>
