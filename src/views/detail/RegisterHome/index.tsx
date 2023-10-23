@@ -376,7 +376,10 @@ function () {
           View={MetaSummary}
           description="Register summary"
           props={registerMetadata
-            ? { register: registerMetadata }
+            ? {
+                register: registerMetadata,
+                style: { padding: '10px 12px 0 12px', flexGrow: 1, flexShrink: 0 },
+              }
             : registerMetadata}
           error={registerMetadata === null
             ? "Failed to load register metadata"
@@ -447,19 +450,18 @@ function HomeBlock<P extends Record<string, any>>(
         css={css`
           padding: 5px;
           display: flex; flex-flow: column nowrap;
+          overflow: hidden;
           transition:
             width .5s linear,
             height .5s linear;
         `}
         description={description}
         className={className}>
-      <div css={css`position: relative; flex: 1; flex-grow: 1; flex-shrink: 0; overflow-y: auto;`}>
-        {props
-          ? <View {...props} />
-          : props === undefined
-            ? <NonIdealState icon={<Spinner />} />
-            : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
-      </div>
+      {props
+        ? <View {...props} />
+        : props === undefined
+          ? <NonIdealState icon={<Spinner />} />
+          : <NonIdealState icon="heart-broken" title="Failed to load" description={error} />}
       {(actions?.length ?? 0) > 0
         ? <Menu css={css`background: none !important; flex-shrink: 0;`}>
             {actions!.map((mip, idx) => <MenuItem key={idx} {...mip }/>)}

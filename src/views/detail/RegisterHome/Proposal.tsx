@@ -14,18 +14,18 @@ import {
   Icon, Spinner,
   //NonIdealState,
   Colors,
-  Classes,
 } from '@blueprintjs/core';
 
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { maybeEllipsizeString } from '../../util';
 import type {
   Register,
   RegisterStakeholder,
 } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../change-request/TransitionOptions';
+import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy, STATE_COLOR } from '../../change-request/TransitionOptions';
 import { getTransitionHistory, type TransitionHistoryEntry } from '../../change-request/PastTransitions';
 import Summary from '../../change-request/Summary';
 
@@ -34,16 +34,19 @@ export const CurrentProposal: React.VoidFunctionComponent<{
   proposal: CR
   register: Register
   stakeholder?: RegisterStakeholder
-  className?: string
-}> = function ({ stakeholder, register, proposal, className }) {
-  const transitions = stakeholder ? getTransitions(proposal, stakeholder) : [];
+}> = function ({ stakeholder, register, proposal }) {
+  const transitions = stakeholder
+    ? getTransitions(proposal, stakeholder)
+    : [];
 
   return (
-    <div className={className}>
-      <DL className={Classes.RUNNING_TEXT} css={css`padding: 10px;`}>
+    <>
+      <DL css={css`padding: 10px 12px 10px 12px; flex-grow: 1; flex-basis: max-content;`}>
         <div>
-          <dt>Viewing proposal:</dt>
-          <dd>“{proposal.justification.trim() || '(justification N/A)'}”</dd>
+          <dt>Viewing&nbsp;proposal:</dt>
+          <dd css={css`max-height: 40px; overflow-y: auto;`}>
+            “{proposal.justification.trim() || '(justification N/A)'}”
+          </dd>
         </div>
         <Summary
           cr={proposal}
@@ -51,17 +54,19 @@ export const CurrentProposal: React.VoidFunctionComponent<{
           registerMetadata={register}
         />
       </DL>
-      <TransitionsAndStatus
-        pastTransitions={getTransitionHistory(proposal)}
-        isFinal={isFinalState(proposal.state)}
-      />
-      <TransitionOptions
-        stakeholder={stakeholder}
-        transitions={transitions}
-        cr={proposal}
-        css={css`padding: 10px;`}
-      />
-    </div>
+      <div css={css`overflow-y: auto; flex-basis: min-content;`}>
+        <TransitionsAndStatus
+          pastTransitions={getTransitionHistory(proposal)}
+          isFinal={isFinalState(proposal.state)}
+        />
+        <TransitionOptions
+          stakeholder={stakeholder}
+          transitions={transitions}
+          cr={proposal}
+          css={css`padding: 12px;`}
+        />
+      </div>
+    </>
   );
 };
 
