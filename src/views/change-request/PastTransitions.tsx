@@ -8,11 +8,15 @@ import * as CR from '../../types/cr';
 import { STATE_COLOR } from './TransitionOptions';
 
 
+export type TransitionHistoryEntry = [
+  key: string,
+  details: JSX.Element | null,
+  color: typeof Colors[keyof typeof Colors] | undefined,
+];
+
 export function getTransitionHistory(cr: CR.Base):
-[key: string, details: JSX.Element | null, color: typeof Colors[keyof typeof Colors] | undefined][] {
-  const els:
-  [key: string, details: JSX.Element | null, color: typeof Colors[keyof typeof Colors] | undefined][] =
-  [];
+TransitionHistoryEntry[] {
+  const els: TransitionHistoryEntry[] = [];
 
   if (cr.pastTransitions && cr.pastTransitions.length > 0) {
 
