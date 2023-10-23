@@ -376,7 +376,7 @@ function () {
           View={MetaSummary}
           description="Register summary"
           props={registerMetadata
-            ? { register: registerMetadata, stakeholder }
+            ? { register: registerMetadata }
             : registerMetadata}
           error={registerMetadata === null
             ? "Failed to load register metadata"

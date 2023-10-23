@@ -2,21 +2,40 @@
 /** @jsxFrag React.Fragment */
 
 import React from 'react';
-import { jsx } from '@emotion/react';
-import type { Register, RegisterStakeholder } from '../../../types';
+import { jsx, css } from '@emotion/react';
+import { Classes } from '@blueprintjs/core';
+import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
+import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
+import { Val } from '../../../views/diffing/InlineDiff';
+import type { Register } from '../../../types';
 
 
 const MetaSummary: React.VoidFunctionComponent<{
   register: Register
-  stakeholder?: RegisterStakeholder
-  className?: string
-}> = function ({ register, stakeholder, className }) {
+}> = function ({ register}) {
   return (
-    <div className={className}>
-      {register.name}
-      <br />
-      Version: {register.version?.id ?? 'N/A'}
-    </div>
+    <DL className={Classes.RUNNING_TEXT} css={css`padding: 10px;`}>
+      <div>
+        <dt>Viewing version:</dt>
+        <dd>{register.version?.id ?? 'N/A'}</dd>
+      </div>
+      <div>
+        <dt>Register name:</dt>
+        <dd>{register.name}</dd>
+      </div>
+      <div>
+        <dt>Content summary:</dt>
+        <dd>{register.contentSummary || 'N/A'}</dd>
+      </div>
+      {register.operatingLanguage
+        ? <div>
+            <dt>Operating language:</dt>
+            <dd>
+              <Val val={normalizeObjectRecursively(register.operatingLanguage)} />
+            </dd>
+          </div>
+        : null}
+    </DL>
   );
 };
 
