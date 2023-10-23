@@ -52,8 +52,10 @@ memo(function ({ uri }) {
   const { changeRequest: cr, canTransition, deleteCR } = useContext(ChangeRequestContext);
   const handleDelete = useCallback(
     (async () => {
-      await deleteCR?.();
-      closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`);
+      if (deleteCR) {
+        await deleteCR();
+        closeTabWithURI(`${Protocols.CHANGE_REQUEST}:${uri}`);
+      }
     }),
     [deleteCR, closeTabWithURI]);
 
