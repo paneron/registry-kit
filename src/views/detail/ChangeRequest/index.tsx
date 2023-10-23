@@ -21,7 +21,7 @@ import {
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
-import TransitionOptions from '../../change-request/TransitionOptions';
+import TransitionOptions, { getTransitions } from '../../change-request/TransitionOptions';
 import PastTransitions from '../../change-request/PastTransitions';
 import Summary from '../../change-request/Summary';
 import { type SomeCR, hadBeenProposed, isDisposed } from '../../../types/cr';
@@ -224,7 +224,11 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
       {canTransition
         ? <Card elevation={3} css={css`flex: 30%; padding: 11px;`}>
-            <TransitionOptions stakeholder={stakeholder} cr={cr} />
+            <TransitionOptions
+              transitions={stakeholder ? getTransitions(cr, stakeholder) : []}
+              stakeholder={stakeholder}
+              cr={cr}
+            />
           </Card>
         : null}
     </TabContentsWithHeader>

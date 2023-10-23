@@ -30,12 +30,16 @@ type Action =
   | { type: 'choose-next-state'; payload: { state: CR.StateType } }
   | { type: 'update-next-state-input'; payload: Record<string, any> }
 
-//export const TransitionOptions: C extends CR.Base ? C["state"] extends keyof CR.Transitions ? React.FC<{ cr: CR.Base }> : never : never = function ({ cr }) {
-export const TransitionOptions: React.FC<{
+export interface TransitionOptions<C extends CR.SomeCR> {
+  cr: C
+  transitions: PossibleTransitionForCR<C>[]
   stakeholder?: RegisterStakeholder
-  cr: CR.Base
   className?: string
-}> = function ({ stakeholder, cr, className }) {
+}
+
+//export const TransitionOptions: C extends CR.Base ? C["state"] extends keyof CR.Transitions ? React.FC<{ cr: CR.Base }> : never : never = function ({ cr }) {
+function TransitionOptions<C extends CR.SomeCR>
+({ cr, transitions, stakeholder, className }: TransitionOptions<C>) {
   const { subregisters } = useContext(BrowserCtx);
   const {
     getObjectData,
@@ -46,19 +50,6 @@ export const TransitionOptions: React.FC<{
   } = useContext(DatasetContext);
 
   const isBusy = operationKey !== undefined;
-
-  const transitions = useMemo((
-    () => stakeholder
-      ? getTransitions(cr, stakeholder)
-      : []
-  ), [
-    JSON.stringify(stakeholder),
-    // IMPORTANT: Below two dependencies arise
-    // from within `getTransitions()` implementation, which in turn
-    // further depends on individual transitions.
-    cr.state,
-    cr.submittingStakeholderGitServerUsername,
-  ]);
 
   const initialState: State = useMemo((() => ({
     // Pre-select next state to first available transition
@@ -271,7 +262,7 @@ type PossibleTransitionForCR<CR extends CR.Base> = [
  * Returns a list of transitions
  * that can be performed on given CR by given stakeholder.
  */
-function getTransitions<CR extends CR.Base>(
+export function getTransitions<CR extends CR.Base>(
   cr: CR,
   stakeholder: RegisterStakeholder,
 ): PossibleTransitionForCR<CR>[] {
