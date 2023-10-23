@@ -2,8 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import React from 'react';
-import { jsx, css } from '@emotion/react';
-import { Classes } from '@blueprintjs/core';
+import { jsx } from '@emotion/react';
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
 import { Val } from '../../../views/diffing/InlineDiff';
@@ -12,9 +11,10 @@ import type { Register } from '../../../types';
 
 const MetaSummary: React.VoidFunctionComponent<{
   register: Register
-}> = function ({ register}) {
+  style?: React.CSSProperties
+}> = function ({ register, style }) {
   return (
-    <DL className={Classes.RUNNING_TEXT} css={css`padding: 10px;`}>
+    <DL style={style}>
       <div>
         <dt>Viewing&nbsp;version:</dt>
         <dd>{register.version?.id ?? 'N/A'}</dd>
