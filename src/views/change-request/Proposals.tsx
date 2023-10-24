@@ -26,6 +26,7 @@ import type {
   RegisterItem,
 } from '../../types';
 import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
+import ErrorState from '@riboseinc/paneron-extension-kit/widgets/ErrorState';
 import type { Drafted } from '../../types/cr';
 import { Protocols, type Protocol } from '../protocolRegistry';
 import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../types/proposal';
@@ -344,12 +345,20 @@ export const ProposalSummary: React.FC<ProposalProps<ChangeProposal>> =
 function ({ proposal, itemRef, item, itemBefore, onChange }) {
   const { itemClasses } = useContext(BrowserCtx);
   const { classID } = itemRef;
-  const ListItemView = itemClasses[classID].views.listItemView;
+  const ListItemView = itemClasses[classID]?.views?.listItemView;
 
-  return <ListItemView
-    itemRef={itemRef}
-    itemData={item.data}
-  />;
+  if (ListItemView) {
+    return <ListItemView
+      itemRef={itemRef}
+      itemData={item.data}
+    />;
+  } else {
+    return <ErrorState
+      viewName="list item view"
+      inline
+      error="unable to load list item view"
+    />;
+  }
 };
 
 
