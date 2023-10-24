@@ -264,7 +264,7 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
   const selectedItem = useRef<HTMLLIElement | null>(null);
   useEffect(() => {
     if (selectedItem.current) {
-      selectedItem.current.scrollIntoView?.();
+      selectedItem.current.scrollIntoView?.({ block: 'nearest' });
     }
   }, [selectedItem.current]);
   return (
@@ -278,7 +278,9 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
             ? proposals.map(cr =>
                 <MenuItem
                   key={cr.id}
-                  elementRef={selectedItem}
+                  elementRef={activeCR && cr.id === activeCR?.id
+                    ? selectedItem
+                    : undefined}
                   selected={activeCR && cr.id === activeCR?.id}
                   active={activeCR && cr.id === activeCR?.id}
                   text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
