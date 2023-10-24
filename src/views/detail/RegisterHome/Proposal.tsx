@@ -123,7 +123,7 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
                     ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
                     : null}
                   {timestamp
-                    ? timestamp.toISOString()
+                    ? (timestamp.toISOString?.() || timestamp)
                     : null}
                   {input
                     ? <div><Val val={normalizeObjectRecursively(input)} /></div>
