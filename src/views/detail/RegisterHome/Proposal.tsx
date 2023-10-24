@@ -312,7 +312,6 @@ export const Proposals: React.VoidFunctionComponent<{
   const proposalMenuItems: JSX.Element | null = useMemo(() => {
     return hasActionable
       ? <ActionableProposalItems
-          stakeholder={stakeholder}
           actionableProposals={actionableProposals ?? []}
           onEnterProposal={onEnterProposal}
           activeCR={activeCR ?? undefined}
