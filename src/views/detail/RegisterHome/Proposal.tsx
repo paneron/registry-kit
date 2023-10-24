@@ -19,8 +19,10 @@ import {
 
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { maybeEllipsizeString } from '../../util';
+import { Val } from '../../diffing/InlineDiff';
 import type {
   Register,
   RegisterStakeholder,
@@ -123,7 +125,9 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
                   {timestamp
                     ? timestamp.toISOString()
                     : null}
-                  <span>{JSON.stringify(input)}</span>
+                  {input
+                    ? <div><Val val={normalizeObjectRecursively(input)} /></div>
+                    : null}
                 </div>} /></>
               : undefined}
           </TransitionEntry>
