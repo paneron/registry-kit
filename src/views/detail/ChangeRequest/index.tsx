@@ -14,6 +14,7 @@ import {
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { JSONStringifyNormalized } from '@riboseinc/paneron-extension-kit/util';
+import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import { BrowserCtx } from '../../BrowserCtx';
 import { crPathToCRID } from '../../itemPathUtils';
 import {
@@ -211,11 +212,13 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
-        <Summary
-          cr={cr}
-          currentStakeholder={stakeholder}
-          registerMetadata={registerMetadata ?? undefined}
-        />
+        <DL>
+          <Summary
+            cr={cr}
+            currentStakeholder={stakeholder}
+            registerMetadata={registerMetadata ?? undefined}
+          />
+        </DL>
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
