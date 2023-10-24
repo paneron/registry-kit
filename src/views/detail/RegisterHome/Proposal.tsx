@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import styled from '@emotion/styled';
 import { jsx, css } from '@emotion/react';
 import {
@@ -261,6 +261,12 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
   onEnterProposal?: (proposalID: string) => void
   activeCR?: CR
 }> = function ({ actionableProposals, activeCR, onEnterProposal }) {
+  const selectedItem = useRef<HTMLLIElement | null>(null);
+  useEffect(() => {
+    if (selectedItem.current) {
+      selectedItem.current.scrollIntoView?.();
+    }
+  }, [selectedItem.current]);
   return (
     <>
       {actionableProposals?.
@@ -272,6 +278,7 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
             ? proposals.map(cr =>
                 <MenuItem
                   key={cr.id}
+                  elementRef={selectedItem}
                   selected={activeCR && cr.id === activeCR?.id}
                   active={activeCR && cr.id === activeCR?.id}
                   text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
