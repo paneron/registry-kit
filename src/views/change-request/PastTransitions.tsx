@@ -14,19 +14,22 @@ import { type RegisterStakeholder } from '../../types/stakeholder';
 //   color: typeof Colors[keyof typeof Colors] | undefined,
 // ];
 
+/**
+ * Transition history entry is mostly like `CR.TransitionEntry`,
+ * except it has optional fields and can be `undefined` to represent
+ * missing parts of history.
+ */
 export type TransitionHistoryEntry = Omit<CR.TransitionEntry, 'timestamp' | 'fromState' | 'stakeholder' | 'input'> & {
   timestamp?: Date
   fromState?: CR.StateType
   stakeholder?: RegisterStakeholder
   input?: CR.StateInput
-}
+} | undefined;
 
 export function getTransitionHistory(cr: CR.Base):
 TransitionHistoryEntry[] {
-  const els: TransitionHistoryEntry[] = [];
 
   if (cr.pastTransitions && cr.pastTransitions.length > 0) {
-
     return [{
       label: "Create",
       toState: CR.State.DRAFT,
@@ -34,6 +37,17 @@ TransitionHistoryEntry[] {
     }, ...cr.pastTransitions];
 
   } else {
+    const els: TransitionHistoryEntry[] = [];
+
+    els.push({
+      label: "Create",
+      toState: CR.State.DRAFT,
+      timestamp: (cr as CR.Drafted).timeStarted,
+    });
+
+    if (!CR.isDrafted(cr)) {
+      els.push(undefined);
+    }
 
     // Backward compatibility
 
@@ -127,17 +141,8 @@ TransitionHistoryEntry[] {
         },
       });
     }
-
-    if (els.length < 1) {
-      els.push({
-        label: "Create",
-        toState: CR.State.DRAFT,
-        timestamp: (cr as CR.Drafted).timeStarted,
-      });
-    }
+    return els;
   }
-
-  return els;
 }
 
 

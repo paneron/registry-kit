@@ -79,48 +79,69 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
 }> = function ({ pastTransitions, isFinal }) {
   return (
     <>
-      {pastTransitions.map(({ label, stakeholder, toState, input, timestamp }, idx) =>
-        <TransitionEntry
-            css={css`
-              background-color: ${STATE_COLOR[toState] ?? Colors.GRAY1};
-              position: sticky;
-              top: ${idx * 3}px;
-              z-index: 1;
-              ${idx === pastTransitions.length - 1
-                ? `
-                    font-weight: bold;
-                    ${isFinal
-                      ? `
-                          &::before {
-                            ${transitionEntryDecorativeMarkerFinal}
-                          }
-                        `
-                      : ''}
-                  `
-                : ''}
-                ${idx === 0
+      {pastTransitions.map((entry, idx) => {
+        if (entry) {
+          const { label, stakeholder, fromState, toState, input, timestamp } = entry;
+          return <TransitionEntry
+              title={`Transition ${fromState ? `from ${fromState} ` : ''}to ${toState}`}
+              css={css`
+                background: linear-gradient(
+                  345deg,
+                  ${STATE_COLOR[toState] ?? Colors.GRAY1}aa,
+                  ${STATE_COLOR[toState] ?? Colors.GRAY1} 50%);
+                position: sticky;
+                top: ${idx * 3}px;
+                z-index: 1;
+                ${idx === pastTransitions.length - 1
                   ? `
-                      &::before {
-                        ${transitionEntryDecorativeMarkerInitial}
-                      }
+                      font-weight: bold;
+                      ${isFinal
+                        ? `
+                            &::before {
+                              ${transitionEntryDecorativeMarkerFinal}
+                            }
+                          `
+                        : ''}
                     `
                   : ''}
-            `}
-            key={idx}>
-          {label}
-          {input
-            ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
-                {stakeholder
-                  ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
-                  : null}
-                {timestamp
-                  ? timestamp.toISOString()
-                  : null}
-                <span>{JSON.stringify(input)}</span>
-              </div>} /></>
-            : undefined}
-        </TransitionEntry>
-      )}
+                  ${idx === 0
+                    ? `
+                        &::before {
+                          ${transitionEntryDecorativeMarkerInitial}
+                        }
+                      `
+                    : ''}
+              `}
+              key={idx}>
+            {label}
+            {input
+              ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
+                  {stakeholder
+                    ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
+                    : null}
+                  {timestamp
+                    ? timestamp.toISOString()
+                    : null}
+                  <span>{JSON.stringify(input)}</span>
+                </div>} /></>
+              : undefined}
+          </TransitionEntry>
+        } else {
+          if (idx > 0 && pastTransitions[idx - 1] !== undefined) {
+            return <div
+                css={css`position: relative`}
+                title="No detailed state transitions available">
+              <Icon
+                icon="more"
+                css={css`position: relative; left: 22px; transform: translateX(-50%);`}
+              />
+            </div>;
+          } else {
+            // Don’t output multiple missing steps in a row.
+            return null;
+          }
+        }
+      })}
     </>
   );
 };
