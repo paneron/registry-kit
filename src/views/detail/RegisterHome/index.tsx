@@ -228,7 +228,7 @@ function () {
             onExitProposal: setActiveChangeRequestID
               ? () => setActiveChangeRequestID?.(null)
               : undefined,
-            onEnterProposal: setActiveChangeRequestID
+            onSelectProposal: setActiveChangeRequestID && !isBusy
               ? crid => { setActiveChangeRequestID?.(crid) }
               : undefined,
           }}

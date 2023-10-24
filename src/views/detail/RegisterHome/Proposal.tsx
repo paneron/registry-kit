@@ -291,8 +291,8 @@ export const Proposals: React.VoidFunctionComponent<{
   activeCR?: CR | null
   onImport?: () => void
   onExitProposal?: () => void
-  onEnterProposal?: (id: string) => void
   onCreate?: (idea: string | false) => Promise<void>
+  onSelectProposal?: (id: string) => void
   onRefreshProposals?: () => void
   className?: string
 }> = function ({
@@ -302,9 +302,9 @@ export const Proposals: React.VoidFunctionComponent<{
   actionableProposals,
   //onImport,
   //onCreate,
-  onEnterProposal,
   //onExitProposal,
   //onRefreshProposals,
+  onSelectProposal,
   className,
 }) {
   //const [creating, setCreating] = useState(false);
@@ -313,11 +313,11 @@ export const Proposals: React.VoidFunctionComponent<{
     return hasActionable
       ? <ActionableProposalItems
           actionableProposals={actionableProposals ?? []}
-          onEnterProposal={onEnterProposal}
+          onEnterProposal={onSelectProposal}
           activeCR={activeCR ?? undefined}
         />
       : null;
-  }, [onEnterProposal, activeCR, hasActionable, stakeholder, actionableProposals]);
+  }, [onSelectProposal, activeCR, hasActionable, actionableProposals]);
 
   return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
     {proposalMenuItems}
