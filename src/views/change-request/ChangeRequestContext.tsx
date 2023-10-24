@@ -35,6 +35,11 @@ export interface ChangeRequestContextSpec {
    */
   canDelete: boolean
 
+  /**
+   * Function that performs CR deletion.
+   * May not be present even if `canDelete` is true for variuos reasons
+   * (e.g., another action is in progress).
+   */
   deleteCR?: () => Promise<void>
 
 }
