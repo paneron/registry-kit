@@ -221,7 +221,6 @@ function () {
             flex-grow: 1;
           `}
           props={{
-            stakeholder,
             activeCR,
             register: registerMetadata,
             actionableProposals,

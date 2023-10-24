@@ -25,7 +25,7 @@ import type {
   RegisterStakeholder,
 } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy, STATE_COLOR } from '../../change-request/TransitionOptions';
+import TransitionOptions, { isFinalState, getTransitions, STATE_COLOR } from '../../change-request/TransitionOptions';
 import { getTransitionHistory, type TransitionHistoryEntry } from '../../change-request/PastTransitions';
 import Summary from '../../change-request/Summary';
 
@@ -232,10 +232,9 @@ export const NewProposal: React.VoidFunctionComponent<{
 
 const ActionableProposalItems: React.VoidFunctionComponent<{
   actionableProposals: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
-  stakeholder?: RegisterStakeholder
   onEnterProposal?: (proposalID: string) => void
   activeCR?: CR
-}> = function ({ stakeholder, actionableProposals, activeCR, onEnterProposal }) {
+}> = function ({ actionableProposals, activeCR, onEnterProposal }) {
   return (
     <>
       {actionableProposals?.
@@ -252,11 +251,6 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
                   text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
                   htmlTitle={cr.justification}
                   disabled={!onEnterProposal}
-                  labelElement={<Icon
-                    icon={stakeholder && canBeTransitionedBy(stakeholder, cr)
-                      ? 'take-action'
-                      : undefined}
-                  />}
                   onClick={() => onEnterProposal?.(cr.id)}
                 />
               )
