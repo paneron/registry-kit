@@ -43,6 +43,7 @@ function () {
     getObjectData,
     updateObjects,
     performOperation,
+    isBusy,
     getMapReducedData,
   } = useContext(DatasetContext);
 
@@ -123,7 +124,7 @@ function () {
   }, [getMapReducedData, requestFileFromFilesystem, getObjectData, stakeholder]);
 
   const [importCR, createCR] = useMemo(() => {
-    if (updateObjects && setActiveChangeRequestID) {
+    if (updateObjects && setActiveChangeRequestID && !isBusy) {
       return [
         getImportedCRChangeset
           ? performOperation('importing proposal', async function () {
@@ -139,7 +140,7 @@ function () {
           ? performOperation('creating blank proposal', async function (newIdea: string) {
               const [objectChangeset, crID] = await getNewEmptyCRChangeset(newIdea);
               await updateObjects({
-                commitMessage: 'start new empty proposal',
+                commitMessage: `start new empty proposal ${newIdea}`,
                 objectChangeset,
               });
               setActiveChangeRequestID(crID);
@@ -149,7 +150,7 @@ function () {
     } else {
       return [undefined, undefined];
     }
-  }, [performOperation, updateObjects, getImportedCRChangeset, getNewEmptyCRChangeset]);
+  }, [isBusy, performOperation, updateObjects, getImportedCRChangeset, getNewEmptyCRChangeset]);
 
   // Actionable proposals
   const [actionableProposals, setActionableProposals] =
@@ -268,7 +269,7 @@ function () {
       return null;
     }
   }, [
-    importCR, createCR,
+    isBusy, importCR, createCR, createMode,
     registerMetadata, stakeholder,
     activeCR?.id,
     toJSONNormalized(actionableProposals),
