@@ -11,12 +11,13 @@ import type { RoughAnnotation, RoughAnnotationConfig } from 'rough-notation/lib/
 function annotateChange(
   type: 'added' | 'removed',
   wrappingEl: HTMLSpanElement,
-  childIsBoxy: boolean | undefined):
-RoughAnnotation[] {
+  childIsBoxy: boolean | undefined,
+  colorScheme?: string
+): RoughAnnotation[] {
   const highlightConfig: RoughAnnotationConfig = {
     type: 'highlight',
     animate: false,
-    color: Colors.GOLD5,
+    color: colorScheme === 'dark' ? Colors.GOLD2 : Colors.GOLD5,
     iterations: 3,
   };
   let changeConfig: RoughAnnotationConfig;
@@ -53,7 +54,13 @@ const AnnotatedChange: React.FC<{ type: 'added' | 'removed' }> = ({ type, childr
 
   useEffect(() => {
     if (elRef.current) {
-      const annotations = annotateChange(type, elRef.current, childIsBoxy);
+      const isDark = getComputedStyle(elRef.current).colorScheme === 'dark';
+      const annotations = annotateChange(
+        type,
+        elRef.current,
+        childIsBoxy,
+        isDark ? 'dark' : undefined,
+      );
       for (const a of annotations) {
         a.show();
       }
@@ -64,11 +71,15 @@ const AnnotatedChange: React.FC<{ type: 'added' | 'removed' }> = ({ type, childr
       }
     }
     return;
-  }, [elRef.current]);
+  }, [elRef.current, childIsBoxy, type]);
 
   return (
     <mark
-        style={{ display: childIsBoxy ? 'block' : 'inline', background: 'none' }}
+        style={{
+          display: childIsBoxy ? 'block' : 'inline',
+          background: 'none',
+          color: 'inherit',
+        }}
         ref={elRef}
         title={`(${type} in this proposal)`}>
       {children}
