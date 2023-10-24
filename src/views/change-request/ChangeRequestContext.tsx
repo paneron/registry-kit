@@ -54,7 +54,7 @@ export const ChangeRequestContext = React.createContext<ChangeRequestContextSpec
 export const ChangeRequestContextProvider: React.FC<{
   changeRequestID: string | null
 }> = function ({ changeRequestID, children }) {
-  const { useObjectData, updateTree, performOperation } = useContext(DatasetContext);
+  const { useObjectData, updateTree, performOperation, isBusy } = useContext(DatasetContext);
   const { stakeholder } = useContext(BrowserCtx);
 
   const crPath = changeRequestID
@@ -88,7 +88,7 @@ export const ChangeRequestContextProvider: React.FC<{
   const hasItems = crItemEntries.length > 0;
 
   const deleteCR = useMemo((() =>
-    changeRequest?.id && canDelete && updateTree && !hasItems && !(changeRequest as Proposed).timeProposed
+    !isBusy && changeRequest?.id && canDelete && updateTree && !hasItems && !(changeRequest as Proposed).timeProposed
     ? performOperation('deleting proposal', async function handleDelete() {
         const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
         await updateTree({
@@ -99,6 +99,7 @@ export const ChangeRequestContextProvider: React.FC<{
       })
     : undefined
   ), [
+    isBusy, performOperation,
     updateTree,
     hasItems, canDelete,
     changeRequest?.id, (changeRequest as Proposed)?.timeProposed]);
