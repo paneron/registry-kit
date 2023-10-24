@@ -35,6 +35,7 @@ function () {
   } = useContext(BrowserCtx);
   const {
     changeRequest: activeCR,
+    canDelete,
     deleteCR,
   } = useContext(ChangeRequestContext);
   const {
@@ -204,11 +205,56 @@ function () {
   //   onClick: () => spawnTab(`${Protocols.CUSTOM_VIEW}:${cv.id}/index`),
   // })), [spawnTab, customViews]);
 
+  const [createMode, setCreateMode] = useState(false);
+  //const canStakeholderCreateCRs = stakeholder && canCreateCR(stakeholder);
   const proposalBlock = useMemo(() => {
     if (
       registerMetadata && (
       actionableProposals.find(p => p[1] && p[1].length > 0) || activeCR || importCR || createCR)
     ) {
+      const actions = [];
+      if (activeCR) {
+        actions.push({
+          text: "Export proposal",
+          onClick: () => void 0,
+          icon: 'export',
+          disabled: true,
+        } as const);
+        actions.push({
+          text: "Exit proposal",
+          icon: 'log-out',
+          intent: 'danger',
+          disabled: isBusy,
+          onClick: setActiveChangeRequestID
+            ? () => setActiveChangeRequestID?.(null)
+            : undefined,
+        } as const);
+      } else {
+        if (stakeholder && canCreateCR(stakeholder)) {
+          actions.push({
+            text: "Create blank proposal",
+            onClick: !createMode ? (() => setCreateMode(true)) : undefined,
+            disabled: !createCR,
+            active: createMode,
+            selected: createMode,
+            icon: 'add',
+            intent: actionableProposals.length < 1
+              ? 'primary'
+              : undefined,
+          } as const);
+        }
+        if (stakeholder && canImportCR(stakeholder)) {
+          actions.push({
+            text: "Import proposal",
+            onClick: importCR,
+            disabled: !importCR || createMode,
+            icon: 'import',
+            intent: actionableProposals.length < 1
+              ? 'primary'
+              : undefined,
+          } as const);
+        }
+      }
       return (
         <HomeBlock
           View={Proposals}
@@ -223,46 +269,21 @@ function () {
             activeCR,
             register: registerMetadata,
             actionableProposals,
-            onImport: importCR,
-            onCreate: createCR,
-            onRefreshProposals: () => setReqCounter(c => c + 1),
-            onExitProposal: setActiveChangeRequestID
-              ? () => setActiveChangeRequestID?.(null)
+            createMode: stakeholder && canCreateCR(stakeholder) && createMode,
+            onCreate: createCR && createMode
+              ? async function (idea) {
+                  if (idea) {
+                    await createCR(idea);
+                  }
+                  setCreateMode(false);
+                }
               : undefined,
+            onRefreshProposals: () => setReqCounter(c => c + 1),
             onSelectProposal: setActiveChangeRequestID && !isBusy
               ? crid => { setActiveChangeRequestID?.(crid) }
               : undefined,
           }}
-          actions={activeCR
-            ? [{
-                text: "Export proposal",
-                onClick: () => void 0,
-                icon: 'export',
-                disabled: true,
-              }, {
-                text: "Exit proposal",
-                icon: 'log-out',
-                intent: 'danger',
-                onClick: setActiveChangeRequestID
-                  ? () => setActiveChangeRequestID?.(null)
-                  : undefined,
-              }]
-            : [{
-                text: "Create blank proposal",
-                onClick: () => void 0,
-                icon: 'add',
-                disabled: true,
-                intent: actionableProposals.length < 1
-                  ? 'primary'
-                  : undefined,
-              }, {
-                text: "Import proposal",
-                onClick: importCR,
-                icon: 'import',
-                intent: actionableProposals.length < 1
-                  ? 'primary'
-                  : undefined,
-              }]}
+          actions={actions}
         />
       );
     } else {
@@ -352,10 +373,11 @@ function () {
                   icon: 'take-action',
                   intent: 'primary',
                 }*/]
-              : deleteCR
+              : canDelete
                 ? [{
-                    text: "Delete this proposal",
+                    text: "Delete this proposal draft",
                     onClick: deleteCR,
+                    disabled: !deleteCR,
                     icon: 'delete',
                     intent: 'danger',
                   }]
@@ -365,7 +387,7 @@ function () {
     } else {
       return null;
     }
-  }, [activeCR, registerMetadata, deleteCR, stakeholder]);
+  }, [activeCR, registerMetadata, canDelete, deleteCR, stakeholder]);
 
   const registerMetaBlock = useMemo(() => {
     if (!activeCRBlock && stakeholder) {

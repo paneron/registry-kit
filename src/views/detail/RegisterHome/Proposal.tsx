@@ -9,10 +9,11 @@ import {
   FormGroup,
   ControlGroup,
   TextArea,
-  //PanelStack2 as PanelStack, type Panel,
+  PanelStack2 as PanelStack, type Panel,
   Menu, MenuDivider, MenuItem,
-  Icon, Spinner,
-  //NonIdealState,
+  Spinner,
+  NonIdealState,
+  Icon,
   Colors,
 } from '@blueprintjs/core';
 
@@ -288,21 +289,19 @@ export const Proposals: React.VoidFunctionComponent<{
   register: Register
   actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   activeCR?: CR | null
-  onImport?: () => void
-  onExitProposal?: () => void
   onCreate?: (idea: string | false) => Promise<void>
+  createMode?: boolean
   onSelectProposal?: (id: string) => void
   onRefreshProposals?: () => void
   className?: string
 }> = function ({
   activeCR,
-  //register,
+  register,
   actionableProposals,
-  //onImport,
-  //onCreate,
-  //onExitProposal,
-  //onRefreshProposals,
+  onCreate,
+  createMode,
   onSelectProposal,
+  onRefreshProposals,
   className,
 }) {
   //const [creating, setCreating] = useState(false);
@@ -317,89 +316,64 @@ export const Proposals: React.VoidFunctionComponent<{
       : null;
   }, [onSelectProposal, activeCR, hasActionable, actionableProposals]);
 
-  return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
-    {proposalMenuItems}
-  </Menu>
+  // return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
+  //   {proposalMenuItems}
+  // </Menu>
 
-  // const stack: Panel<any>[] = useMemo(() => {
-  //   const stack = [];
-  //   const proposalMenu = proposalMenuItems || onImport || onCreate
-  //     ? <Menu css={css`overflow-y: auto; background: none !important;`}>
-  //         {onImport
-  //           ? <MenuItem onClick={onImport} text="Import proposal" icon="import" />
-  //           : null}
-  //         {onCreate
-  //           ? <MenuItem
-  //               onClick={() => setCreating(true)}
-  //               text="Create blank proposal"
-  //               icon="add"
-  //             />
-  //           : null}
-  //         {proposalMenuItems}
-  //       </Menu>
-  //     : null;
-  //   if (proposalMenu) {
-  //     stack.push({
-  //       title: activeCR
-  //         ? "Proposals"
-  //         : <>
-  //             Proposals
-  //             {hasActionable && !creating && !activeCR
-  //               ? <>
-  //                   &nbsp;
-  //                   <Button
-  //                     minimal
-  //                     small
-  //                     onClick={onRefreshProposals}
-  //                     disabled={!onRefreshProposals}
-  //                     icon="refresh"
-  //                   />
-  //                 </>
-  //               : null}
-  //           </>,
-  //       renderPanel: () => proposalMenu,
-  //     });
-  //   }
-  //   if (activeCR) {
-  //     stack.push({
-  //       title: activeCR.justification.trim() || activeCR.id,
-  //       renderPanel: () =>
-  //         <CurrentProposal
-  //           proposal={activeCR}
-  //           stakeholder={stakeholder}
-  //           register={register}
-  //           css={css`padding: 5px;`}
-  //         />,
-  //     });
-  //   } else if (creating) {
-  //     stack.push({
-  //       title: "Start proposal",
-  //       renderPanel: () =>
-  //         <NewProposal
-  //           onCreateBlank={onCreate}
-  //           register={register}
-  //           css={css`padding: 5px;`}
-  //         />,
-  //     });
-  //   }
-  //   return stack;
-  // }, [
-  //   onCreate, onImport, onRefreshProposals,
-  //   creating, activeCR, register, stakeholder, proposalMenuItems
-  // ]);
+  const stack: Panel<any>[] = useMemo(() => {
+    const stack = [];
+    const proposalMenu = proposalMenuItems
+      ? <Menu css={css`overflow-y: auto; background: none !important;`}>
+          {proposalMenuItems}
+        </Menu>
+      : null;
+    if (proposalMenu) {
+      stack.push({
+        title: createMode
+          ? "Proposals"
+          : <>
+              Proposals
+              {hasActionable
+                ? <>
+                    &nbsp;
+                    <Button
+                      minimal
+                      small
+                      onClick={onRefreshProposals}
+                      disabled={!onRefreshProposals}
+                      icon="refresh"
+                    />
+                  </>
+                : null}
+            </>,
+        renderPanel: () => proposalMenu,
+      });
+    }
+    if (createMode) {
+      stack.push({
+        title: "Start proposal",
+        renderPanel: () =>
+          <NewProposal
+            onCreateBlank={onCreate}
+            register={register}
+            css={css`padding: 5px;`}
+          />,
+      });
+    }
+    return stack;
+  }, [
+    onCreate, createMode,
+    onRefreshProposals,
+    activeCR, register, proposalMenuItems,
+  ]);
 
-  // function handleClosePanel() {
-  //   setCreating(false);
-  //   onExitProposal?.();
-  // }
-
-  // return <PanelStack
-  //   css={css`position: absolute; inset: 0; .bp4-panel-stack-view { background: none; }`}
-  //   renderActivePanelOnly
-  //   className={className}
-  //   onClose={handleClosePanel}
-  //   stack={stack.length > 0
-  //     ? stack
-  //     : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
-  // />;
+  return <PanelStack
+    css={css`flex: 1; .bp4-panel-stack-view { background: none; }`}
+    renderActivePanelOnly
+    className={className}
+    onClose={() => onCreate?.(false)}
+    stack={stack.length > 0
+      ? stack
+      : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
+  />;
 }
