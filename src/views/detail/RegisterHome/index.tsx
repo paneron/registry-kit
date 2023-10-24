@@ -161,11 +161,9 @@ function () {
       const proposalGroups = getActionableProposalGroupsForRole(stakeholder.role);
       setActionableProposals(proposalGroups.map(([groupLabel, ]) => [groupLabel, undefined]));
 
-      console.debug("TEST1");
       async function updateItems([ groupLabel, , queryGetter ]: ActionableProposalGroup) {
         const query = queryGetter(stakeholder);
 
-        console.debug("TEST2", query);
         const mapFunc = `
           const objPath = key, obj = value;
           if ((${CR_BASE_QUERY}) && (${query})) {
