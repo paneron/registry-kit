@@ -211,14 +211,14 @@ const TransitionEntry = styled.div`
 
 export const NewProposal: React.VoidFunctionComponent<{
   register: Register
-  onCreateBlank?: (idea: string) => void
+  onCreateBlank?: (idea: string) => Promise<void>
   className?: string
 }> = function ({ register, onCreateBlank, className }) {
   const [ newProposalIdea, setNewProposalIdea ] = useState('');
 
-  const handleNewProposal = useCallback(() => {
+  const handleNewProposal = useCallback(async function handleNewProposal () {
     if (newProposalIdea.trim()) {
-      onCreateBlank?.(newProposalIdea);
+      await onCreateBlank?.(newProposalIdea);
       setNewProposalIdea('');
     } else {
       throw new Error("Cannot create proposal: need some initial motivation for the change");
@@ -290,9 +290,9 @@ export const Proposals: React.VoidFunctionComponent<{
   actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   activeCR?: CR | null
   onImport?: () => void
-  onCreate?: (idea: string) => void
   onExitProposal?: () => void
   onEnterProposal?: (id: string) => void
+  onCreate?: (idea: string | false) => Promise<void>
   onRefreshProposals?: () => void
   className?: string
 }> = function ({
