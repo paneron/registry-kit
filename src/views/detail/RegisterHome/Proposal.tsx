@@ -285,7 +285,6 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
 
 
 export const Proposals: React.VoidFunctionComponent<{
-  stakeholder?: RegisterStakeholder
   register: Register
   actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   activeCR?: CR | null
@@ -296,7 +295,6 @@ export const Proposals: React.VoidFunctionComponent<{
   onRefreshProposals?: () => void
   className?: string
 }> = function ({
-  stakeholder,
   activeCR,
   //register,
   actionableProposals,
