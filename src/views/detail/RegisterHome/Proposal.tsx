@@ -117,7 +117,7 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
               `}
               key={idx}>
             {label}
-            {input
+            {input || timestamp || stakeholder
               ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
                   {stakeholder
                     ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
