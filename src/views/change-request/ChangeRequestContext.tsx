@@ -98,7 +98,10 @@ export const ChangeRequestContextProvider: React.FC<{
         });
       })
     : undefined
-  ), [hasItems, canDelete, changeRequest?.id, (changeRequest as Proposed)?.timeProposed, updateTree]);
+  ), [
+    updateTree,
+    hasItems, canDelete,
+    changeRequest?.id, (changeRequest as Proposed)?.timeProposed]);
 
   const ctx: ChangeRequestContextSpec = useMemo((() => ({
     changeRequest,
