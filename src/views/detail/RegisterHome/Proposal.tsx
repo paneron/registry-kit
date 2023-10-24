@@ -59,12 +59,14 @@ export const CurrentProposal: React.VoidFunctionComponent<{
           pastTransitions={getTransitionHistory(proposal)}
           isFinal={isFinalState(proposal.state)}
         />
-        <TransitionOptions
-          stakeholder={stakeholder}
-          transitions={transitions}
-          cr={proposal}
-          css={css`padding: 12px;`}
-        />
+        {transitions.length > 0
+          ? <TransitionOptions
+              stakeholder={stakeholder}
+              transitions={transitions}
+              cr={proposal}
+              css={css`padding: 12px;`}
+            />
+          : null}
       </div>
     </>
   );
