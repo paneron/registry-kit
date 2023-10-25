@@ -256,6 +256,11 @@ export const NewProposal: React.VoidFunctionComponent<{
   );
 };
 
+
+/**
+ * A list of menu items for given actionable proposals,
+ * grouped by label.
+ */
 const ActionableProposalItems: React.VoidFunctionComponent<{
   actionableProposals: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
   onEnterProposal?: (proposalID: string) => void
