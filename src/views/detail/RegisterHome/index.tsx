@@ -207,6 +207,12 @@ function () {
 
   const [createMode, setCreateMode] = useState(false);
   //const canStakeholderCreateCRs = stakeholder && canCreateCR(stakeholder);
+  const handleSelectProposal = useMemo(() => {
+    return (setActiveChangeRequestID && !isBusy
+      ? function (crid: string) { setActiveChangeRequestID?.(crid) }
+      : undefined);
+  }, [setActiveChangeRequestID, isBusy]);
+
   const proposalBlock = useMemo(() => {
     if (
       registerMetadata && (
@@ -279,9 +285,7 @@ function () {
                 }
               : undefined,
             onRefreshProposals: () => setReqCounter(c => c + 1),
-            onSelectProposal: setActiveChangeRequestID && !isBusy
-              ? crid => { setActiveChangeRequestID?.(crid) }
-              : undefined,
+            onSelectProposal: handleSelectProposal,
           }}
           actions={actions}
         />
@@ -293,6 +297,7 @@ function () {
     isBusy, importCR, createCR, createMode,
     registerMetadata, stakeholder,
     activeCR?.id,
+    handleSelectProposal,
     toJSONNormalized(actionableProposals),
   ]);
 
