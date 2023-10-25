@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useMemo, useContext, useEffect, useState } from 'react';
+import React, { useMemo, useContext, useCallback, useEffect, useState } from 'react';
 //import { Helmet } from 'react-helmet';
 import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
@@ -213,54 +213,70 @@ function () {
       : undefined);
   }, [setActiveChangeRequestID, isBusy]);
 
-  const proposalBlock = useMemo(() => {
-    if (
-      registerMetadata && (
-      actionableProposals.find(p => p[1] && p[1].length > 0) || activeCR || importCR || createCR)
-    ) {
-      const actions = [];
-      if (activeCR) {
+  const proposalBlockActions = useMemo(() => {
+    const actions = [];
+    if (activeCR) {
+      actions.push({
+        text: "Export proposal",
+        onClick: () => void 0,
+        icon: 'export',
+        disabled: true,
+      } as const);
+      actions.push({
+        text: "Exit proposal",
+        icon: 'log-out',
+        intent: 'danger',
+        disabled: isBusy,
+        onClick: setActiveChangeRequestID
+          ? () => setActiveChangeRequestID?.(null)
+          : undefined,
+      } as const);
+    } else {
+      if (stakeholder && canCreateCR(stakeholder)) {
         actions.push({
-          text: "Export proposal",
-          onClick: () => void 0,
-          icon: 'export',
-          disabled: true,
-        } as const);
-        actions.push({
-          text: "Exit proposal",
-          icon: 'log-out',
-          intent: 'danger',
-          disabled: isBusy,
-          onClick: setActiveChangeRequestID
-            ? () => setActiveChangeRequestID?.(null)
+          text: "Create blank proposal",
+          onClick: !createMode ? (() => setCreateMode(true)) : undefined,
+          disabled: !createCR,
+          active: createMode,
+          selected: createMode,
+          icon: 'add',
+          intent: actionableProposals.length < 1
+            ? 'primary'
             : undefined,
         } as const);
-      } else {
-        if (stakeholder && canCreateCR(stakeholder)) {
-          actions.push({
-            text: "Create blank proposal",
-            onClick: !createMode ? (() => setCreateMode(true)) : undefined,
-            disabled: !createCR,
-            active: createMode,
-            selected: createMode,
-            icon: 'add',
-            intent: actionableProposals.length < 1
-              ? 'primary'
-              : undefined,
-          } as const);
-        }
-        if (stakeholder && canImportCR(stakeholder)) {
-          actions.push({
-            text: "Import proposal",
-            onClick: importCR,
-            disabled: !importCR || createMode,
-            icon: 'import',
-            intent: actionableProposals.length < 1
-              ? 'primary'
-              : undefined,
-          } as const);
-        }
       }
+      if (stakeholder && canImportCR(stakeholder)) {
+        actions.push({
+          text: "Import proposal",
+          onClick: importCR,
+          disabled: !importCR || createMode,
+          icon: 'import',
+          intent: actionableProposals.length < 1
+            ? 'primary'
+            : undefined,
+        } as const);
+      }
+    }
+    return actions;
+  }, [!activeCR, createMode, importCR, createCR, isBusy, actionableProposals.length < 1]);
+
+  const handleCreate = useMemo((() =>
+    createCR && createMode
+      ? async function (idea: string | false) {
+          if (idea && createCR) {
+            await createCR(idea);
+          }
+          setCreateMode(false);
+        }
+      : undefined
+  ), [createMode, createCR]);
+
+  const handleRefreshProposals = useCallback(
+    (() => setReqCounter(c => c + 1)),
+    [setReqCounter]);
+
+  const proposalBlock = useMemo(() => {
+    if (registerMetadata /*&& actionableProposals.find(p => p[1] && p[1].length > 0)*/) {
       return (
         <HomeBlock
           View={Proposals}
@@ -272,32 +288,24 @@ function () {
             flex-grow: 1;
           `}
           props={{
-            activeCR,
             register: registerMetadata,
             actionableProposals,
-            createMode: stakeholder && canCreateCR(stakeholder) && createMode,
-            onCreate: createCR && createMode
-              ? async function (idea) {
-                  if (idea) {
-                    await createCR(idea);
-                  }
-                  setCreateMode(false);
-                }
-              : undefined,
-            onRefreshProposals: () => setReqCounter(c => c + 1),
+            createMode,
+            onCreate: handleCreate,
+            onRefreshProposals: handleRefreshProposals,
             onSelectProposal: handleSelectProposal,
           }}
-          actions={actions}
+          actions={proposalBlockActions}
         />
       );
     } else {
       return null;
     }
   }, [
-    isBusy, importCR, createCR, createMode,
-    registerMetadata, stakeholder,
-    activeCR?.id,
+    createMode, registerMetadata,
+    proposalBlockActions,
     handleSelectProposal,
+    handleCreate,
     toJSONNormalized(actionableProposals),
   ]);
 

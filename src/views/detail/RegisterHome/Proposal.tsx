@@ -1,7 +1,14 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useContext,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import styled from '@emotion/styled';
 import { jsx, css } from '@emotion/react';
 import {
@@ -20,6 +27,7 @@ import {
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
+import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { maybeEllipsizeString } from '../../util';
 import { Val } from '../../diffing/InlineDiff';
@@ -263,42 +271,54 @@ export const NewProposal: React.VoidFunctionComponent<{
  */
 const ActionableProposalItems: React.VoidFunctionComponent<{
   actionableProposals: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
-  onEnterProposal?: (proposalID: string) => void
-  activeCR?: CR
-}> = function ({ actionableProposals, activeCR, onEnterProposal }) {
+  onSelect?: (proposalID: string) => void
+}> = function ActionableProposalItems ({ actionableProposals, onSelect }) {
+  return <>{
+    actionableProposals?.
+    filter(([, proposals]) => proposals && proposals.length > 0).
+    map(([groupLabel, proposals], idx) =>
+      <React.Fragment key={idx}>
+        <MenuDivider title={groupLabel} />
+        {proposals !== undefined && proposals.length > 0
+          ? proposals.map(cr =>
+              <ActionableProposalItem
+                cr={cr}
+                onClick={onSelect}
+              />)
+          : proposals === undefined
+            ? <MenuItem disabled text="Loading…" icon={<Spinner />} />
+            : <MenuItem disabled text="No pending proposals" icon="clean" />}
+      </React.Fragment>)
+  }</>;
+};
+
+
+const ActionableProposalItem: React.VoidFunctionComponent<{
+  cr: CR
+  onClick?: (crID: string) => void
+}> = function ({ cr, onClick }) {
+  const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const selectedMenuItem = useRef<HTMLLIElement | null>(null);
+  const isActive = activeCR && cr.id === activeCR?.id
+    ? true
+    : false;
   useEffect(() => {
-    if (selectedMenuItem.current) {
-      selectedMenuItem.current.scrollIntoView?.({ block: 'nearest' });
-    }
-  }, [selectedMenuItem.current]);
+    selectedMenuItem.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [isActive]);
+  const handleClick = useCallback(() => {
+    return onClick?.(cr.id);
+  }, [onClick, cr.id]);
   return (
-    <>
-      {actionableProposals?.
-      filter(([, proposals]) => proposals && proposals.length > 0).
-      map(([groupLabel, proposals], idx) =>
-        <React.Fragment key={idx}>
-          <MenuDivider title={groupLabel} />
-          {proposals !== undefined && proposals.length > 0
-            ? proposals.map(cr =>
-                <MenuItem
-                  key={cr.id}
-                  elementRef={activeCR && cr.id === activeCR?.id
-                    ? selectedMenuItem
-                    : undefined}
-                  selected={activeCR && cr.id === activeCR?.id}
-                  active={activeCR && cr.id === activeCR?.id}
-                  text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
-                  htmlTitle={cr.justification}
-                  disabled={!onEnterProposal}
-                  onClick={() => onEnterProposal?.(cr.id)}
-                />
-              )
-            : proposals === undefined
-              ? <MenuItem disabled text="Loading…" icon={<Spinner />} />
-              : <MenuItem disabled text="No pending proposals" icon="clean" />}
-        </React.Fragment>)}
-    </>
+    <MenuItem
+      key={cr.id}
+      elementRef={isActive ? selectedMenuItem : undefined}
+      selected={isActive}
+      active={isActive}
+      text={maybeEllipsizeString(cr.justification?.trim() || cr.id, 120)}
+      htmlTitle={cr.justification}
+      disabled={!onClick}
+      onClick={onClick ? handleClick : undefined}
+    />
   );
 }
 
@@ -306,14 +326,12 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
 export const Proposals: React.VoidFunctionComponent<{
   register: Register
   actionableProposals?: [groupLabel: JSX.Element | string, proposals: CR[] | undefined][]
-  activeCR?: CR | null
   onCreate?: (idea: string | false) => Promise<void>
   createMode?: boolean
   onSelectProposal?: (id: string) => void
   onRefreshProposals?: () => void
   className?: string
 }> = function ({
-  activeCR,
   register,
   actionableProposals,
   onCreate,
@@ -324,15 +342,14 @@ export const Proposals: React.VoidFunctionComponent<{
 }) {
   //const [creating, setCreating] = useState(false);
   const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
-  const proposalMenuItems: JSX.Element | null = useMemo(() => {
+  const proposalMenuItems = useMemo(() => {
     return hasActionable
       ? <ActionableProposalItems
           actionableProposals={actionableProposals ?? []}
-          onEnterProposal={onSelectProposal}
-          activeCR={activeCR ?? undefined}
+          onSelect={onSelectProposal}
         />
       : null;
-  }, [onSelectProposal, activeCR, hasActionable, actionableProposals]);
+  }, [onSelectProposal, hasActionable, actionableProposals?.length]);
 
   // return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
   //   {proposalMenuItems}
@@ -382,7 +399,7 @@ export const Proposals: React.VoidFunctionComponent<{
   }, [
     onCreate, createMode,
     onRefreshProposals,
-    activeCR, register, proposalMenuItems,
+    register, proposalMenuItems,
   ]);
 
   return <PanelStack
@@ -394,4 +411,4 @@ export const Proposals: React.VoidFunctionComponent<{
       ? stack
       : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
   />;
-}
+};
