@@ -505,7 +505,7 @@ type ActionableProposalGroup = readonly [
 ];
 const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
 [
-  ['my drafts', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  ['My Drafts', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
     if (stakeholder && stakeholder.gitServerUsername) {
       const stakeholderCondition = `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
       const query = `(obj.state === "${State.DRAFT}" || obj.state === "${State.RETURNED_FOR_CLARIFICATION}") && (${stakeholderCondition})`;
@@ -514,7 +514,7 @@ const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
       return 'false';
     }
   }],
-  ['my rejected', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  ['My Rejected', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
     // Rejections are actionable because they can be appealed by the submitter.
     if (stakeholder && stakeholder.gitServerUsername) {
       const stakeholderCondition = `obj.submittingStakeholderGitServerUsername === "${stakeholder.gitServerUsername}"`;
@@ -524,7 +524,7 @@ const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
       return 'false';
     }
   }],
-  ['everyone’s drafts or returned', new Set(['manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
+  ['Everyone’s Drafts or Returned', new Set(['manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {
     if (stakeholder && stakeholder.gitServerUsername) {
       const stakeholderCondition = `obj.submittingStakeholderGitServerUsername !== "${stakeholder.gitServerUsername}"`;
       const query = `(obj.state === "${State.DRAFT}" || obj.state === "${State.RETURNED_FOR_CLARIFICATION}") && (${stakeholderCondition})`;
@@ -561,13 +561,13 @@ const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
   //   }
   //   // TODO: Implement limit
   // }],
-  ['pending owner appeal review', new Set(['owner']), function ownerProposals() {
+  ['Pending Owner Appeal Review', new Set(['owner']), function ownerProposals() {
     return `obj.state === "${State.APPEALED}"`;
   }],
-  ['pending control body review', new Set(['control-body', 'owner']), function cbProposals() {
+  ['Pending Control Body Review', new Set(['control-body', 'owner']), function cbProposals() {
     return `obj.state === "${State.SUBMITTED_FOR_CONTROL_BODY_REVIEW}"`;
   }],
-  ['pending manager review', new Set(['manager', 'control-body', 'owner']), function managerProposals() {
+  ['Pending Manager Review', new Set(['manager', 'control-body', 'owner']), function managerProposals() {
     return `obj.state === "${State.PROPOSED}"`;
   }],
 ] as const;
