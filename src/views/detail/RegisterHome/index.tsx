@@ -301,62 +301,6 @@ function () {
     toJSONNormalized(actionableProposals),
   ]);
 
-    // if (activeCR) {
-    //   return <HomeBlock
-    //     View={CurrentProposal}
-    //     props={activeCR
-    //       ? { proposal: activeCR, stakeholder }
-    //       : activeCR}
-    //     actions={[{
-    //       text: "Exit proposal view",
-    //       onClick: () => setActiveChangeRequestID?.(null),
-    //       disabled: !setActiveChangeRequestID,
-    //     }]}
-    //   />;
-    // } else {
-    //   const importAction: MenuItemProps = {
-    //     text: "Import proposal",
-    //     icon: 'import',
-    //     disabled: !canCreateCR,
-    //     onClick: handleImportProposal,
-    //   };
-    //   switch (stakeholder?.role) {
-    //     case 'submitter':
-    //     case 'owner':
-    //     case 'manager':
-    //     case 'control-body':
-    //       return <HomeBlock
-    //         View={NewProposal}
-    //         props={!offline && registerMetadata
-    //           ? {
-    //               stakeholder,
-    //               register: registerMetadata,
-    //               onPropose: canCreateCR ? handleNewProposal : undefined,
-    //             }
-    //           : null}
-    //         actions={!offline && registerMetadata
-    //           ? [importAction]
-    //           : []}
-    //         error={offline
-    //           ? <>
-    //               Because this repository is offline (no remote configured),
-    //               and remote username is currently required for proposal,
-    //               you cannot create proposals.
-    //             </>
-    //           : !registerMetadata
-    //             ? "Unable to retrieve register metadata"
-    //             : undefined}
-    //       />;
-    //     case undefined:
-    //     default:
-    //       return <HomeBlock
-    //         View={CurrentProposal}
-    //         props={null}
-    //         error="View view is not implemented yet"
-    //       />;
-    //   }
-    // }
-
   const activeCRBlock = useMemo(() => {
     if (activeCR && registerMetadata) {
       return (
