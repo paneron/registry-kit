@@ -368,7 +368,7 @@ function () {
     } else {
       return null;
     }
-  }, [activeCRBlock, registerMetadata, stakeholder]);
+  }, [!activeCRBlock, registerMetadata, stakeholder]);
 
   return (
     <TabContentsWithHeader
