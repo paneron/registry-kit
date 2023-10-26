@@ -23,7 +23,7 @@ import {
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
 import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
-import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionsAndStatus';
+import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
 import Summary from '../../change-request/Summary';
 import { type SomeCR, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';

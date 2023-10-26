@@ -28,7 +28,7 @@ import type { Register, RegisterStakeholder } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
 import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
 import Summary from '../../change-request/Summary';
-import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionsAndStatus';
+import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
 
 
 export const CurrentProposal: React.VoidFunctionComponent<{

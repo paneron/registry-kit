@@ -28,6 +28,11 @@ export type TransitionHistoryEntry = Omit<CR.TransitionEntry, 'timestamp' | 'fro
   input?: CR.StateInput
 } | undefined;
 
+
+/**
+ * Outputs transition history,
+ * back-filling it from state and timestamps if `pastTransitions` is not present.
+ */
 export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
   if (cr.pastTransitions && cr.pastTransitions.length > 0) {
     return [{
@@ -146,6 +151,10 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
 }
 
 
+/**
+ * Lists transitions between states,
+ * emphasizing the end (current as of now) state.
+ */
 export const TransitionsAndStatus: React.VoidFunctionComponent<{
   pastTransitions: TransitionHistoryEntry[]
   isFinal?: boolean
@@ -155,7 +164,7 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
       {pastTransitions.map((entry, idx) => {
         if (entry) {
           const { label, stakeholder, fromState, toState, input, timestamp } = entry;
-          return <TransitionEntry
+          return <TransitionEntryWrapper
               title={`Transition ${fromState ? `from ${fromState} ` : ''}to ${toState}`}
               css={css`
                 background: linear-gradient(
@@ -200,10 +209,10 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
                     : null}
                 </div>} /></>
               : undefined}
-          </TransitionEntry>
+          </TransitionEntryWrapper>
         } else {
           if (idx > 0 && pastTransitions[idx - 1] !== undefined) {
-            return <TransitionEntriesMissing />;
+            return <MissingTransitionEntries />;
           } else {
             // Don’t output multiple missing steps in a row.
             return null;
@@ -211,6 +220,23 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
         }
       })}
     </>
+  );
+};
+
+
+/** Shown in place of transition entries, if some are missing. */
+const MissingTransitionEntries: React.VoidFunctionComponent<Record<never, never>> = function () {
+  return (
+    <div title="No detailed state transitions available">
+      <Icon
+        icon="more"
+        css={css`
+          position: relative;
+          left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
+          transform: translateX(-50%);
+        `}
+      />
+    </div>
   );
 };
 
@@ -250,25 +276,7 @@ const transitionEntryDecorativeMarkerFinal = `
 `;
 
 
-const TransitionEntriesMissing: React.VoidFunctionComponent<Record<never, never>> = function () {
-  return (
-    <div
-        css={css`position: relative`}
-        title="No detailed state transitions available">
-      <Icon
-        icon="more"
-        css={css`
-          position: relative;
-          left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
-          transform: translateX(-50%);
-        `}
-      />
-    </div>
-  );
-};
-
-
-const TransitionEntry = styled.div`
+const TransitionEntryWrapper = styled.div`
   position: relative;
   color: white;
   padding: 10px;
@@ -295,5 +303,6 @@ const TransitionEntry = styled.div`
     ${transitionEntryDecorativeMarker}
   }
 `;
+
 
 export default TransitionsAndStatus;
