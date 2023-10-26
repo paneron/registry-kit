@@ -141,14 +141,7 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
           </TransitionEntry>
         } else {
           if (idx > 0 && pastTransitions[idx - 1] !== undefined) {
-            return <div
-                css={css`position: relative`}
-                title="No detailed state transitions available">
-              <Icon
-                icon="more"
-                css={css`position: relative; left: 22px; transform: translateX(-50%);`}
-              />
-            </div>;
+            return <TransitionEntriesMissing />;
           } else {
             // Don’t output multiple missing steps in a row.
             return null;
@@ -160,6 +153,8 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
 };
 
 
+const TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX = 22;
+
 /**
  * Style rules for pseudo-element that contains decorative marker line with a circle.
  */
@@ -170,7 +165,7 @@ const transitionEntryDecorativeMarker = `
   overflow: hidden;
   z-index: 1;
   position: absolute;
-  left: 22px;
+  left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
 
   transform: translateX(-50%);
   top: 0;
@@ -193,11 +188,29 @@ const transitionEntryDecorativeMarkerFinal = `
 `;
 
 
+const TransitionEntriesMissing: React.VoidFunctionComponent<Record<never, never>> = function () {
+  return (
+    <div
+        css={css`position: relative`}
+        title="No detailed state transitions available">
+      <Icon
+        icon="more"
+        css={css`
+          position: relative;
+          left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
+          transform: translateX(-50%);
+        `}
+      />
+    </div>
+  );
+};
+
+
 const TransitionEntry = styled.div`
   position: relative;
   color: white;
   padding: 10px;
-  padding-left: 42px;
+  padding-left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX + 20}px;
   margin-bottom: 1px;
 
   &::after {
@@ -207,7 +220,7 @@ const TransitionEntry = styled.div`
     overflow: hidden;
     z-index: 1;
     position: absolute;
-    left: 22px;
+    left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
 
     transform: translateX(-50%) translateY(-50%);
     top: 50%;
@@ -404,7 +417,7 @@ export const Proposals: React.VoidFunctionComponent<{
 
   return <PanelStack
     css={css`flex: 1; .bp4-panel-stack-view { background: none; }`}
-    renderActivePanelOnly
+    renderActivePaneOnly
     className={className}
     onClose={() => onCreate?.(false)}
     stack={stack.length > 0
