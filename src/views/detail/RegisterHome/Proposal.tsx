@@ -9,7 +9,6 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import styled from '@emotion/styled';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
@@ -20,25 +19,16 @@ import {
   Menu, MenuDivider, MenuItem,
   Spinner,
   NonIdealState,
-  Icon,
-  Colors,
 } from '@blueprintjs/core';
 
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
-import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
-import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
-import { RegisterStakeholderListItem } from '../../RegisterStakeholder';
 import { maybeEllipsizeString } from '../../util';
-import { Val } from '../../diffing/InlineDiff';
-import type {
-  Register,
-  RegisterStakeholder,
-} from '../../../types';
+import type { Register, RegisterStakeholder } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import TransitionOptions, { isFinalState, getTransitions, STATE_COLOR } from '../../change-request/TransitionOptions';
-import { getTransitionHistory, type TransitionHistoryEntry } from '../../change-request/PastTransitions';
+import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
 import Summary from '../../change-request/Summary';
+import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionsAndStatus';
 
 
 export const CurrentProposal: React.VoidFunctionComponent<{
@@ -82,157 +72,6 @@ export const CurrentProposal: React.VoidFunctionComponent<{
     </>
   );
 };
-
-
-export const TransitionsAndStatus: React.VoidFunctionComponent<{
-  pastTransitions: TransitionHistoryEntry[]
-  isFinal?: boolean
-}> = function ({ pastTransitions, isFinal }) {
-  return (
-    <>
-      {pastTransitions.map((entry, idx) => {
-        if (entry) {
-          const { label, stakeholder, fromState, toState, input, timestamp } = entry;
-          return <TransitionEntry
-              title={`Transition ${fromState ? `from ${fromState} ` : ''}to ${toState}`}
-              css={css`
-                background: linear-gradient(
-                  345deg,
-                  ${STATE_COLOR[toState] ?? Colors.GRAY1}aa,
-                  ${STATE_COLOR[toState] ?? Colors.GRAY1} 50%);
-                position: sticky;
-                top: ${idx * 3}px;
-                z-index: 1;
-                ${idx === pastTransitions.length - 1
-                  ? `
-                      font-weight: bold;
-                      ${isFinal
-                        ? `
-                            &::before {
-                              ${transitionEntryDecorativeMarkerFinal}
-                            }
-                          `
-                        : ''}
-                    `
-                  : ''}
-                  ${idx === 0
-                    ? `
-                        &::before {
-                          ${transitionEntryDecorativeMarkerInitial}
-                        }
-                      `
-                    : ''}
-              `}
-              key={idx}>
-            {label}
-            {input || timestamp || stakeholder
-              ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
-                  {stakeholder
-                    ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
-                    : null}
-                  {timestamp
-                    ? (timestamp.toISOString?.() || timestamp)
-                    : null}
-                  {input
-                    ? <div><Val val={normalizeObjectRecursively(input)} /></div>
-                    : null}
-                </div>} /></>
-              : undefined}
-          </TransitionEntry>
-        } else {
-          if (idx > 0 && pastTransitions[idx - 1] !== undefined) {
-            return <TransitionEntriesMissing />;
-          } else {
-            // Don’t output multiple missing steps in a row.
-            return null;
-          }
-        }
-      })}
-    </>
-  );
-};
-
-
-const TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX = 22;
-
-/**
- * Style rules for pseudo-element that contains decorative marker line with a circle.
- */
-const transitionEntryDecorativeMarker = `
-  content: " ";
-  background: white;
-  display: block;
-  overflow: hidden;
-  z-index: 1;
-  position: absolute;
-  left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
-
-  transform: translateX(-50%);
-  top: 0;
-  width: 2px;
-  bottom: 0;
-`;
-
-/**
- * Style rules for pseudo-element that contains decorative marker line with a circle.
- */
-const transitionEntryDecorativeMarkerInitial = `
-  top: 50%;
-`;
-
-/**
- * Style rules for pseudo-element that contains decorative marker line with a circle.
- */
-const transitionEntryDecorativeMarkerFinal = `
-  bottom: 50%;
-`;
-
-
-const TransitionEntriesMissing: React.VoidFunctionComponent<Record<never, never>> = function () {
-  return (
-    <div
-        css={css`position: relative`}
-        title="No detailed state transitions available">
-      <Icon
-        icon="more"
-        css={css`
-          position: relative;
-          left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
-          transform: translateX(-50%);
-        `}
-      />
-    </div>
-  );
-};
-
-
-const TransitionEntry = styled.div`
-  position: relative;
-  color: white;
-  padding: 10px;
-  padding-left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX + 20}px;
-  margin-bottom: 1px;
-
-  &::after {
-    content: " ";
-    background: white;
-    display: block;
-    overflow: hidden;
-    z-index: 1;
-    position: absolute;
-    left: ${TRANSITION_ENTRY_MARKER_SIDE_OFFSET_PX}px;
-
-    transform: translateX(-50%) translateY(-50%);
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 100%;
-  }
-
-  &::before {
-    ${transitionEntryDecorativeMarker}
-  }
-`;
 
 
 export const NewProposal: React.VoidFunctionComponent<{

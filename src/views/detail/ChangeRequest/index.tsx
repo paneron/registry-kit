@@ -22,8 +22,8 @@ import {
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
 import Proposals from '../../change-request/Proposals';
-import TransitionOptions, { getTransitions } from '../../change-request/TransitionOptions';
-import PastTransitions from '../../change-request/PastTransitions';
+import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
+import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionsAndStatus';
 import Summary from '../../change-request/Summary';
 import { type SomeCR, hadBeenProposed, isDisposed } from '../../../types/cr';
 import { Protocols } from '../../protocolRegistry';
@@ -222,7 +222,10 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       </Card>
 
       <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
-        <PastTransitions cr={cr} />
+        <TransitionsAndStatus
+          pastTransitions={getTransitionHistory(cr)}
+          isFinal={isFinalState(cr.state)}
+        />
       </Card>
 
       {canTransition
