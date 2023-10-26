@@ -17,6 +17,7 @@ import { toJSONNormalized } from '@riboseinc/paneron-extension-kit/util';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
+import { crIDToCRPath } from '../../itemPathUtils';
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
 import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
@@ -355,6 +356,27 @@ function () {
 
   const activeCRBlock = useMemo(() => {
     if (activeCR && registerMetadata) {
+      const actions: MenuItemProps[] = stakeholder && canBeTransitionedBy(stakeholder, activeCR)
+        ? [/*{
+            // Action is taken from within the widget.
+            text: "Take action",
+            onClick: () => void 0,
+            icon: 'take-action',
+            intent: 'primary',
+          }*/]
+        : canDelete
+          ? [{
+              text: "Delete this proposal draft",
+              onClick: deleteCR,
+              disabled: !deleteCR,
+              icon: 'delete',
+              intent: 'danger',
+            }]
+          : [];
+      actions.push({
+        text: "Open in new window",
+        onClick: async () => spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(activeCR.id)}`),
+      });
       return (
         <HomeBlock
           View={CurrentProposal}
@@ -365,24 +387,7 @@ function () {
             flex-basis: calc(50% - 10px);
             flex-grow: 1;
           `}
-          actions={
-            stakeholder && canBeTransitionedBy(stakeholder, activeCR)
-              ? [/*{
-                  // Action is taken from within the widget.
-                  text: "Take action",
-                  onClick: () => void 0,
-                  icon: 'take-action',
-                  intent: 'primary',
-                }*/]
-              : canDelete
-                ? [{
-                    text: "Delete this proposal draft",
-                    onClick: deleteCR,
-                    disabled: !deleteCR,
-                    icon: 'delete',
-                    intent: 'danger',
-                  }]
-                : undefined}
+          actions={actions}
         />
       );
     } else {
