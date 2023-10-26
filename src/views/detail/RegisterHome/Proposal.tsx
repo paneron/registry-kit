@@ -417,7 +417,6 @@ export const Proposals: React.VoidFunctionComponent<{
 
   return <PanelStack
     css={css`flex: 1; .bp4-panel-stack-view { background: none; }`}
-    renderActivePaneOnly
     className={className}
     onClose={() => onCreate?.(false)}
     stack={stack.length > 0
