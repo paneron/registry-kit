@@ -1,7 +1,13 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useMemo, useContext, useCallback, useEffect, useState } from 'react';
+import React, {
+  useMemo,
+  useContext,
+  //useCallback,
+  //useEffect,
+  useState,
+} from 'react';
 //import { Helmet } from 'react-helmet';
 import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
@@ -46,6 +52,7 @@ function () {
     performOperation,
     isBusy,
     getMapReducedData,
+    useMapReducedData,
   } = useContext(DatasetContext);
 
   const registerVersion = registerMetadata?.version;
@@ -153,48 +160,89 @@ function () {
     }
   }, [isBusy, performOperation, updateObjects, getImportedCRChangeset, getNewEmptyCRChangeset]);
 
-  // Actionable proposals
-  const [actionableProposals, setActionableProposals] =
-  useState<[string, CR[] | undefined][]>([]);
-  const [reqCounter, setReqCounter] = useState(1);
-  useEffect(() => {
-    let cancelled = false;
-    if (stakeholder) {
-      const proposalGroups = getActionableProposalGroupsForRole(stakeholder.role);
-      setActionableProposals(proposalGroups.map(([groupLabel, ]) => [groupLabel, undefined]));
+  // Actionable proposals v2
+  const proposalGroups = useMemo(
+    (() => stakeholder?.role
+      ? getActionableProposalGroupsForRole(stakeholder.role)
+      : null),
+    [stakeholder?.role]);
 
-      async function updateItems([ groupLabel, , queryGetter ]: ActionableProposalGroup) {
+  const actionableProposalsResult = useMapReducedData({
+    chains:
+      (proposalGroups ?? []).
+      map(([label, , queryGetter]) => {
         const query = queryGetter(stakeholder);
-
-        const mapFunc = `
+        const predicateFunc = `
           const objPath = key, obj = value;
-          if ((${CR_BASE_QUERY}) && (${query})) {
-            emit(obj);
-          }
+          return ((${CR_BASE_QUERY}) && (${query}));
         `;
-        const result = await getMapReducedData({
-          chains: { _: { mapFunc } },
-        });
-        if (!Array.isArray(result._)) {
-          console.error("Weird result", result);
-        }
-        if (!cancelled) {
-          setActionableProposals(previousGroups =>
-            previousGroups.map(([previousGroupLabel, previousProposals]) =>
-              previousGroupLabel === groupLabel
-                ? [previousGroupLabel, Array.isArray(result._) ? result._ : []]
-                : [previousGroupLabel, previousProposals]
-            )
-          );
-        }
+        const mapFunc = `emit(value);`;
+        return { [label]: { mapFunc, predicateFunc } };
+      }).reduce((prev, curr) => ({ ...prev, ...curr }), {}),
+  });
 
-      };
-      proposalGroups.map(updateItems);
-    } else {
-      setActionableProposals([]);
-    }
-    return function cleanUp() { cancelled = true; };
-  }, [stakeholder, reqCounter, getMapReducedData]);
+  const actionableProposals: [string, CR[] | undefined][] = useMemo(
+    (() =>
+    Object.entries(actionableProposalsResult.value).
+      map(([chainID, chainResult]) =>
+        [
+          chainID,
+          (Array.isArray(chainResult)
+            ? (chainResult as CR[])
+            : undefined) || undefined
+        ]
+      )
+    ),
+    [actionableProposalsResult.value]);
+
+  const handleRefreshProposals = actionableProposalsResult.refresh;
+
+  // Actionable proposals
+  // const [actionableProposals, setActionableProposals] =
+  // useState<[string, CR[] | undefined][]>([]);
+  // const [reqCounter, setReqCounter] = useState(1);
+  // useEffect(() => {
+  //   let cancelled = false;
+  //   if (stakeholder) {
+  //     const proposalGroups = getActionableProposalGroupsForRole(stakeholder.role);
+  //     setActionableProposals(proposalGroups.map(([groupLabel, ]) => [groupLabel, undefined]));
+
+  //     async function updateItems([ groupLabel, , queryGetter ]: ActionableProposalGroup) {
+  //       const query = queryGetter(stakeholder);
+
+  //       const mapFunc = `
+  //         const objPath = key, obj = value;
+  //         if ((${CR_BASE_QUERY}) && (${query})) {
+  //           emit(obj);
+  //         }
+  //       `;
+  //       const result = await getMapReducedData({
+  //         chains: { _: { mapFunc } },
+  //       });
+  //       if (!Array.isArray(result._)) {
+  //         console.error("Weird result", result);
+  //       }
+  //       if (!cancelled) {
+  //         setActionableProposals(previousGroups =>
+  //           previousGroups.map(([previousGroupLabel, previousProposals]) =>
+  //             previousGroupLabel === groupLabel
+  //               ? [previousGroupLabel, Array.isArray(result._) ? result._ : []]
+  //               : [previousGroupLabel, previousProposals]
+  //           )
+  //         );
+  //       }
+
+  //     };
+  //     proposalGroups.map(updateItems);
+  //   } else {
+  //     setActionableProposals([]);
+  //   }
+  //   return function cleanUp() { cancelled = true; };
+  // }, [stakeholder, reqCounter, getMapReducedData]);
+
+  // const handleRefreshProposals = useCallback(
+  //   (() => setReqCounter(c => c + 1)),
+  //   [setReqCounter]);
 
   // TODO: Move to action bar
   // const customActions = useMemo(() => customViews.map(cv => ({
@@ -270,10 +318,6 @@ function () {
         }
       : undefined
   ), [createMode, createCR]);
-
-  const handleRefreshProposals = useCallback(
-    (() => setReqCounter(c => c + 1)),
-    [setReqCounter]);
 
   const proposalBlock = useMemo(() => {
     if (registerMetadata /*&& actionableProposals.find(p => p[1] && p[1].length > 0)*/) {
