@@ -13,7 +13,7 @@ import {
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
-import { JSONStringifyNormalized } from '@riboseinc/paneron-extension-kit/util';
+import { toJSONNormalized } from '@riboseinc/paneron-extension-kit/util';
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import { BrowserCtx } from '../../BrowserCtx';
 import { crPathToCRID } from '../../itemPathUtils';
@@ -154,7 +154,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
               : 'primary',
     });
     return classification;
-  }, [JSONStringifyNormalized(cr)]);
+  }, [toJSONNormalized(cr)]);
 
   const actions = useMemo(() => {
     const actions: TabContentsWithHeaderProps["actions"] = [];
