@@ -172,7 +172,7 @@ const ActionableProposalItem: React.VoidFunctionComponent<{
       onClick={onClick ? handleClick : undefined}
     />
   );
-}
+};
 
 
 export const Proposals: React.VoidFunctionComponent<{
