@@ -9,7 +9,6 @@ import React, {
 //import { Helmet } from 'react-helmet';
 import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { type MenuItemProps } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
@@ -19,13 +18,13 @@ import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../..
 import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
 import { type SomeCR as CR, State } from '../../../types/cr';
-import { canBeTransitionedBy } from '../../change-request/TransitionOptions';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
-import { Proposals, CurrentProposal } from './Proposal';
 import { TabContentsWithHeader } from '../../util';
+import { Proposals } from './Proposal';
 import HomeBlock from './Block';
+import CurrentProposalBlock from './ActiveProposalDetails';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
@@ -304,46 +303,31 @@ function () {
     actionableProposals,
   ]);
 
+  const handleOpenProposal = useMemo(() => {
+    return activeCR
+      ? (async () => spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(activeCR.id)}`))
+      : undefined;
+  }, [spawnTab, activeCR?.id]);
+
   const activeCRBlock = useMemo(() => {
     if (activeCR && registerMetadata) {
-      const actions: MenuItemProps[] = stakeholder && canBeTransitionedBy(stakeholder, activeCR)
-        ? [/*{
-            // Action is taken from within the widget.
-            text: "Take action",
-            onClick: () => void 0,
-            icon: 'take-action',
-            intent: 'primary',
-          }*/]
-        : canDelete
-          ? [{
-              text: "Delete this proposal draft",
-              onClick: deleteCR,
-              disabled: !deleteCR,
-              icon: 'delete',
-              intent: 'danger',
-            }]
-          : [];
-      actions.push({
-        text: "Open in new window",
-        onClick: async () => spawnTab(`${Protocols.CHANGE_REQUEST}:${crIDToCRPath(activeCR.id)}`),
-      });
-      return (
-        <HomeBlock
-          View={CurrentProposal}
-          description="Active proposal"
-          props={{ proposal: activeCR, stakeholder, register: registerMetadata }}
-          css={css`
-            height: 300px;
-            flex-basis: calc(50% - 10px);
-            flex-grow: 1;
-          `}
-          actions={actions}
-        />
-      );
+      return <CurrentProposalBlock
+        proposal={activeCR}
+        stakeholder={stakeholder}
+        register={registerMetadata}
+        onOpen={handleOpenProposal}
+        onDelete={deleteCR}
+        canDelete={canDelete}
+        css={css`
+          height: 300px;
+          flex-basis: calc(50% - 10px);
+          flex-grow: 1;
+        `}
+      />
     } else {
       return null;
     }
-  }, [activeCR, registerMetadata, canDelete, deleteCR, stakeholder]);
+  }, [activeCR, registerMetadata, canDelete, deleteCR, handleOpenProposal, stakeholder]);
 
   const registerMetaBlock = useMemo(() => {
     if (!activeCRBlock && stakeholder) {

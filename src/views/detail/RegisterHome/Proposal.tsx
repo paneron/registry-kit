@@ -21,60 +21,13 @@ import {
   NonIdealState,
 } from '@blueprintjs/core';
 
-import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { maybeEllipsizeString } from '../../util';
-import type { Register, RegisterStakeholder } from '../../../types';
+import type { Register } from '../../../types';
 import { type SomeCR as CR } from '../../../types/cr';
-import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
-import Summary from '../../change-request/Summary';
-import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
 
 
-export const CurrentProposal: React.VoidFunctionComponent<{
-  proposal: CR
-  register: Register
-  stakeholder?: RegisterStakeholder
-}> = function ({ stakeholder, register, proposal }) {
-  const transitions = stakeholder
-    ? getTransitions(proposal, stakeholder)
-    : [];
-
-  return (
-    <>
-      <DL css={css`padding: 10px 12px 10px 12px; flex-grow: 1; flex-basis: max-content;`}>
-        <div>
-          <dt>Viewing&nbsp;proposal:</dt>
-          <dd css={css`max-height: 40px; overflow-y: auto;`}>
-            “{proposal.justification.trim() || '(justification N/A)'}”
-          </dd>
-        </div>
-        <Summary
-          cr={proposal}
-          currentStakeholder={stakeholder}
-          registerMetadata={register}
-        />
-      </DL>
-      <div css={css`overflow-y: auto; flex-basis: min-content;`}>
-        <TransitionsAndStatus
-          pastTransitions={getTransitionHistory(proposal)}
-          isFinal={isFinalState(proposal.state)}
-        />
-        {transitions.length > 0
-          ? <TransitionOptions
-              stakeholder={stakeholder}
-              transitions={transitions}
-              cr={proposal}
-              css={css`padding: 12px;`}
-            />
-          : null}
-      </div>
-    </>
-  );
-};
-
-
-export const NewProposal: React.VoidFunctionComponent<{
+const NewProposal: React.VoidFunctionComponent<{
   register: Register
   onCreateBlank?: (idea: string) => Promise<void>
   className?: string
@@ -201,7 +154,7 @@ export const Proposals: React.VoidFunctionComponent<{
           onSelect={onSelectProposal}
         />
       : null;
-  }, [onSelectProposal, hasActionable, actionableProposals?.length]);
+  }, [onSelectProposal, hasActionable, actionableProposals]);
 
   // return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
   //   {proposalMenuItems}
