@@ -13,7 +13,6 @@ import { jsx, css } from '@emotion/react';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { Menu, MenuItem, type MenuItemProps, NonIdealState, Spinner } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { toJSONNormalized } from '@riboseinc/paneron-extension-kit/util';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
@@ -351,7 +350,7 @@ function () {
     proposalBlockActions,
     handleSelectProposal,
     handleCreate,
-    toJSONNormalized(actionableProposals),
+    actionableProposals,
   ]);
 
   const activeCRBlock = useMemo(() => {
