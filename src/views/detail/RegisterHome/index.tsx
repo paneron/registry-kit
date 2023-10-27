@@ -350,6 +350,7 @@ function () {
     proposalBlockActions,
     handleSelectProposal,
     handleCreate,
+    handleRefreshProposals,
     actionableProposals,
   ]);
 
