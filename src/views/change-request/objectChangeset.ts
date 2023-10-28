@@ -168,14 +168,14 @@ function isPredicate(val: any): val is Predicate {
 async function resolvePredicates<T>(
   value: T,
   resolveRef: (predicate: string) => Promise<InternalItemReference>,
-): Promise<T extends Predicate ? string : WithPredicatesResolved<T>> {
+): Promise<T extends Predicate ? (string | InternalItemReference) : WithPredicatesResolved<T>> {
   // NOTE: Return types are cast because https://github.com/microsoft/TypeScript/issues/33912.
   if (isPredicate(value)) {
-    const ref = await resolveRef(value.predicate) as any;
+    const ref: InternalItemReference = await resolveRef(value.predicate) as any;
     if (value.mode === 'generic') {
-      return ref;
+      return ref as any;
     } else {
-      return ref.itemID;
+      return ref.itemID as any;
     }
   } else if (value && typeof value === 'object') {
     if (Array.isArray(value)) {
