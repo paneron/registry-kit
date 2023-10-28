@@ -102,6 +102,12 @@ const ActionableProposalItem: React.VoidFunctionComponent<{
   cr: CR
   onClick?: (crID: string) => void
 }> = function ({ cr, onClick }) {
+  // TODO: Try to avoid useContext here.
+  // Originally activeCR was passed via prop, need to try again.
+  // Switch to context was done to avoid rerendering the entire list
+  // & losing scroll position.
+  // We want(?) active CR to determine if this item is active
+  // and keep it in viewport after user switches back.
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const selectedMenuItem = useRef<HTMLLIElement | null>(null);
   const isActive = activeCR && cr.id === activeCR?.id
