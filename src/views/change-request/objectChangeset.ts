@@ -141,8 +141,8 @@ export async function importedProposalToCRObjectChangeset(
  * at import time.
  *
  * `mode` should specify whether the predicate should be replaced with
- * only a UUID string ('id', if classID is already known)
- * or full InternalItemReference ('generic').
+ * only a UUID string ('id', used when classID is already known)
+ * or full `InternalItemReference` instance ('generic').
  */
 export interface Predicate {
   __isPredicate: true
@@ -162,7 +162,8 @@ function isPredicate(val: any): val is Predicate {
 }
 /**
  * Resolves any properties that should reference register item UUIDs,
- * but have predicates instead.
+ * but have predicates instead, using given async `resolveRef()` callback
+ * which can do requisite data fetching.
  */
 async function resolvePredicates<T>(
   value: T,
