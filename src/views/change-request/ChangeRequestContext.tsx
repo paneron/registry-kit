@@ -13,32 +13,32 @@ import { canBeTransitionedBy } from './TransitionOptions';
 export interface ChangeRequestContextSpec {
   /**
    * Change request object, undefined if not available/loading,
-   * null if not expected (i.e. changeRequestID is not given).
+   * null is out of ordinary (i.e. changeRequestID is not given).
    */
   changeRequest?: CR | null
 
   /**
-   * Current user is eligible to edit the contents of this CR.
+   * Contents of current CR can be edited by current stakeholder.
    * Always false if `changeRequest` is not defined or `null`.
    */
   canEdit: boolean
 
   /**
-   * Current user is eligible to transition the contents of this CR.
+   * Current CR can be transitioned by current stsakeholder.
    * Always false if `changeRequest` is not defined or `null`.
    */
   canTransition: boolean
 
   /**
-   * Current user is eligible to delete this CR.
+   * Current CR can be deleted by current stakeholder.
    * Always false if `changeRequest` is not defined or `null`.
    */
   canDelete: boolean
 
   /**
    * Function that performs CR deletion.
-   * May not be present even if `canDelete` is true for variuos reasons
-   * (e.g., another action is in progress).
+   * May not be present if operation is not possible right now,
+   * but otherwise is present if `canDelete` is true.
    */
   deleteCR?: () => Promise<void>
 
