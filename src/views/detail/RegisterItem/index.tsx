@@ -562,10 +562,10 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   return (
     <TabContentsWithHeader
-      smallTitle={compactHeader}
-      title={<ListItemView itemRef={itemRef} itemData={item.data} />}
-      classification={classification}
-      actions={actions}>
+        smallTitle={compactHeader}
+        title={<ListItemView itemRef={itemRef} itemData={item.data} />}
+        classification={classification}
+        actions={actions}>
       <Card css={css`position: absolute; border-radius: 0; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
         <Helmet><title>{windowTitle}</title></Helmet>
         {details}
