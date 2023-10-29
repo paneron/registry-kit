@@ -88,7 +88,7 @@ export const ChangeRequestContextProvider: React.FC<{
   const hasItems = crItemEntries.length > 0;
 
   const deleteCR = useMemo((() =>
-    !isBusy && changeRequest?.id && canDelete && updateTree && !hasItems && !(changeRequest as Proposed).timeProposed
+    !isBusy && canDelete && updateTree
     ? performOperation('deleting proposal', async function handleDelete() {
         const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
         await updateTree({
@@ -102,7 +102,7 @@ export const ChangeRequestContextProvider: React.FC<{
     isBusy, performOperation,
     updateTree,
     hasItems, canDelete,
-    changeRequest?.id, (changeRequest as Proposed)?.timeProposed]);
+  ]);
 
   const ctx: ChangeRequestContextSpec = useMemo((() => ({
     changeRequest,
