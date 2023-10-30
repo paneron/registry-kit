@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react';
 import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { type SomeCR as CR, type Proposed, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
+import { type SomeCR as CR, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
 import { BrowserCtx } from '../BrowserCtx';
 import { crIDToCRPath } from '../itemPathUtils';
 import { canBeTransitionedBy } from './TransitionOptions';
