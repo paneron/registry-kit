@@ -1,5 +1,5 @@
 import type React from 'react';
-import { IconName } from '@blueprintjs/core';
+import type { IconName } from '@blueprintjs/core';
 import type { ItemClassConfigurationSet, Subregisters } from '../../types';
 
 

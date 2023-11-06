@@ -1,4 +1,4 @@
-import { CriteriaGroup, isCriteriaGroup } from './models';
+import { type CriteriaGroup, isCriteriaGroup } from './models';
 
 
 /**
