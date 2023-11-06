@@ -7,7 +7,7 @@ import type { CustomViewConfiguration } from '../../types';
 export default function useCustomView(viewID: string):
 ValueHook<CustomViewConfiguration | undefined> {
   const { customViews } = useContext(BrowserCtx);
-  const view = customViews.find(v => v.id === viewID);
+  const view = (customViews ?? []).find(v => v.id === viewID);
   return {
     value: view,
     errors: [],

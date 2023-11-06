@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react';
 import { createContext } from 'react';
 import type {
-  CustomViewConfiguration,
   ItemClassConfigurationSet,
   ItemClassConfiguration,
   RegisterItem,
@@ -14,13 +13,14 @@ import type {
   // SaveProposalHandler,
   Subregisters,
   InternalItemReference,
+  RegistryViewProps,
 } from '../types';
-import { type CriteriaGroup } from './FilterCriteria/models';
 import { type Protocol } from './protocolRegistry';
 
 
 // TODO(perf): split into smaller contexts
-export type BrowserCtx = {
+export interface BrowserCtx
+extends Pick<RegistryViewProps, "defaultSearchCriteria" | "customViews"> {
   itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
 
@@ -40,9 +40,6 @@ export type BrowserCtx = {
    * Should contain the expression itself, no “return” statement.
    */
   keyExpression?: string
-
-  /** Default search criteria to be used by the Search sidebar */
-  defaultSearchCriteria?: CriteriaGroup
 
   /**
    * Allows to access register metadata
@@ -93,12 +90,6 @@ export type BrowserCtx = {
    * the result will be null.
    */
   // getRegisterItemData: (opts: { itemPaths: string[] }) => Promise<Record<string, RegisterItem<any> | null>>
-
-  /**
-   * Extension-provided additional views that don’t correspond
-   * to entities like register item, change request, etc. handled by RegistryKit.
-   */
-  customViews: CustomViewConfiguration[]
 
   // onPropose?: SaveProposalHandler
 
