@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { memo, useState, useContext } from 'react';
+import React, { memo, useState, useContext, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, ControlGroup, Colors, InputGroup, Tag, ButtonGroup } from '@blueprintjs/core';
 import CriteriaTree from './FilterCriteria';
@@ -37,7 +37,7 @@ const SearchQuery: React.FC<{
 
   const hasAdvancedQuery = rootCriteria.criteria.length > 0;
 
-  function makeDefaultCriteria(): Criterion {
+  const makeDefaultCriteria = useCallback(function makeDefaultCriteria(): Criterion {
     if (quickSearchString) {
       return {
         key: 'raw-substring',
@@ -55,7 +55,7 @@ const SearchQuery: React.FC<{
         ),
       }
     }
-  }
+  }, [quickSearchString, getQuickSearchPredicate, itemClasses, subregisters]);
 
   return (
     <ControlGroup fill vertical className={className}>
