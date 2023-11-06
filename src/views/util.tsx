@@ -66,6 +66,17 @@ export const PropertyDetailView: React.FC<{
         css={css`
           &, &.bp4-inline {
             label.bp4-label {
+              /*
+               * Since it’s in flex container, label expands to fill its width,
+               * and due to the mechanics of how labels work (?)
+               * any button (e.g., for deletion) within labelInfo
+               * would responds to events of the entire label
+               * (meaning you can hover space to the right of the label and labelInfo
+               * and the button would still be clickable).
+               * This makes the label not fill flex container width.
+               */
+              align-self: flex-start;
+
               font-weight: bold;
               line-height: unset;
               text-transform: capitalize;
