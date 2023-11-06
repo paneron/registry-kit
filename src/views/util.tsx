@@ -60,7 +60,14 @@ export const PropertyDetailView: React.FC<{
     <FormGroup
         label={`${title}:`}
         labelInfo={secondaryTitle}
-        css={css`&, &.bp4-inline { label.bp4-label { font-weight: bold; line-height: unset } }`}
+        css={css`
+          &, &.bp4-inline {
+            label.bp4-label {
+              font-weight: bold;
+              line-height: unset;
+            }
+          }
+        `}
         className={className}
         inline={inline}>
       {children}
