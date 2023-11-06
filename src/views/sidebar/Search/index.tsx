@@ -10,7 +10,7 @@ import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/Searc
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { type CriteriaGroup, BLANK_CRITERIA } from '../../FilterCriteria/models';
 import criteriaGroupToQueryExpression from '../../FilterCriteria/criteriaGroupToQueryExpression';
-import { RAW_SUBSTRING } from '../../FilterCriteria/CRITERIA_CONFIGURATION';
+import { RAW_SUBSTRING, CUSTOM_CONDITION } from '../../FilterCriteria/CRITERIA_CONFIGURATION';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import type { RegisterItem } from '../../../types';
 import { itemRefToItemPath } from '../../itemPathUtils';
@@ -62,7 +62,7 @@ const Search: React.FC<{
 memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { keyExpression, itemClasses, subregisters, selectedRegisterItem } = useContext(BrowserCtx);
+  const { keyExpression, getQuickSearchPredicate, itemClasses, subregisters, selectedRegisterItem } = useContext(BrowserCtx);
   const { changeRequest } = useContext(ChangeRequestContext);
 
   const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
@@ -105,17 +105,26 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
 
   const effectiveQueryExpression = useMemo(() => {
     const quickSearchString = (state.quickSubstringQuery ?? '').trim();
+    console.log("quick search predicate", getQuickSearchPredicate?.(quickSearchString));
     const withSearchString: CriteriaGroup =
       state.query.criteria.criteria.length < 1 && quickSearchString !== ''
         ? {
             require: 'all',
             criteria: [
-              {
-                key: 'raw-substring',
-                query: RAW_SUBSTRING.toQuery(
-                  { substring: quickSearchString },
-                  { itemClasses, subregisters }),
-              },
+              getQuickSearchPredicate
+                ? {
+                    key: 'custom',
+                    query: CUSTOM_CONDITION.toQuery(
+                      { customExpression: getQuickSearchPredicate(quickSearchString) },
+                      { itemClasses, subregisters },
+                    ),
+                  }
+                : {
+                    key: 'raw-substring',
+                    query: RAW_SUBSTRING.toQuery(
+                      { substring: quickSearchString },
+                      { itemClasses, subregisters }),
+                  },
             ],
           }
         : state.query.criteria
@@ -129,7 +138,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
       ? criteriaGroupToQueryExpression(withImplicit)
       // If no criteria provided, don’t show anything by default.
       : 'false';
-  }, [state.query.criteria, state.quickSubstringQuery, itemClasses, subregisters]);
+  }, [state.query.criteria, state.quickSubstringQuery, itemClasses, subregisters, getQuickSearchPredicate]);
 
   const stateRecalledDebounced = useDebounce(stateRecalled, 100);
   const queryExpressionDebounced = useDebounce(

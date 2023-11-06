@@ -107,6 +107,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
   subregisters,
   keyExpression,
   defaultSearchCriteria,
+  getQuickSearchPredicate,
   customViews,
   children,
 }) {
@@ -261,6 +262,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
 
           keyExpression,
           defaultSearchCriteria,
+          getQuickSearchPredicate,
         })), [
           selectedRegisterItem,
           activeChangeRequestIDDebounced,
@@ -275,6 +277,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           subregisters,
           keyExpression,
           defaultSearchCriteria,
+          getQuickSearchPredicate,
         ])}>
       <ChangeRequestContextProvider changeRequestID={activeChangeRequestIDDebounced}>
         {children}

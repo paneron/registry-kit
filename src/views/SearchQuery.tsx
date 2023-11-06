@@ -29,7 +29,7 @@ const SearchQuery: React.FC<{
   availableClassIDs,
   className,
 }) {
-  const { itemClasses, subregisters } = useContext(BrowserCtx);
+  const { itemClasses, subregisters, getQuickSearchPredicate } = useContext(BrowserCtx);
 
   const [ editingAdvanced, toggleEditingAdvanced ] = useState<boolean>(false);
 
@@ -39,12 +39,22 @@ const SearchQuery: React.FC<{
 
   const makeDefaultCriteria = useCallback(function makeDefaultCriteria(): Criterion {
     if (quickSearchString) {
-      return {
-        key: 'raw-substring',
-        query: RAW_SUBSTRING.toQuery(
-          { substring: quickSearchString },
-          { itemClasses, subregisters },
-        ),
+      if (getQuickSearchPredicate) {
+        return {
+          key: 'custom',
+          query: CUSTOM_CONDITION.toQuery(
+            { customExpression: getQuickSearchPredicate(quickSearchString) },
+            { itemClasses, subregisters },
+          ),
+        }
+      } else {
+        return {
+          key: 'raw-substring',
+          query: RAW_SUBSTRING.toQuery(
+            { substring: quickSearchString },
+            { itemClasses, subregisters },
+          ),
+        }
       }
     } else {
       return {

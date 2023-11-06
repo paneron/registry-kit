@@ -131,6 +131,24 @@ extends RegisterConfiguration<Items> {
   // TODO: Obsoluete?
   defaultSearchCriteria?: CriteriaGroup
 
+  /**
+   * Default predicate for matching items
+   * using quick search.
+   *
+   * Must return the search expression as text.
+   *
+   * Search expression must return a boolean and can access:
+   *
+   * - `obj`, which *should* be a RegisterItem instance
+   *   with `obj.data` being its class-specific payload.
+   *
+   * E.g., if all important item classes in your register
+   * specify a `name` field:
+   *
+   * @example (searchQuery) => `obj.data?.name?.toLowerCase().indexOf("${searchQuery.toLowerCase()}") >= 0`
+   */
+  getQuickSearchPredicate?: (quickSearchQuery: string) => string
+
   customViews?: CustomViewConfiguration[]
 }
 
