@@ -53,43 +53,44 @@ export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
 /**
  * A wrapper to show property data with its label(s).
  */
-export const PropertyDetailView: React.FC<{
-  title: FormGroupProps["label"]
+export const PropertyDetailView: React.FC<FormGroupProps & {
+  /** @deprecated use `label` instead */
+  title?: FormGroupProps["label"]
+  /** @deprecated use `labelInfo` instead */
   secondaryTitle?: FormGroupProps["labelInfo"]
-  inline?: FormGroupProps["inline"]
-  className?: string
-}> = function ({ title, secondaryTitle, inline, children, className }) {
+}> = function ({
+    label, labelInfo,
+    title, secondaryTitle,
+    ...props }) {
   return (
     <FormGroup
-        label={`${title}:`}
-        labelInfo={secondaryTitle}
-        css={css`
-          &, &.bp4-inline {
-            label.bp4-label {
-              /*
-               * Since it’s in flex container, label expands to fill its width,
-               * and due to the mechanics of how labels work (?)
-               * any button (e.g., for deletion) within labelInfo
-               * would responds to events of the entire label
-               * (meaning you can hover space to the right of the label and labelInfo
-               * and the button would still be clickable).
-               * This makes the label not fill flex container width.
-               */
-              align-self: flex-start;
+      label={label || title ? `${label ?? title}:` : undefined}
+      labelInfo={labelInfo ?? secondaryTitle}
+      css={css`
+        &, &.bp4-inline {
+          label.bp4-label {
+            /*
+             * Since it’s in flex container, label expands to fill its width,
+             * and due to the mechanics of how labels work (?)
+             * any button (e.g., for deletion) within labelInfo
+             * would responds to events of the entire label
+             * (meaning you can hover space to the right of the label and labelInfo
+             * and the button would still be clickable).
+             * This makes the label not fill flex container width.
+             */
+            align-self: flex-start;
 
-              font-weight: bold;
-              line-height: unset;
-              text-transform: capitalize;
-              .bp4-text-muted {
-                text-transform: none;
-              }
+            font-weight: bold;
+            line-height: unset;
+            text-transform: capitalize;
+            .bp4-text-muted {
+              text-transform: none;
             }
           }
-        `}
-        className={className}
-        inline={inline}>
-      {children}
-    </FormGroup>
+        }
+      `}
+      {...props}
+    />
   );
 };
 
