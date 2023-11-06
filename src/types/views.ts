@@ -96,8 +96,8 @@ export interface ItemClassConfiguration<P extends Payload/*, F extends Field*/> 
   // If false, items of this class cannot be superseded, only retired.
   // Default is true.
 
+  /** Used to pre-populate item data e.g. when a new item is created. */
   defaults?: RegistryItemPayloadDefaults<P>
-  // Used to pre-populate item data e.g. when a new item is created.
 
   validatePayload?: (item: P) => Promise<boolean>
   sanitizePayload?: (item: P) => Promise<P>
@@ -149,6 +149,10 @@ extends RegisterConfiguration<Items> {
    */
   getQuickSearchPredicate?: (quickSearchQuery: string) => string
 
+  /**
+   * Extension-provided additional views that don’t correspond
+   * to entities like register item, change request, etc. handled by RegistryKit.
+   */
   customViews?: CustomViewConfiguration[]
 }
 
