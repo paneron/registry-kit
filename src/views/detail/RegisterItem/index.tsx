@@ -164,8 +164,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
     );
   }
 
-  console.debug("Rendering RegisterItem view");
-
   const [ isEditingProposal, setIsEditingProposal ] = useState(false);
 
   //const [ diffMode, setDiffMode ] = useState<boolean>(false);
