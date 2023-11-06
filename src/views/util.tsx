@@ -68,6 +68,10 @@ export const PropertyDetailView: React.FC<{
             label.bp4-label {
               font-weight: bold;
               line-height: unset;
+              text-transform: capitalize;
+              .bp4-text-muted {
+                text-transform: none;
+              }
             }
           }
         `}
