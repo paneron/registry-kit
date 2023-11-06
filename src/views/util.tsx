@@ -50,6 +50,9 @@ export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
 });
 
 
+/**
+ * A wrapper to show property data with its label(s).
+ */
 export const PropertyDetailView: React.FC<{
   title: FormGroupProps["label"]
   secondaryTitle?: FormGroupProps["labelInfo"]
