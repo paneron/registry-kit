@@ -3,7 +3,7 @@
 
 import { jsx, css } from '@emotion/react';
 import React, { useContext, useMemo, useState } from 'react';
-import { Button, ButtonGroup, ButtonProps } from '@blueprintjs/core';
+import { Button, ButtonGroup, type ButtonProps } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
   type RelatedItemClassConfiguration,
@@ -121,7 +121,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     const canChangeRelatedItem = /*classIDs.length >= 1 && */onChange && !itemResult.isUpdating;
     const canClear = onClear && itemID !== '' && !itemResult.isUpdating;
 
-    let itemButtons: ButtonProps[] = [];
+    let itemButtons: (ButtonProps & { title: string })[] = [];
 
     async function handleCreateNew() {
       if (!onCreateNew) { return; }
@@ -135,6 +135,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
         icon: 'add',
         text: 'Auto create',
         intent: 'primary',
+        title: "Automatically create new item",
       });
     }
     if (canChangeRelatedItem) {
@@ -143,11 +144,17 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
         icon: 'edit',
         text: willShowItemView ? undefined : 'Specify',
         intent: 'primary',
+        title: "Select related item",
         /*disabled: classIDs.length < 1,*/
       });
     }
     if (canClear) {
-      itemButtons.push({ onClick: onClear, icon: 'cross', intent: 'danger' });
+      itemButtons.push({
+        onClick: onClear,
+        icon: 'eraser',
+        intent: 'danger',
+        title: "Clear related item selection",
+      });
     }
 
     return itemButtons;
