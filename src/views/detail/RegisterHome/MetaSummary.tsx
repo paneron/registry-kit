@@ -25,7 +25,7 @@ const MetaSummary: React.VoidFunctionComponent<{
       </div>
       <div>
         <dt>Content&nbsp;summary:</dt>
-        <dd>{register.contentSummary || 'N/A'}</dd>
+        <dd dangerouslySetInnerHTML={{ __html: register.contentSummary || 'N/A' }}></dd>
       </div>
       {register.operatingLanguage
         ? <div>
