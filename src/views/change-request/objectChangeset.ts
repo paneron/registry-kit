@@ -21,7 +21,6 @@ import {
 import {
   crIDToCRPath,
   itemPathInCR,
-  itemPathNotInCR,
   itemPathToItemRef,
   itemRefToItemPath,
 } from '../itemPathUtils';
@@ -71,7 +70,8 @@ export async function importedProposalToCRObjectChangeset(
   /** VCS username of the person performing the import. */
   importingStakeholderGitServerUsername: string,
   getObjectData: (opts: { objectPaths: string[] }) => Promise<{ data: ObjectDataset }>,
-  findObjects: (predicate: string) => Promise<any[]>,
+  resolvePredicates?: (predicates: Set<string>) => Promise<ResolvedPredicates>,
+  //findObjects: (predicate: string) => Promise<any[]>,
 ): Promise<[changeset: ObjectChangeset, id: string]> {
   const proposalDraft: Drafted = importableCR.proposalDraft;
   proposalDraft.submittingStakeholderGitServerUsername = importingStakeholderGitServerUsername;
@@ -111,21 +111,21 @@ export async function importedProposalToCRObjectChangeset(
     if (!isRegisterItem(itemPayload)) {
       throw new Error(`Invalid register item data at ${itemPath}`);
     }
-    changeset[itemPathInCR(itemPath, crID)] = {
-      oldValue: null,
-      newValue: await resolvePredicates(itemPayload, async function resolveRef(predicate: string) {
-        const objects = (await findObjects(predicate)).
-          filter((o: any) => o.objectPath === itemPathNotInCR(o.objectPath));
-        if (objects.length < 1) {
-          throw new Error(`Unable to resolve predicate to item UUID: no item found matching ${predicate}`);
-        } else if (objects.length > 1) {
-          const objectOverview = objects.map((o: any) => JSON.stringify(o)).join(', ')
-          throw new Error(`Unable to resolve predicate to item UUID: more than one item matches ${predicate}: ${objectOverview}`);
-        } else {
-          return itemPathToItemRef(false, objects[0].objectPath);
-        }
-      }),
-    };
+    const predicates = collectPredicates(itemPayload);
+    if (predicates.size < 1) {
+      changeset[itemPathInCR(itemPath, crID)] = {
+        oldValue: null,
+        newValue: itemPayload,
+      };
+    } else {
+      if (!resolvePredicates) {
+        throw new Error("Cannot create object changeset for imported proposal: cannot resolve predicates");
+      }
+      changeset[itemPathInCR(itemPath, crID)] = {
+        oldValue: null,
+        newValue: replacePredicates(itemPayload, await resolvePredicates(predicates)),
+      };
+    }
   }
 
   return [changeset, crID];
@@ -155,41 +155,78 @@ export interface Predicate {
   mode: 'generic' | 'id'
 }
 
-type WithPredicatesResolved<T> = ReplaceType<T, Predicate, string | InternalItemReference>;
 
 function isPredicate(val: any): val is Predicate {
   return val && val.__isPredicate === true;
 }
+
+/** Maps found predicates to resolved item references. */
+type ResolvedPredicates = Record<string, InternalItemReference>;
+
 /**
  * Resolves any properties that should reference register item UUIDs,
- * but have predicates instead, using given async `resolveRef()` callback
- * which can do requisite data fetching.
+ * but have predicates instead, using a map of found predicates
+ * and item references they already were resolved to.
  */
-async function resolvePredicates<T>(
+function replacePredicates<T>(
   value: T,
-  resolveRef: (predicate: string) => Promise<InternalItemReference>,
-): Promise<T extends Predicate ? (string | InternalItemReference) : WithPredicatesResolved<T>> {
+  resolvedPredicates: Readonly<ResolvedPredicates>,
+): T /*extends Predicate ? (string | InternalItemReference) : WithPredicatesResolved<T>*/ {
   // NOTE: Return types are cast because https://github.com/microsoft/TypeScript/issues/33912.
   if (isPredicate(value)) {
-    const ref: InternalItemReference = await resolveRef(value.predicate) as any;
+    const ref = resolvedPredicates[value.predicate];
+    if (!ref) {
+      throw new Error(`Could not resolve predicate “${value.predicate}”`);
+    }
     if (value.mode === 'generic') {
-      return ref as any;
+      return ref as unknown as T;
     } else {
-      return ref.itemID as any;
+      return ref.itemID as unknown as T;
     }
   } else if (value && typeof value === 'object') {
     if (Array.isArray(value)) {
-      return await Promise.all(value.map((v: any) => resolvePredicates(v, resolveRef))) as any;
+      return value.map((v: any) => replacePredicates(v, resolvedPredicates)) as any;
     } else {
       // Assume plain non-array object.
       for (const [key, v] of Object.entries(value)) {
-        value[key as keyof typeof value] = await resolvePredicates(v, resolveRef);
+        value[key as keyof typeof value] = replacePredicates(v, resolvedPredicates);
       }
       return value as any;
     }
   } else {
     return value as any;
   }
+}
+
+function collectPredicates(
+  /**
+   * Imported register item data with possibly some predicates
+   * instead of related item references.
+   */
+  value: unknown | unknown[],
+
+  /** Cache for recursive calls, don’t supply. */
+  _cache?: Set<string>,
+): Set<string> {
+  const collected = _cache ?? new Set<string>();
+
+  if (isPredicate(value)) {
+    collected.add(value.predicate);
+  } else if (value && typeof value === 'object') {
+    if (Array.isArray(value)) {
+      for (const item in value) {
+        collectPredicates(item, collected);
+      }
+      value.map((v: any) => collectPredicates(v, collected));
+    } else {
+      // Assume plain non-array object.
+      for (const v of Object.values(value)) {
+        collectPredicates(v, collected);
+      }
+    }
+  }
+
+  return collected;
 }
 
 
@@ -385,13 +422,3 @@ async function proposalToObjectChangeset(
 
 // Helper
 
-type ReplaceType<Type, FromType, ToType> = Type extends FromType
-  ? ToType
-  : Type extends object
-      ? ReplaceTypes<Type, FromType, ToType>
-      : Type;
-
-type ReplaceTypes<ObjType extends object, FromType, ToType> = {
-  [KeyType in keyof ObjType]:
-    ReplaceType<ObjType[KeyType], FromType, ToType>;
-}

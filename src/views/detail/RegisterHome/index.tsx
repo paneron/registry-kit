@@ -19,6 +19,7 @@ import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
 import { type SomeCR as CR, State } from '../../../types/cr';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
+import { itemPathToItemRef } from '../../itemPathUtils';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader } from '../../util';
@@ -93,25 +94,41 @@ function () {
               itemClasses,
               stakeholder!.gitServerUsername!,
               getObjectData,
-              async function findObjects(predicate: string) {
-                const result = await getMapReducedData({
-                  chains: {
-                    _: {
-                      mapFunc: `
-                        const data = value.data;
-                        if (data && (${predicate})) {
-                          emit({ objectPath: key, objectData: value });
-                        }
-                      `,
-                    },
+              async function resolvePredicates(predicates) {
+                const mapReduceChains = [...predicates.values()].map(predicate => ({
+                  [predicate]: {
+                    mapFunc: `
+                      const data = value.data;
+                      if (!key.startsWith('/proposals/') && data && (${predicate})) {
+                        emit({ objectPath: key, objectData: value });
+                      }
+                    `,
                   },
+                })).reduce((prev, curr) => ({ ...prev, ...curr }), {});
+
+                const result:
+                Record<string, { objectPath: string, objectData: any }[] | {}> =
+                await getMapReducedData({
+                  chains: mapReduceChains,
                 });
-                // NOTE: map returns an empty object if there’re no items,
-                // but we promise to return a list.
-                if (!Array.isArray(result._)) {
-                  return [];
-                }
-                return result._;
+
+                return Object.entries(result).map(([chainLabel, chainResult]) => {
+                  const objects =
+                    // Map returns an empty object if there’re no items,
+                    // but we promise to return a list.
+                    (Array.isArray(chainResult) ? chainResult : []);
+                  if (objects.length < 1) {
+                    throw new Error(`Unable to resolve predicate to item UUID: no item found matching predicate ${chainLabel}`);
+                  } else if (objects.length > 1) {
+                    const objectOverview = objects.map((o: any) => JSON.stringify(o)).join(', ')
+                    throw new Error(`Unable to resolve predicate to item UUID: more than one item matches predicate ${chainLabel}: ${objectOverview}`);
+                  } else {
+                    return {
+                      // There’s just one item anyway, hence `objects[0]`.
+                      [chainLabel]: itemPathToItemRef(false, objects[0].objectPath),
+                    };
+                  }
+                }).reduce((prev, curr) => ({ ...prev, ...curr }), {});
               },
             );
             return [changeset, crID];
