@@ -331,11 +331,12 @@ const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
     onClick={props.disabled ? undefined : props.onClick}
     disabled={props.active ? false : props.disabled}
     title={tooltip}
+    rightIcon={popup ? 'more' : undefined}
   />;
 
   if (popup && !props.disabled) {
     return (
-      <Popover content={popup} placement="top">
+      <Popover content={popup} placement="top" minimal interactionKind="click">
         {btn}
       </Popover>
     );
