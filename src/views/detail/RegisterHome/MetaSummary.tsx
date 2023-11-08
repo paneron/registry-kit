@@ -17,7 +17,7 @@ const MetaSummary: React.VoidFunctionComponent<{
     <DL style={style}>
       <div>
         <dt>Viewing&nbsp;version:</dt>
-        <dd>{register.version?.id ?? 'N/A'}</dd>
+        <dd>{register.version?.id || 'N/A'}</dd>
       </div>
       <div>
         <dt>Register&nbsp;name:</dt>
