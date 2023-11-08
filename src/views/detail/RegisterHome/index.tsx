@@ -338,7 +338,7 @@ function () {
           props={registerMetadata
             ? {
                 register: registerMetadata,
-                style: { padding: '10px 12px 0 12px', flexGrow: 1, flexShrink: 0 },
+                style: { padding: '10px 12px 0 12px', flexGrow: 1, overflowY: 'auto' },
               }
             : registerMetadata}
           error={registerMetadata === null
