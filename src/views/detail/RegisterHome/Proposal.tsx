@@ -87,6 +87,7 @@ const ActionableProposalItems: React.VoidFunctionComponent<{
         {proposals !== undefined && proposals.length > 0
           ? proposals.map(cr =>
               <ActionableProposalItem
+                key={cr.id}
                 cr={cr}
                 onClick={onSelect}
               />)
@@ -222,3 +223,107 @@ export const Proposals: React.VoidFunctionComponent<{
       : [{ title: '', renderPanel: () => <NonIdealState title="Nothing to show" /> }]}
   />;
 };
+
+
+//1const ProposalsBlock: React.VoidFunctionComponent<{
+//1  proposal: CR
+//1  register: Register
+//1  stakeholder?: RegisterStakeholder
+//1  canDelete?: boolean
+//1  onDelete?: () => (void | Promise<void>)
+//1  onOpen?: () => void
+//1  className?: string
+//1}> = function ({ proposal, stakeholder, register, onDelete, onOpen, canDelete, className }) {
+//1  const actions: MenuItemProps[] = stakeholder && canBeTransitionedBy(stakeholder, proposal)
+//1    ? [/*{
+//1        // Action is taken from within the widget.
+//1        text: "Take action",
+//1        onClick: () => void 0,
+//1        icon: 'take-action',
+//1        intent: 'primary',
+//1      }*/]
+//1    : canDelete
+//1      ? [{
+//1          text: "Delete this proposal draft",
+//1          onClick: onDelete,
+//1          disabled: !onDelete,
+//1          icon: 'delete',
+//1          intent: 'danger',
+//1        }]
+//1      : [];
+//1
+//1  actions.push({
+//1    text: "Open in new window",
+//1    disabled: !onOpen,
+//1    onClick: onOpen,
+//1  });
+//1  const proposalBlockActions = useMemo(() => {
+//1    const actions = [];
+//1    if (activeCR) {
+//1      actions.push({
+//1        text: "Export proposal",
+//1        onClick: () => void 0,
+//1        icon: 'export',
+//1        disabled: true,
+//1      } as const);
+//1      actions.push({
+//1        text: "Exit proposal",
+//1        icon: 'log-out',
+//1        intent: 'danger',
+//1        disabled: isBusy,
+//1        onClick: setActiveChangeRequestID
+//1          ? () => setActiveChangeRequestID?.(null)
+//1          : undefined,
+//1      } as const);
+//1    } else {
+//1      if (stakeholder && canCreateCR(stakeholder)) {
+//1        actions.push({
+//1          text: "Create blank proposal",
+//1          onClick: !createMode ? (() => setCreateMode(true)) : undefined,
+//1          disabled: !createCR,
+//1          active: createMode,
+//1          selected: createMode,
+//1          icon: 'add',
+//1          intent: actionableProposals.length < 1
+//1            ? 'primary'
+//1            : undefined,
+//1        } as const);
+//1      }
+//1      if (stakeholder && canImportCR(stakeholder)) {
+//1        actions.push({
+//1          text: "Import proposal",
+//1          onClick: importCR,
+//1          disabled: !importCR || createMode,
+//1          icon: 'import',
+//1          intent: actionableProposals.length < 1
+//1            ? 'primary'
+//1            : undefined,
+//1        } as const);
+//1      }
+//1    }
+//1    return actions;
+//1  }, [!activeCR, createMode, importCR, createCR, isBusy, actionableProposals.length < 1]);
+//1
+//1  return (
+//1    <HomeBlock
+//1      View={Proposals}
+//1      key="proposal dashboard"
+//1      description="Actionable proposals"
+//1      css={css`
+//1        height: 300px;
+//1        flex-basis: calc(50% - 10px);
+//1        flex-grow: 1;
+//1      `}
+//1      props={{
+//1        register,
+//1        actionableProposals,
+//1        createMode,
+//1        onCreate: handleCreate,
+//1        onRefreshProposals: handleRefreshProposals,
+//1        onSelectProposal: handleSelectProposal,
+//1      }}
+//1      actions={proposalBlockActions}
+//1    />
+//1  );
+//1};
+//1export default ProposalsBlock;
