@@ -133,6 +133,7 @@ function () {
             );
             return [changeset, crID];
           } catch (e) {
+            console.error("Error reading proposal data", e);
             throw new Error("Error reading proposal data");
           }
         } else {
