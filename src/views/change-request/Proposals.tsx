@@ -346,13 +346,19 @@ export const ProposalSummary: React.FC<ProposalProps<ChangeProposal>> =
 function ({ proposal, itemRef, item, itemBefore, onChange }) {
   const { itemClasses } = useContext(BrowserCtx);
   const { classID } = itemRef;
-  const ListItemView = itemClasses[classID]?.views?.listItemView;
+  const cls = itemClasses[classID];
+  const ListItemView = cls?.views?.listItemView;
 
   if (ListItemView) {
-    return <ListItemView
-      itemRef={itemRef}
-      itemData={item.data}
-    />;
+    return <>
+      <ListItemView
+        itemRef={itemRef}
+        itemData={item.data}
+        css={css`text-overflow: ellipsis; overflow: hidden;`}
+      />
+      &emsp;
+      <small>{cls.meta.title}</small>
+    </>;
   } else {
     return <ErrorState
       viewName="list item view"
