@@ -132,38 +132,38 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
 };
 
 
-/**
- * Suitable for use as tab contents for TabbedWorkspace.
- * Provides top bar with actions and main content.
- */
-export const TabContentsWithActions: React.FC<{
-  actions: JSX.Element;
-  main: JSX.Element;
-  gapPx?: number;
-  className?: string;
-}> = function ({ actions, gapPx: _gapPx, main, className }) {
-  const gapPx = _gapPx ?? 10;
-  return (
-    <div css={css`
-      position: absolute; inset: 0;
-      display: flex; flex-flow: column nowrap;
-    `} className={className}>
-      <div css={css`flex: 0; padding: ${gapPx}px; display: flex; flex-flow: row wrap; gap: ${gapPx}px;`}>
-        {actions}
-      </div>
-      <div css={css`
-        position: relative;
-        flex: 1;
-        padding: ${gapPx}px;
-        overflow-y: auto;
-        background: ${Colors.GRAY5};
-        .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
-      `}>
-        {main}
-      </div>
-    </div>
-  );
-};
+// /**
+//  * Suitable for use as tab contents for TabbedWorkspace.
+//  * Provides top bar with actions and main content.
+//  */
+// export const TabContentsWithActions: React.FC<{
+//   actions: JSX.Element;
+//   main: JSX.Element;
+//   gapPx?: number;
+//   className?: string;
+// }> = function ({ actions, gapPx: _gapPx, main, className }) {
+//   const gapPx = _gapPx ?? 10;
+//   return (
+//     <div css={css`
+//       position: absolute; inset: 0;
+//       display: flex; flex-flow: column nowrap;
+//     `} className={className}>
+//       <div css={css`flex: 0; padding: ${gapPx}px; display: flex; flex-flow: row wrap; gap: ${gapPx}px;`}>
+//         {actions}
+//       </div>
+//       <div css={css`
+//         position: relative;
+//         flex: 1;
+//         padding: ${gapPx}px;
+//         overflow-y: auto;
+//         background: ${Colors.GRAY5};
+//         .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
+//       `}>
+//         {main}
+//       </div>
+//     </div>
+//   );
+// };
 
 
 export type ClassificationEntry = TagProps & { tooltip?: HelpTooltipProps };
