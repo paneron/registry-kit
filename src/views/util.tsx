@@ -182,6 +182,22 @@ export interface TabContentsWithHeaderProps {
    * 'card-grid' implies 'scrollable'.
    */
   layout?: undefined | 'card-grid' | 'scrollable'
+  layoutOptions?: Record<string, unknown>
+}
+interface Grid extends TabContentsWithHeaderProps {
+  layout: 'card-grid'
+  layoutOptions?: {
+    gapPx?: number
+    stretch?: boolean
+  }
+}
+interface Scrollable extends TabContentsWithHeaderProps {
+  layout: 'scrollable'
+  layoutOptions?: never
+}
+interface NoLayout extends TabContentsWithHeaderProps {
+  layout?: undefined
+  layoutOptions?: never
 }
 const paddingPx = 11;
 function findEnabledActions
@@ -195,8 +211,8 @@ function findEnabledActions
         : []
   ).flat();
 }
-export const TabContentsWithHeader: React.FC<TabContentsWithHeaderProps> =
-function ({ title, smallTitle, classification, actions, className, layout, children }) {
+export const TabContentsWithHeader: React.FC<Grid | Scrollable | NoLayout> =
+function ({ title, smallTitle, classification, actions, layout, layoutOptions, className, children }) {
   const hasClassification = (classification ?? []).length > 0;
 
   const enabledActions = actions ? findEnabledActions(actions) : [];
@@ -289,8 +305,10 @@ function ({ title, smallTitle, classification, actions, className, layout, child
               display: flex;
               flex-flow: row wrap;
               align-content: flex-start;
-              align-items: flex-start;
-              gap: 10px;
+              ${layoutOptions?.stretch
+                ? 'align-items: stretch;'
+                : 'align-items: flex-start;'}
+              gap: ${layoutOptions?.gapPx ?? 10}px;
             `
           : ''}
       `}>
