@@ -44,7 +44,8 @@ const CurrentProposalBlock: React.VoidFunctionComponent<{
         : [];
 
     actions.push({
-      text: "Open in new window",
+      text: "View proposal in a new tab",
+      icon: 'open-application',
       disabled: !onOpen,
       onClick: onOpen,
     });
