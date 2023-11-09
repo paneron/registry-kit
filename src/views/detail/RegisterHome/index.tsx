@@ -338,7 +338,7 @@ function () {
         canDelete={canDelete}
         css={css`
           height: 300px;
-          flex-basis: calc(50% - 10px);
+          flex-basis: calc(50% - ${itemGapPx}px);
           flex-grow: 1;
         `}
       />
@@ -364,7 +364,7 @@ function () {
             : undefined}
           css={css`
             height: 300px;
-            flex-basis: calc(50% - 10px);
+            flex-basis: calc(50% - ${itemGapPx}px);
             flex-grow: 1;
           `}
           actions={[{
@@ -382,6 +382,7 @@ function () {
   return (
     <TabContentsWithHeader
         title={registerMetadata?.name ?? 'Register'}
+        layoutOptions={{ gapPx: itemGapPx, stretch: true }}
         layout="card-grid">
 
       {activeCRBlock ?? registerMetaBlock}
@@ -400,6 +401,8 @@ function () {
     </TabContentsWithHeader>
   );
 }
+
+const itemGapPx = 10;
 
 export default RegisterHome;
 
