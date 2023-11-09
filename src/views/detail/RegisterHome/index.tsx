@@ -17,6 +17,7 @@ import { BrowserCtx } from '../../BrowserCtx';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { crIDToCRPath } from '../../itemPathUtils';
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
+import { Proposals as CRProposals } from '../../change-request/Proposals';
 import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
 import { type SomeCR as CR, State } from '../../../types/cr';
@@ -25,7 +26,7 @@ import { itemPathToItemRef, itemRefToItemPath } from '../../itemPathUtils';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader } from '../../util';
-import { Proposals } from './Proposal';
+import { Proposals as ProposalsBlock } from './Proposal';
 import HomeBlock, { HomeBlockCard, HomeBlockActions } from './Block';
 import CurrentProposalBlock from './ActiveProposalDetails';
 import ItemDrawer from '../../ItemDrawer';
@@ -42,9 +43,11 @@ function () {
   } = useContext(BrowserCtx);
   const {
     changeRequest: activeCR,
+    canEdit: activeCRIsEditable,
     proposeBlankItem,
     canDelete,
     deleteCR,
+    updateItemProposal,
   } = useContext(ChangeRequestContext);
   const {
     requestFileFromFilesystem,
@@ -295,7 +298,7 @@ function () {
     if (registerMetadata /*&& actionableProposals.find(p => p[1] && p[1].length > 0)*/) {
       return (
         <HomeBlock
-          View={Proposals}
+          View={ProposalsBlock}
           key="proposal dashboard"
           description="Actionable proposals"
           css={css`
@@ -384,6 +387,21 @@ function () {
     }
   }, [!activeCRBlock, registerMetadata, stakeholder]);
 
+  const proposedChangeBlocks = useMemo(() => {
+    if (activeCR) {
+      return (
+        <CRProposals
+          proposals={activeCR.items}
+          onDeleteProposalForItemAtPath={updateItemProposal
+            ? (path) => updateItemProposal("delete item from proposal draft", null, path)
+            : undefined}
+        />
+      );
+    } else {
+      return null;
+    }
+  }, [activeCR, updateItemProposal]);
+
   const [activeItemSelector, activateItemSelector] =
     useState<keyof typeof itemClasses | true | null>(null);
 
@@ -441,6 +459,14 @@ function () {
       {activeCRBlock ?? registerMetaBlock}
 
       {proposalBlock}
+
+      {proposedChangeBlocks
+        ? <GridHeader>
+            Proposed Changes: ({Object.keys(activeCR?.items ?? []).length} total)
+          </GridHeader>
+        : null}
+
+      {proposedChangeBlocks}
 
       <GridHeader>
         Register Items:

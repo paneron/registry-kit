@@ -6,7 +6,6 @@ import { jsx, css } from '@emotion/react';
 import {
   Button,
   Card,
-  Colors,
   NonIdealState,
   Spinner,
   UL,
@@ -50,7 +49,13 @@ memo(function ({ uri }) {
 const MaybeChangeRequest: React.VoidFunctionComponent<{ uri: string }> =
 memo(function ({ uri }) {
   const { closeTabWithURI } = useContext(TabbedWorkspaceContext);
-  const { changeRequest: cr, canTransition, deleteCR } = useContext(ChangeRequestContext);
+  const {
+    changeRequest: cr,
+    canTransition,
+    deleteCR,
+    updateItemProposal,
+  } = useContext(ChangeRequestContext);
+
   const handleDelete = useCallback(
     (async () => {
       if (deleteCR) {
@@ -60,11 +65,23 @@ memo(function ({ uri }) {
     }),
     [deleteCR, closeTabWithURI]);
 
+  const handleDeleteProposalAtItemPath = useCallback(
+    async function handleDeleteProposalAtItemPath(itemPath: string) {
+      return await updateItemProposal?.("remove proposed change from proposal draft", null, itemPath);
+    },
+    [updateItemProposal],
+  );
+
   return (cr
     ? <ChangeRequestDetails
         cr={cr}
         canTransition={canTransition}
-        onDelete={deleteCR ? handleDelete : undefined}
+        onDelete={deleteCR
+          ? handleDelete
+          : undefined}
+        onDeleteProposalForItemAtPath={updateItemProposal
+          ? handleDeleteProposalAtItemPath
+          : undefined}
         css={css`
           position: absolute;
           inset: 0;
@@ -88,8 +105,9 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
   cr: SomeCR,
   canTransition: boolean,
   onDelete?: () => void,
+  onDeleteProposalForItemAtPath?: (itemPath: string) => void,
   className?: string,
-}> = memo(function ({ cr, canTransition, onDelete, className }) {
+}> = memo(function ({ cr, canTransition, onDelete, onDeleteProposalForItemAtPath, className }) {
   const {
     activeChangeRequestID,
     setActiveChangeRequestID,
@@ -111,7 +129,10 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
 
   const proposals = useMemo((() =>
     hasItems
-      ? <Proposals proposals={cr.items} css={css`flex: 1;`} />
+      ? <Proposals
+          proposals={cr.items}
+          onDeleteProposalForItemAtPath={onDeleteProposalForItemAtPath}
+        />
       : <NonIdealState
           icon="clean"
           title="Nothing is proposed here yet."
@@ -121,7 +142,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
               </Button>
             : undefined}
         />
-  ), [onDelete, hasItems]);
+  ), [onDelete, onDeleteProposalForItemAtPath, hasItems]);
 
   const classification = useMemo(() => {
     const classification: TabContentsWithHeaderProps["classification"] = [];
@@ -197,21 +218,14 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
         title={maybeEllipsizeString(cr.justification, 70)}
         classification={classification}
         layout="card-grid"
+        layoutOptions={{ stretch: true }}
         actions={actions}>
 
       {helmet}
 
-      <Card elevation={0} css={css`
-        flex: 100%;
-        background: ${Colors.LIGHT_GRAY3};
-        padding: 0;
-        display: flex;
-        min-height: 70vh;
-      `}>
-        {proposals}
-      </Card>
+      {proposals}
 
-      <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
+      <Card elevation={1} css={css`flex: 100%; padding: 11px;`}>
         <DL>
           <Summary
             cr={cr}
@@ -221,7 +235,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
         </DL>
       </Card>
 
-      <Card elevation={1} css={css`flex: 30%; padding: 11px;`}>
+      <Card elevation={1} css={css`flex: calc(50% - 10px); flex-grow: 1; padding: 11px;`}>
         <TransitionsAndStatus
           pastTransitions={getTransitionHistory(cr)}
           isFinal={isFinalState(cr.state)}
@@ -229,7 +243,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
       </Card>
 
       {canTransition
-        ? <Card elevation={3} css={css`flex: 30%; padding: 11px;`}>
+        ? <Card elevation={3} css={css`flex: calc(50% - 10px); flex-grow: 1; padding: 11px;`}>
             <TransitionOptions
               transitions={stakeholder ? getTransitions(cr, stakeholder) : []}
               stakeholder={stakeholder}

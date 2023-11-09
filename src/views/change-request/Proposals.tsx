@@ -1,18 +1,20 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useEffect, useContext, useState, useCallback, memo, useMemo } from 'react';
+import React, { useEffect, useRef, useContext, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import {
+  Card,
   ButtonGroup,
   Button,
   Classes,
   Colors,
-  MenuItem,
-  NonIdealState,
-  IconName,
+  MenuItem, type MenuItemProps, type MenuDividerProps,
+  type IconName,
+  Tag,
+  H5,
 } from '@blueprintjs/core';
-import { ItemRenderer, Select2 as Select } from '@blueprintjs/select';
+import { type ItemRenderer, Select2 as Select } from '@blueprintjs/select';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import type {
   Addition,
@@ -34,6 +36,8 @@ import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
 import { useItemRef, itemPathToItemRef } from '../itemPathUtils';
 import useItemClassConfig from '../hooks/useItemClassConfig';
 import { InlineDiffGeneric } from '../diffing/InlineDiff';
+import { proposalToTagProps } from './util';
+import { HomeBlockCard, HomeBlockActions } from '../detail/RegisterHome/Block';
 import { ItemDetail } from '../detail/RegisterItem';
 
 
@@ -49,10 +53,23 @@ function stringifiedJSONEqual(i1: any, i2: any): boolean {
 }
 
 
-const Proposals: React.FC<{
-  proposals: Drafted['items']
+interface ProposalBrowserProps<CR extends Drafted> {
+  proposals: CR['items']
+  /**
+   * If provided, button to delete each proposed change
+   * is shown in change card list mode.
+   */
+  onDeleteProposalForItemAtPath?: (itemPath: string) => void
   className?: string
-}> = function ({ proposals, className }) {
+}
+/**
+ * Shows a list of individual proposed changes as cards by default,
+ * allowing to expand a proposal and view item details.
+ *
+ * If no proposals exist, returns null.
+ */
+export function Proposals<CR extends Drafted>
+({ proposals, onDeleteProposalForItemAtPath, className }: ProposalBrowserProps<CR>) {
   const [ selectedProposal, selectProposal ] = useState<string | null>(null);
   const [ preferDiff, setPreferDiff ] = useState(false);
 
@@ -152,16 +169,23 @@ const Proposals: React.FC<{
 
   const proposalCount = Object.keys(proposals).length;
 
+  const selectedProposalDetailRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    if (!selectedProposal) {
-      const firstProposal = Object.keys(proposals)[0];
-      if (firstProposal) {
-        if (getCurrentItem(firstProposal) || getProposedItem(firstProposal)) {
-          selectProposal(firstProposal);
-        }
+    // if (!selectedProposal) {
+    //   const firstProposal = Object.keys(proposals)[0];
+    //   if (firstProposal) {
+    //     if (getCurrentItem(firstProposal) || getProposedItem(firstProposal)) {
+    //       selectProposal(firstProposal);
+    //     }
+    //   }
+    // }
+    if (selectedProposal) {
+      if (selectedProposalDetailRef.current) {
+        selectedProposalDetailRef.current.scrollIntoView({ block: 'center' });
       }
     }
-  }, [proposalCount, selectedProposal, getCurrentItem, getProposedItem]);
+  }, [selectedProposal === null]);
 
   const canShowDiff: boolean =
     haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
@@ -181,104 +205,164 @@ const Proposals: React.FC<{
     const icon = haveSelectedItem
       ? getProposalIcon(proposals[selectedProposal])
       : undefined;
-    return (
-      <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
-        {proposalCount > 0
-          ? <ButtonGroup css={css`margin: 5px 0 0 5px;`}>
-              {haveSelectedItem
-                ? <>
-                    <Button
-                      disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
-                      icon='locate'
-                      onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
-                      title="Open selected item in a new tab (not applicable to proposed additions)"
-                    />
-                    <Button
-                      active={preferDiff}
-                      onClick={() => setPreferDiff(v => !v)}
-                      // Diffing only makes sense for clarifications.
-                      // Additions are entire new items, and for amendments
-                      // item data is unchanged.
-                      disabled={!canShowDiff}
-                      icon="changes"
-                      title="Annotate proposed clarifications for this item"
-                    />
-                    {/*
-                    <Switch
-                      checked={preferDiff && showOnlyChanged}
-                      disabled={!preferDiff}
-                      onChange={evt => setShowOnlyChanged(evt.currentTarget.checked)}
-                      label="Show clarified properties only"
-                    />
-                    */}
-                  </>
+
+    if (proposalCount > 0 && haveSelectedItem) {
+      return (
+        <Card
+            key={selectedProposal}
+            elevation={0}
+            css={css`
+              flex: 100%;
+              background: ${Colors.LIGHT_GRAY3};
+              padding: 0;
+              min-height: 70vh;
+
+              overflow: hidden;
+
+              border-radius: 5px;
+              display: flex;
+              flex-flow: column nowrap;
+              transition:
+                width .5s linear
+                height .5s linear;
+            `}
+            className={className}>
+          <ButtonGroup>
+            <Button
+              disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+              icon='open-application'
+              onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
+              title="Open selected item in a new tab (not applicable to proposed additions)"
+            />
+            <Button
+              active={preferDiff}
+              onClick={() => setPreferDiff(v => !v)}
+              // Diffing only makes sense for clarifications.
+              // Additions are entire new items, and for amendments
+              // item data is unchanged.
+              disabled={!canShowDiff}
+              text="Compare"
+              title="Annotate proposed clarifications for this item"
+            />
+            <ClassNames>
+              {(({ css: css2 }) =>
+                <Select<ChangeProposalItem>
+                    filterable={false}
+                    itemsEqual={stringifiedJSONEqual}
+                    menuProps={{ className: css2(`max-height: 50vh; overflow-y: auto;`) }}
+                    activeItem={activeItem}
+                    items={allItems}
+                    popoverProps={{ minimal: true, matchTargetWidth: true }}
+                    fill
+                    itemRenderer={ChangeProposalItemView}
+                    onItemSelect={handleItemSelect}>
+                  <Button fill rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
+                    {selectedItemSummary}
+                  </Button>
+                </Select>
+              )}
+            </ClassNames>
+            <Button
+              onClick={() => selectProposal(null)}
+              icon="minimize"
+              title="Minimize proposed change view"
+              text="Minimize"
+            />
+          </ButtonGroup>
+          <div css={css`position: relative; flex: 1;`} ref={selectedProposalDetailRef}>
+            <BrowserCtx.Provider value={proposalBrowserCtx}>
+              <ErrorBoundary viewName="Proposal detail">
+                <ProposalDetail
+                  itemRef={selectedItemRef}
+                  showDiff={showDiff}
+                  //showOnlyChanged={showOnlyChanged}
+                  item={(selectedItemProposed ?? selectedItemCurrent)!}
+                  itemBefore={selectedItemCurrent ?? undefined}
+                  proposal={proposals[selectedProposal]}
+                />
+              </ErrorBoundary>
+            </BrowserCtx.Provider>
+          </div>
+        </Card>
+      );
+    } else {
+      return (
+        <>
+          {allItems.map(cpi => {
+            const actions: (MenuItemProps | MenuDividerProps)[] = [{
+              onClick: () => selectProposal(cpi.itemPath),
+              text: "Expand",
+              title: "Expand proposed change to see item details",
+              icon: 'maximize',
+            }];
+            if (onDeleteProposalForItemAtPath) {
+              actions.push({
+                text: "Delete this proposal",
+                intent: 'danger',
+                onClick: () => onDeleteProposalForItemAtPath(cpi.itemPath),
+                icon: 'trash',
+              });
+            }
+            return <HomeBlockCard
+                css={css`
+                  flex-basis: calc(33.33% - 10px*2/3);
+                `}
+                description={`${cpi.proposal.type} proposal`}
+                key={cpi.itemPath}>
+              <ProposalType item={cpi as any} />
+              <div css={css`padding: 5px; flex-grow: 1;`}>
+                {cpi.item !== null
+                  ? <H5 css={css`margin: 0; overflow: hidden; text-overflow: ellipsis;`}>
+                      <ProposalSummary
+                        itemRef={cpi.itemRef}
+                        proposal={cpi.proposal}
+                        itemBefore={cpi.itemBefore}
+                        item={cpi.item}
+                      />
+                    </H5>
+                  : <>Problem reading proposed item data.</>}
+              </div>
+              {actions.length > 0
+                ? <HomeBlockActions actions={actions} />
                 : null}
-              <ClassNames>
-                {(({ css: css2 }) =>
-                  <Select<ChangeProposalItem>
-                      filterable={false}
-                      itemsEqual={stringifiedJSONEqual}
-                      menuProps={{ className: css2(`height: 50vh; overflow-y: auto;`) }}
-                      activeItem={activeItem}
-                      items={allItems}
-                      popoverProps={{ minimal: true }}
-                      fill
-                      itemRenderer={ChangeProposalItemView}
-                      onItemSelect={handleItemSelect}>
-                    <Button rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
-                      {selectedItemSummary}
-                    </Button>
-                  </Select>
-                )}
-              </ClassNames>
-            </ButtonGroup>
-          : null}
-        {haveSelectedItem
-          ? <div css={css`position: relative; flex: 1;`}>
-              <BrowserCtx.Provider value={proposalBrowserCtx}>
-                <ErrorBoundary viewName="Proposal detail">
-                  <ProposalDetail
-                    itemRef={selectedItemRef}
-                    showDiff={showDiff}
-                    //showOnlyChanged={showOnlyChanged}
-                    item={(selectedItemProposed ?? selectedItemCurrent)!}
-                    itemBefore={selectedItemCurrent ?? undefined}
-                    proposal={proposals[selectedProposal]}
-                  />
-                </ErrorBoundary>
-              </BrowserCtx.Provider>
-            </div>
-          : null}
-      </div>
-    );
+            </HomeBlockCard>
+          })}
+        </>
+      );
+    }
   } else {
-    return <NonIdealState
-      icon='clean'
-      className={className}
-      title="Nothing is proposed here yet."
-    />;
+    return null;
   }
 };
+
+
+function ProposalType({ item }: { item: ChangeProposalItem & { item: RegisterItem<any> } }) {
+  const proposalConfig = 
+    item.proposal.type === 'amendment'
+      ? PROPOSAL_VIEWS[item.proposal.amendmentType]
+      : PROPOSAL_VIEWS[item.proposal.type];
+  //const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
+  const tagProps = proposalToTagProps(item.proposal);
+  return (
+    <Tag
+      minimal
+      {...tagProps}
+      rightIcon={<HelpTooltip content={<>Proposed to be {proposalConfig.hint}</>} />}
+    />
+    
+  );
+}
 
 
 const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
 (item, { handleClick, modifiers, query }) => {
   if (item.item !== null) {
     const i = item as ChangeProposalItem & { item: RegisterItem<any> };
-    const proposalConfig = 
-      item.proposal.type === 'amendment'
-        ? PROPOSAL_VIEWS[item.proposal.amendmentType]
-        : PROPOSAL_VIEWS[item.proposal.type];
-    const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
     return (
       <MenuItem
         active={modifiers.active}
         disabled={modifiers.disabled}
-        labelElement={<>
-          <ProposalTypeLabel {...i} />
-          {" "}
-          <HelpTooltip content={<>Proposed to be {proposalConfig.hint}</>} />
-        </>}
+        labelElement={<ProposalType item={i} />}
         key={item.itemPath}
         onClick={handleClick}
         icon={getProposalIcon(item.proposal)}
