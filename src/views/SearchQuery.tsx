@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { memo, useState, useContext, useCallback } from 'react';
+import React, { memo, useEffect, useRef, useState, useContext, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, ControlGroup, Colors, InputGroup, Tag, ButtonGroup } from '@blueprintjs/core';
 import CriteriaTree from './FilterCriteria';
@@ -67,12 +67,21 @@ const SearchQuery: React.FC<{
     }
   }, [quickSearchString, getQuickSearchPredicate, itemClasses, subregisters]);
 
+  const quickSearchIsEnabled = onQuickSearchStringChange && !hasAdvancedQuery;
+  const quickSearchInputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (quickSearchIsEnabled && quickSearchInputRef.current) {
+      quickSearchInputRef.current.focus();
+    }
+  }, []);
+
   return (
     <ControlGroup fill vertical className={className}>
       <InputGroup
         fill
         small
-        disabled={!onQuickSearchStringChange || hasAdvancedQuery}
+        inputRef={quickSearchInputRef}
+        disabled={!quickSearchIsEnabled}
         value={hasAdvancedQuery ? '' : quickSearchString}
         leftIcon="search"
         placeholder="Quick search"
