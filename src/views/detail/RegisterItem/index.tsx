@@ -36,6 +36,7 @@ import {
   type TabContentsWithHeaderProps,
   type ActionProps,
 } from '../../util';
+import { proposalToTagProps } from '../../change-request/util';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
@@ -363,19 +364,10 @@ export const ItemDetail: React.VoidFunctionComponent<{
     });
 
     if (proposal) {
+      const tagProps = proposalToTagProps(proposal);
       classification.push({
-        children: proposal.type === 'amendment'
-          ? `${proposal.amendmentType} proposed`
-          : proposal.type === 'addition'
-            ? "addition proposed"
-            : proposal.type === 'clarification'
-              ? "clarification proposed"
-              : "(unknown proposal type)",
-        intent: proposal.type === 'amendment'
-          ? 'warning'
-          : proposal.type === 'addition' || proposal.type === 'clarification'
-            ? 'primary'
-            : undefined,
+        ...tagProps,
+        children: <>{tagProps.children} proposed</>,
         icon: 'lightbulb',
         minimal: false,
         tooltip: canBeSuperseded || isBeingSuperseded
