@@ -139,20 +139,22 @@ export const _getRelatedClass = (classes: Record<string, ItemClassConfiguration<
 export const TabContentsWithActions: React.FC<{
   actions: JSX.Element;
   main: JSX.Element;
+  gapPx?: number;
   className?: string;
-}> = function ({ actions, main, className }) {
+}> = function ({ actions, gapPx: _gapPx, main, className }) {
+  const gapPx = _gapPx ?? 10;
   return (
     <div css={css`
       position: absolute; inset: 0;
       display: flex; flex-flow: column nowrap;
     `} className={className}>
-      <div css={css`flex: 0; padding: 10px; display: flex; flex-flow: row wrap; gap: 10px;`}>
+      <div css={css`flex: 0; padding: ${gapPx}px; display: flex; flex-flow: row wrap; gap: ${gapPx}px;`}>
         {actions}
       </div>
       <div css={css`
         position: relative;
         flex: 1;
-        padding: 10px;
+        padding: ${gapPx}px;
         overflow-y: auto;
         background: ${Colors.GRAY5};
         .bp4-dark & { background: ${Colors.DARK_GRAY2}; }
