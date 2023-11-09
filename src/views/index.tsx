@@ -91,7 +91,7 @@ function RegistryWorkspace () {
     css={css`flex: 1 1 auto;`}
     sidebarConfig={sidebarConfig}
     sidebarPosition={globalSettings.sidebarPosition}
-    sidebarIDs={sidebarIDs}
+    sidebarIDs={[]}
     newTabPrompt={<RegisterHome />}
     globalMode={globalMode}
     sidebarWidth={sidebarWidth}
