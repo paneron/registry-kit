@@ -7,7 +7,9 @@ import React, {
   useState,
 } from 'react';
 //import { Helmet } from 'react-helmet';
+import styled from '@emotion/styled';
 import { jsx, css } from '@emotion/react';
+import { H5, H4, Colors, Tag, type MenuItemProps } from '@blueprintjs/core'
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
@@ -19,13 +21,14 @@ import { isImportableCR } from '../../../types/cr';
 import type { RegisterStakeholder, StakeholderRoleType } from '../../../types';
 import { type SomeCR as CR, State } from '../../../types/cr';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
-import { itemPathToItemRef } from '../../itemPathUtils';
+import { itemPathToItemRef, itemRefToItemPath } from '../../itemPathUtils';
 import { Protocols } from '../../protocolRegistry';
 import MetaSummary from './MetaSummary';
 import { TabContentsWithHeader } from '../../util';
 import { Proposals } from './Proposal';
-import HomeBlock from './Block';
+import HomeBlock, { HomeBlockCard, HomeBlockActions } from './Block';
 import CurrentProposalBlock from './ActiveProposalDetails';
+import ItemDrawer from '../../ItemDrawer';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
@@ -35,9 +38,11 @@ function () {
     registerMetadata, stakeholder,
     itemClasses,
     setActiveChangeRequestID,
+    jumpTo,
   } = useContext(BrowserCtx);
   const {
     changeRequest: activeCR,
+    proposeBlankItem,
     canDelete,
     deleteCR,
   } = useContext(ChangeRequestContext);
@@ -379,6 +384,54 @@ function () {
     }
   }, [!activeCRBlock, registerMetadata, stakeholder]);
 
+  const [activeItemSelector, activateItemSelector] =
+    useState<keyof typeof itemClasses | true | null>(null);
+
+  const itemSelectorBlocks = useMemo(() => {
+    return (
+      <>
+        {Object.entries(itemClasses).map(([clsID, cls]) => {
+          const actions: MenuItemProps[] = [{
+            onClick: () => activateItemSelector(clsID),
+            icon: 'search',
+            text: "Find item…",
+            selected: activeItemSelector === clsID,
+          }];
+          if (activeCRIsEditable && proposeBlankItem) {
+            actions.push({
+              onClick: () => proposeBlankItem(clsID),
+              icon: 'add',
+              text: "Propose new",
+              intent: 'primary',
+            });
+          }
+          return <HomeBlockCard
+              key={clsID}
+              css={css`flex-basis: calc(25% - 10px*3/4); flex-shrink: 0;`}
+              description={`Search items of class ${cls.meta.title}`}>
+            <Tag minimal>Class</Tag>
+            <div css={css`padding: 5px; flex-grow: 1;`}>
+              <H5 css={css`margin: 0;`}>{cls.meta.title}</H5>
+              {cls.meta.description && cls.meta.description !== cls.meta.title
+                ? <p css={css`margin: 10px 0 0 0;`}>
+                    {cls.meta.description ?? "(no description)"}
+                  </p>
+                : null}
+            </div>
+            <HomeBlockActions actions={actions} />
+          </HomeBlockCard>
+        })}
+
+        <ItemDrawer
+          isOpen={jumpTo && activeItemSelector ? true : false}
+          onClose={() => activateItemSelector(null)}
+          availableClassIDs={typeof activeItemSelector === 'string' ? [activeItemSelector] : []}
+          onChooseItem={(itemRef) => jumpTo?.(`itemdetails:${itemRefToItemPath(itemRef)}`)}
+        />
+      </>
+    );
+  }, [itemClasses, activeItemSelector, activeCRIsEditable, jumpTo]);
+
   return (
     <TabContentsWithHeader
         title={registerMetadata?.name ?? 'Register'}
@@ -388,6 +441,12 @@ function () {
       {activeCRBlock ?? registerMetaBlock}
 
       {proposalBlock}
+
+      <GridHeader>
+        Register Items:
+      </GridHeader>
+
+      {itemSelectorBlocks}
 
       {/* TODO: Move to action bar customActions.length > 0
         ? <HomeBlock
@@ -401,6 +460,16 @@ function () {
     </TabContentsWithHeader>
   );
 }
+
+const GridHeader = styled(H4)`
+  flex: 100%;
+  margin-top: 10px;
+  padding-left: 10px;
+  color: ${Colors.GRAY2};
+  .bp4-dark & {
+    color: ${Colors.GRAY2};
+  }
+`;
 
 const itemGapPx = 10;
 
