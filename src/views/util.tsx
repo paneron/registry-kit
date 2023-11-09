@@ -7,7 +7,7 @@ import React, { memo, useContext } from 'react';
 import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
 import {
-  Card,
+  Card, type CardProps,
   Classes,
   FormGroup, type FormGroupProps,
   H2, H4,
@@ -346,14 +346,17 @@ const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
 };
 
 
-export const CardInGrid: React.FC<{ description: string, className?: string }> = function ({ description, className, children }) {
+export const CardInGrid: React.FC<{ description: string } & CardProps> =
+function ({ description, className, ...props }) {
   return (
     <Card
-        css={css`border-radius: 5px;`}
-        title={description}
-        className={`${Classes.ELEVATION_3} ${className ?? ''}`}>
-      {children}
-    </Card>
+      css={css`border-radius: 5px;`}
+      title={description}
+      className={!props.interactive
+        ? `${Classes.ELEVATION_3} ${className ?? ''}`
+        : className}
+      {...props}
+    />
   );
 };
 
