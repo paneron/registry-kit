@@ -163,9 +163,10 @@ const Proposals: React.FC<{
     }
   }, [proposalCount, selectedProposal, getCurrentItem, getProposedItem]);
 
-  const canShowDiff: boolean = haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
-    ? true
-    : false;
+  const canShowDiff: boolean =
+    haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
+      ? true
+      : false;
   const showDiff = canShowDiff && preferDiff;
 
   if (!currentItemDataReq.isUpdating && !proposedItemDataReq.isUpdating) {
