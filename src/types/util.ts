@@ -12,6 +12,10 @@ export interface Locale {
 export interface Citation {
   title: string
 
+  author?: string | null
+  publicationDate?: string | null
+  revisionDate?: string | null
+
   seriesIssueID: string | null
   seriesName: string | null
   seriesPage: string | null
