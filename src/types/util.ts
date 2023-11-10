@@ -13,6 +13,7 @@ export interface Citation {
   title: string
 
   author?: string | null
+  publisher?: string | null
   publicationDate?: string | null
   revisionDate?: string | null
 
