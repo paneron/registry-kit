@@ -2,7 +2,7 @@ import { useContext, useMemo } from 'react';
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemRefToItemPath } from '../itemPathUtils';
-import type { InternalItemReference, RegisterItem } from '../../types';
+import type { InternalItemReference, RegisterItem, Payload } from '../../types';
 
 
 const errMsg = "Item data cannot be loaded";
@@ -10,11 +10,11 @@ const errMsg = "Item data cannot be loaded";
 
 export default function useSingleRegisterItemData
 (ref: InternalItemReference | undefined | null):
-ValueHook<RegisterItem<any> | null> {
+ValueHook<Payload | null> {
   const { useRegisterItemData } = useContext(BrowserCtx);
   const itemPath = ref ? itemRefToItemPath(ref) : 'NONEXISTENT_ITEM';
   const itemResponse = useRegisterItemData({ itemPaths: [itemPath] });
-  const itemResponseValue: RegisterItem<any> | null =
+  const itemResponseValue: RegisterItem<Payload> | null =
     itemResponse.value[itemPath];
 
   const itemData = itemResponseValue?.data ?? null;
