@@ -214,6 +214,9 @@ export interface GenericRelatedItemViewProps {
   /** Currently selected item’s ref. */
   itemRef?: InternalItemReference
 
+  /** Allows to grab a ref of the input displaying the selected item. */
+  inputRef?: React.Ref<HTMLInputElement>
+
   /**
    * By default, clicking the item will spawn a tab via TabbedWorkspace context.
    * This prop can customize that behavior.

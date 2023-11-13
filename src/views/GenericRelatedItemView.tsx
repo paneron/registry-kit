@@ -2,8 +2,8 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useContext, useMemo, useState } from 'react';
-import { Button, ButtonGroup, type ButtonProps } from '@blueprintjs/core';
+import React, { useContext, useCallback, useMemo, useState } from 'react';
+import { InputGroup, Button, ControlGroup, type ControlGroupProps, type ButtonProps } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
   type RelatedItemClassConfiguration,
@@ -23,11 +23,15 @@ const DUMMY_REF = {
 } as const;
 
 
-export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = function ({
+export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
+  controlGroupProps?: ControlGroupProps
+}> = function ({
   itemRef, className,
   onCreateNew, onClear, onChange,
   availableClassIDs,
   onJump,
+  inputRef,
+  controlGroupProps,
   // availableSubregisterIDs,
   // itemSorter,
 }) {
@@ -101,10 +105,12 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     let itemView: JSX.Element | null;
 
     if (hasItem) {
-      itemView = <Item
-        itemRef={{ classID, itemID, subregisterID }}
-        itemData={item.data}
-      />;
+      itemView = <>
+        <Item
+          itemRef={{ classID, itemID, subregisterID }}
+          itemData={item.data}
+        />&emsp;<small>{cfg.title ?? 'unknown class'}</small>
+      </>;
     } else {
       if (itemIsMissing) {
         itemView = <span>Item not found: {itemID ?? 'N/A'}</span>;
@@ -161,34 +167,42 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
 
   //log.debug("Rendering generic related item view: got item", item);
   return (
-    <ButtonGroup
-        fill
+    <ControlGroup
         dir="ltr"
         className={className}
-        css={css`.bp4-button-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`}>
+        title={hasItem
+          ? `${cfg.title ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
+          : undefined}
+        {...controlGroupProps}>
 
-      {classID
-        ? <Button
-              alignText="left"
-              css={css`width: 180px;`}
-              title={`Item class: ${cfg.title ?? "N/A"}`}
-              outlined disabled>
-            {cfg.title ?? "Class N/A"}
-          </Button>
-        : null}
+      <InputGroup
+        fill={hasItem}
+        readOnly={!onChange && !onClear}
+        onChange={() => void 0}
+        inputRef={inputRef}
+        css={css`
+          /* leftElement which displays itemView */
+          .bp4-input-left-container {
+            top: unset;
+            bottom: .45em;
+            padding-left: 10px;
+            padding-right: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
 
-      {willShowItemView
-        ? <Button
-              alignText="left"
-              fill={hasItem} outlined
-              disabled={!canJump}
-              onClick={jump}
-              loading={itemResult.isUpdating}
-              title={hasItem
-                ? `${cfg.title} (click to jump to item)`
-                : undefined}>
-            {itemView}
-          </Button>
+            max-width: 70%;
+          }
+        `}
+        leftElement={itemView}
+        value={itemID ?? ''}
+        title={hasItem
+          ? `${cfg.title ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
+          : undefined}
+      />
+
+      {canJump
+        ? <Button outlined onClick={jump} icon="open-application" />
         : null}
 
       {itemButtons.map((props, idx) =>
@@ -203,7 +217,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
             availableClassIDs={classIDs}
           />
         : null}
-    </ButtonGroup>
+    </ControlGroup>
   );
 };
 
