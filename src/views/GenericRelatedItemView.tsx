@@ -86,17 +86,16 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps> = fun
     availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : [])
   ), [availableClassIDs?.join(','), itemRef?.classID]);
 
-  function jump() {
-    //jumpToItem?.(classID, itemID, subregisterID);
-    onJump
-      ? onJump()
-      : jumpTo?.(`${Protocols.ITEM_DETAILS}:/${itemPathWithSubregister}`);
-  }
-
   const hasItem = item !== null && classConfigured && isRegisterItem(item);
   const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
   const willShowItemView = hasItem || itemIsMissing || !onChange;
   const canJump = (item !== null || itemIsMissing) && classConfigured && !itemResult.isUpdating && (onJump || jumpTo);
+
+  const jump = useCallback(function jump() {
+    return onJump
+      ? onJump()
+      : jumpTo?.(`${Protocols.ITEM_DETAILS}:/${itemPathWithSubregister}`);
+  }, [onJump, jumpTo]);
 
   const itemView: JSX.Element | null = useMemo(() => {
     let itemView: JSX.Element | null;
