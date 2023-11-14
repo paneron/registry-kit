@@ -209,14 +209,12 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         <Button key={idx} outlined {...props} />
       )}
 
-      {onChange
-        ? <ItemSearchDrawer
-            isOpen={selectDialogState}
-            onClose={() => setSelectDialogState(false)}
-            onChooseItem={onChange}
-            availableClassIDs={classIDs}
-          />
-        : null}
+      <ItemSearchDrawer
+        isOpen={selectDialogState}
+        onClose={() => setSelectDialogState(false)}
+        onChooseItem={onChange}
+        availableClassIDs={classIDs}
+      />
     </ControlGroup>
   );
 };
