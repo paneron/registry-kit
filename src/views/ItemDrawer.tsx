@@ -48,9 +48,10 @@ const ItemSearchDrawer: React.FC<{
         isOpen={isOpen}
         onClose={onClose}
         enforceFocus={false}
+        size="50vw"
         style={{ padding: '0', width: 'unset' }}>
       <Search
-        style={{ height: '100vh', width: '80vw', minWidth: '500px', maxWidth: '100vw' }}
+        style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
         availableClassIDs={availableClassIDs}
         implicitCriteria={implicitCriteria}
         stateName="superseding-item-selector-search"
