@@ -55,12 +55,15 @@ function stringifiedJSONEqual(i1: any, i2: any): boolean {
 
 interface ProposalBrowserProps<CR extends Drafted> {
   proposals: CR['items']
+
+  selectedItem?: (string & keyof CR['items']) | null
+  onSelectItem: (selectedItem: (string & keyof CR['items']) | null) => void
+
   /**
    * If provided, button to delete each proposed change
    * is shown in change card list mode.
    */
   onDeleteProposalForItemAtPath?: (itemPath: string) => void
-  className?: string
 }
 /**
  * Shows a list of individual proposed changes as cards by default,
@@ -69,9 +72,11 @@ interface ProposalBrowserProps<CR extends Drafted> {
  * If no proposals exist, returns null.
  */
 export function Proposals<CR extends Drafted>
-({ proposals, onDeleteProposalForItemAtPath, className }: ProposalBrowserProps<CR>) {
-  const [ selectedProposal, selectProposal ] = useState<string | null>(null);
+({ proposals, onDeleteProposalForItemAtPath, selectedItem, onSelectItem: selectProposal }:
+ProposalBrowserProps<CR>) {
   const [ preferDiff, setPreferDiff ] = useState(false);
+
+  const selectedProposal = selectedItem ?? null;
 
   // TODO: Temporarily unsupported
   // (limitations of current change annotation implementation)

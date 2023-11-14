@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useMemo, memo, useCallback } from 'react';
+import React, { useState, useContext, useMemo, memo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
@@ -127,10 +127,13 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
   const crItemEntries = Object.entries(cr.items).map(i => JSON.stringify(i));
   const hasItems = crItemEntries.length > 0;
 
+  const [selectedProposal, selectProposal] = useState<string | null>(null);
   const proposals = useMemo((() =>
     hasItems
       ? <Proposals
           proposals={cr.items}
+          selectedItem={selectedProposal}
+          onSelectItem={selectProposal}
           onDeleteProposalForItemAtPath={onDeleteProposalForItemAtPath}
         />
       : <NonIdealState
@@ -142,7 +145,7 @@ const ChangeRequestDetails: React.VoidFunctionComponent<{
               </Button>
             : undefined}
         />
-  ), [onDelete, onDeleteProposalForItemAtPath, hasItems]);
+  ), [onDelete, onDeleteProposalForItemAtPath, selectedProposal, selectProposal, hasItems]);
 
   const classification = useMemo(() => {
     const classification: TabContentsWithHeaderProps["classification"] = [];

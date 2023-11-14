@@ -387,11 +387,14 @@ function () {
     }
   }, [!activeCRBlock, registerMetadata, stakeholder]);
 
+  const [selectedProposal, selectProposal] = useState<string | null>(null);
   const proposedChangeBlocks = useMemo(() => {
     if (activeCR) {
       return (
         <CRProposals
           proposals={activeCR.items}
+          selectedItem={selectedProposal}
+          onSelectItem={selectProposal}
           onDeleteProposalForItemAtPath={updateItemProposal
             ? (path) => updateItemProposal("delete item from proposal draft", null, path)
             : undefined}
@@ -400,7 +403,7 @@ function () {
     } else {
       return null;
     }
-  }, [activeCR, updateItemProposal]);
+  }, [activeCR, selectedProposal, selectProposal, updateItemProposal]);
 
   const [activeItemSelector, activateItemSelector] =
     useState<keyof typeof itemClasses | true | null>(null);
