@@ -1,12 +1,12 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useEffect, useRef, useContext, useState, useCallback, memo, useMemo } from 'react';
+import React, { useContext, useState, useCallback, memo, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import {
-  Card,
   ButtonGroup,
   Button,
+  Drawer, DrawerSize,
   Classes,
   Colors,
   MenuItem, type MenuItemProps, type MenuDividerProps,
@@ -169,23 +169,21 @@ export function Proposals<CR extends Drafted>
 
   const proposalCount = Object.keys(proposals).length;
 
-  const selectedProposalDetailRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    // if (!selectedProposal) {
-    //   const firstProposal = Object.keys(proposals)[0];
-    //   if (firstProposal) {
-    //     if (getCurrentItem(firstProposal) || getProposedItem(firstProposal)) {
-    //       selectProposal(firstProposal);
-    //     }
-    //   }
-    // }
-    if (selectedProposal) {
-      if (selectedProposalDetailRef.current) {
-        selectedProposalDetailRef.current.scrollIntoView({ block: 'center' });
-      }
-    }
-  }, [selectedProposal === null]);
+  //useEffect(() => {
+  //  // if (!selectedProposal) {
+  //  //   const firstProposal = Object.keys(proposals)[0];
+  //  //   if (firstProposal) {
+  //  //     if (getCurrentItem(firstProposal) || getProposedItem(firstProposal)) {
+  //  //       selectProposal(firstProposal);
+  //  //     }
+  //  //   }
+  //  // }
+  //  if (selectedProposal) {
+  //    if (selectedProposalDetailRef.current) {
+  //      selectedProposalDetailRef.current.scrollIntoView({ block: 'center' });
+  //    }
+  //  }
+  //}, [selectedProposal === null]);
 
   const canShowDiff: boolean =
     haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
@@ -193,146 +191,131 @@ export function Proposals<CR extends Drafted>
       : false;
   const showDiff = canShowDiff && preferDiff;
 
-  if (!currentItemDataReq.isUpdating && !proposedItemDataReq.isUpdating) {
-    const selectedItemSummary = haveSelectedItem
-      ? <ProposalSummary
-          itemRef={selectedItemRef}
-          item={(selectedItemProposed ?? selectedItemCurrent)!}
-          itemBefore={selectedItemCurrent ?? undefined}
-          proposal={proposals[selectedProposal]}
-        />
-      : <>Select item…</>;
-    const icon = haveSelectedItem
-      ? getProposalIcon(proposals[selectedProposal])
-      : undefined;
+  const selectedItemSummary = haveSelectedItem
+    ? <ProposalSummary
+        itemRef={selectedItemRef}
+        item={(selectedItemProposed ?? selectedItemCurrent)!}
+        itemBefore={selectedItemCurrent ?? undefined}
+        proposal={proposals[selectedProposal]}
+      />
+    : <>Select item…</>;
+  const icon = haveSelectedItem
+    ? getProposalIcon(proposals[selectedProposal])
+    : undefined;
 
-    if (proposalCount > 0 && haveSelectedItem) {
-      return (
-        <Card
-            key={selectedProposal}
-            elevation={0}
+  const selectedItemDrawer = useMemo((() =>
+    <Drawer
+        isOpen={proposalCount > 0 && haveSelectedItem ? true : false}
+        onClose={() => selectProposal(null)}
+        size={DrawerSize.LARGE}
+        enforceFocus={false}>
+      {proposalCount > 0 && haveSelectedItem
+        ? <>
+            <ButtonGroup>
+              <Button
+                disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+                icon='open-application'
+                onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
+                title="Open selected item in a new tab (not applicable to proposed additions)"
+              />
+              <Button
+                active={preferDiff}
+                onClick={() => setPreferDiff(v => !v)}
+                // Diffing only makes sense for clarifications.
+                // Additions are entire new items, and for amendments
+                // item data is unchanged.
+                disabled={!canShowDiff}
+                text="Compare"
+                title="Annotate proposed clarifications for this item"
+              />
+              <ClassNames>
+                {(({ css: css2 }) =>
+                  <Select<ChangeProposalItem>
+                      filterable={false}
+                      itemsEqual={stringifiedJSONEqual}
+                      menuProps={{ className: css2(`max-height: 50vh; overflow-y: auto;`) }}
+                      activeItem={activeItem}
+                      items={allItems}
+                      popoverProps={{ minimal: true, matchTargetWidth: true }}
+                      fill
+                      itemRenderer={ChangeProposalItemView}
+                      onItemSelect={handleItemSelect}>
+                    <Button fill rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
+                      {selectedItemSummary}
+                    </Button>
+                  </Select>
+                )}
+              </ClassNames>
+              <Button
+                onClick={() => selectProposal(null)}
+                icon="minimize"
+                title="Minimize proposed change view"
+                text="Minimize"
+              />
+            </ButtonGroup>
+            <div css={css`position: relative; flex: 1;`}>
+              <BrowserCtx.Provider value={proposalBrowserCtx}>
+                <ErrorBoundary viewName="Proposal detail">
+                  <ProposalDetail
+                    itemRef={selectedItemRef}
+                    showDiff={showDiff}
+                    //showOnlyChanged={showOnlyChanged}
+                    item={(selectedItemProposed ?? selectedItemCurrent)!}
+                    itemBefore={selectedItemCurrent ?? undefined}
+                    proposal={proposals[selectedProposal]}
+                  />
+                </ErrorBoundary>
+              </BrowserCtx.Provider>
+            </div>
+          </>
+        : null}
+    </Drawer>
+  ), [proposalCount > 0, haveSelectedItem, selectedItemProposed, selectedItemCurrent, preferDiff, jumpTo, handleItemSelect, selectedProposal && proposals[selectedProposal]]);
+
+  return (
+    <>
+      {selectedItemDrawer}
+      {allItems.map(cpi => {
+        const actions: (MenuItemProps | MenuDividerProps)[] = [{
+          onClick: () => selectProposal(cpi.itemPath),
+          text: "Expand",
+          title: "Expand proposed change to see item details",
+          icon: 'maximize',
+        }];
+        if (onDeleteProposalForItemAtPath) {
+          actions.push({
+            text: "Delete this proposal",
+            intent: 'danger',
+            onClick: () => onDeleteProposalForItemAtPath(cpi.itemPath),
+            icon: 'trash',
+          });
+        }
+        return <HomeBlockCard
             css={css`
-              flex: 100%;
-              background: ${Colors.LIGHT_GRAY3};
-              padding: 0;
-              min-height: 70vh;
-
-              overflow: hidden;
-
-              border-radius: 5px;
-              display: flex;
-              flex-flow: column nowrap;
-              transition:
-                width .5s linear
-                height .5s linear;
+              flex-basis: calc(33.33% - 10px*2/3);
             `}
-            className={className}>
-          <ButtonGroup>
-            <Button
-              disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
-              icon='open-application'
-              onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
-              title="Open selected item in a new tab (not applicable to proposed additions)"
-            />
-            <Button
-              active={preferDiff}
-              onClick={() => setPreferDiff(v => !v)}
-              // Diffing only makes sense for clarifications.
-              // Additions are entire new items, and for amendments
-              // item data is unchanged.
-              disabled={!canShowDiff}
-              text="Compare"
-              title="Annotate proposed clarifications for this item"
-            />
-            <ClassNames>
-              {(({ css: css2 }) =>
-                <Select<ChangeProposalItem>
-                    filterable={false}
-                    itemsEqual={stringifiedJSONEqual}
-                    menuProps={{ className: css2(`max-height: 50vh; overflow-y: auto;`) }}
-                    activeItem={activeItem}
-                    items={allItems}
-                    popoverProps={{ minimal: true, matchTargetWidth: true }}
-                    fill
-                    itemRenderer={ChangeProposalItemView}
-                    onItemSelect={handleItemSelect}>
-                  <Button fill rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
-                    {selectedItemSummary}
-                  </Button>
-                </Select>
-              )}
-            </ClassNames>
-            <Button
-              onClick={() => selectProposal(null)}
-              icon="minimize"
-              title="Minimize proposed change view"
-              text="Minimize"
-            />
-          </ButtonGroup>
-          <div css={css`position: relative; flex: 1;`} ref={selectedProposalDetailRef}>
-            <BrowserCtx.Provider value={proposalBrowserCtx}>
-              <ErrorBoundary viewName="Proposal detail">
-                <ProposalDetail
-                  itemRef={selectedItemRef}
-                  showDiff={showDiff}
-                  //showOnlyChanged={showOnlyChanged}
-                  item={(selectedItemProposed ?? selectedItemCurrent)!}
-                  itemBefore={selectedItemCurrent ?? undefined}
-                  proposal={proposals[selectedProposal]}
-                />
-              </ErrorBoundary>
-            </BrowserCtx.Provider>
+            description={`${cpi.proposal.type} proposal`}
+            key={cpi.itemPath}>
+          <ProposalType item={cpi as any} />
+          <div css={css`padding: 5px; flex-grow: 1;`}>
+            {cpi.item !== null
+              ? <H5 css={css`margin: 0; overflow: hidden; text-overflow: ellipsis;`}>
+                  <ProposalSummary
+                    itemRef={cpi.itemRef}
+                    proposal={cpi.proposal}
+                    itemBefore={cpi.itemBefore}
+                    item={cpi.item}
+                  />
+                </H5>
+              : <>Problem reading proposed item data.</>}
           </div>
-        </Card>
-      );
-    } else {
-      return (
-        <>
-          {allItems.map(cpi => {
-            const actions: (MenuItemProps | MenuDividerProps)[] = [{
-              onClick: () => selectProposal(cpi.itemPath),
-              text: "Expand",
-              title: "Expand proposed change to see item details",
-              icon: 'maximize',
-            }];
-            if (onDeleteProposalForItemAtPath) {
-              actions.push({
-                text: "Delete this proposal",
-                intent: 'danger',
-                onClick: () => onDeleteProposalForItemAtPath(cpi.itemPath),
-                icon: 'trash',
-              });
-            }
-            return <HomeBlockCard
-                css={css`
-                  flex-basis: calc(33.33% - 10px*2/3);
-                `}
-                description={`${cpi.proposal.type} proposal`}
-                key={cpi.itemPath}>
-              <ProposalType item={cpi as any} />
-              <div css={css`padding: 5px; flex-grow: 1;`}>
-                {cpi.item !== null
-                  ? <H5 css={css`margin: 0; overflow: hidden; text-overflow: ellipsis;`}>
-                      <ProposalSummary
-                        itemRef={cpi.itemRef}
-                        proposal={cpi.proposal}
-                        itemBefore={cpi.itemBefore}
-                        item={cpi.item}
-                      />
-                    </H5>
-                  : <>Problem reading proposed item data.</>}
-              </div>
-              {actions.length > 0
-                ? <HomeBlockActions actions={actions} />
-                : null}
-            </HomeBlockCard>
-          })}
-        </>
-      );
-    }
-  } else {
-    return null;
-  }
+          {actions.length > 0
+            ? <HomeBlockActions actions={actions} />
+            : null}
+        </HomeBlockCard>
+      })}
+    </>
+  );
 };
 
 
