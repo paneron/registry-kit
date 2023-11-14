@@ -157,38 +157,45 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
   // are just object paths. The casting here is optimistic, since an item at given path
   // may not be a RegisterItem.
   const useRegisterItemData: RegisterItemDataHook = useCallback((opts) => {
+    const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
+
     // Original item path mapped to its potential alternative path in current CR,
     // if the item is clarified or added in it.
     // TODO(perf): Access CR data and check whether the item is affected instead of blindly trying CR paths
-    const pathsToRequest: Record<string, string> = {};
+    const pathsToRequest = useMemo(() => {
+      const pathsToRequest: Record<string, string> = {};
 
-    const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
+      for (const givenItemPath of opts.itemPaths) {
+        pathsToRequest[givenItemPath] = givenItemPath;
 
-
-    for (const givenItemPath of opts.itemPaths) {
-      pathsToRequest[givenItemPath] = givenItemPath;
-
-      // Don’t use CR alternative path for any path that is already explicitly in-CR.
-      // TODO(perf): move out of the loop what’s possible, use map-reduce maybe too
-      if (!opts.ignoreActiveCR && !givenItemPath.startsWith('/proposals') && activeChangeRequest?.id) {
-        pathsToRequest[itemPathInCR(givenItemPath, activeChangeRequest.id)] = givenItemPath;
+        // Don’t use CR alternative path for any path that is already explicitly in-CR.
+        // TODO(perf): move out of the loop what’s possible, use map-reduce maybe too
+        if (!opts.ignoreActiveCR && !givenItemPath.startsWith('/proposals') && activeChangeRequest?.id) {
+          pathsToRequest[itemPathInCR(givenItemPath, activeChangeRequest.id)] = givenItemPath;
+        }
       }
-    }
+      return pathsToRequest;
+    }, [activeChangeRequest?.id, opts.itemPaths.sort().toString()]);
+
+    const objectPaths = Object.keys(pathsToRequest).sort();
 
     const result = useObjectData({
-      objectPaths: Object.keys(pathsToRequest),
+      objectPaths,
       //nounLabel: 'register item(s)',
     }) as ValueHook<{ data: Record<string, Record<string, any> | null> }>;
 
-    const itemData: Record<string, RegisterItem<any> | null> = {};
-    for (const [alternativePath, itemPath] of Object.entries(pathsToRequest)) {
-      const data = result.value.data[alternativePath]
-        ?? result.value.data[itemPath]
-        ?? null;
-      if (isRegisterItem(data) || data === null) {
-        itemData[itemPath] = data;
+    const itemData = useMemo(() => {
+      const itemData: Record<string, RegisterItem<any> | null> = {};
+      for (const [alternativePath, itemPath] of Object.entries(pathsToRequest)) {
+        const data = result.value.data[alternativePath]
+          ?? result.value.data[itemPath]
+          ?? null;
+        if (isRegisterItem(data) || data === null) {
+          itemData[itemPath] = data;
+        }
       }
-    }
+      return itemData;
+    }, [pathsToRequest, result.value.data]);
 
     // Convert dates
     // const parsedData: Record<string, RegisterItem<any> | null> = Object.entries(result.value.data).
