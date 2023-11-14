@@ -12,8 +12,8 @@ import {
 import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
 import { isDrafted } from '../types/cr';
-import { Protocols } from './protocolRegistry';
 import ItemSearchDrawer from './ItemSearchDrawer';
+import ItemDetailsDrawer from './ItemDetailsDrawer';
 
 
 const DUMMY_REF = {
@@ -61,6 +61,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     : `/${itemPathWithSubregister}`;
 
   const [selectDialogState, setSelectDialogState] = useState(false);
+  const [peekingDrawerState, setPeekingDrawerState] = useState(false);
 
   //log.debug("Rendering generic related item view", itemRef);
   //const { jumpToItem } = useContext(BrowserCtx);
@@ -98,7 +99,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
   const jump = useCallback(function jump() {
     return onJump
       ? onJump()
-      : jumpTo?.(`${Protocols.ITEM_DETAILS}:/${itemPathWithSubregister}`);
+      : setPeekingDrawerState(true)
   }, [onJump, jumpTo]);
 
   const itemView: JSX.Element | null = useMemo(() => {
@@ -202,7 +203,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
       />
 
       {canJump
-        ? <Button outlined onClick={jump} icon="open-application" />
+        ? <Button outlined onClick={jump} icon="maximize" />
         : null}
 
       {itemButtons.map((props, idx) =>
@@ -215,6 +216,15 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         onChooseItem={onChange}
         availableClassIDs={classIDs}
       />
+
+      {itemRef
+        ? <ItemDetailsDrawer
+            isOpen={peekingDrawerState}
+            onClose={() => setPeekingDrawerState(false)}
+            itemRef={itemRef}
+          />
+        : null}
+
     </ControlGroup>
   );
 };
