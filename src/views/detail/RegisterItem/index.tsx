@@ -13,7 +13,6 @@ import {
 } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { normalizeObject } from '@riboseinc/paneron-extension-kit/util';
-import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import type { HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import useSingleRegisterItemData from '../../hooks/useSingleRegisterItemData';
 import useItemClassConfig from '../../hooks/useItemClassConfig';
@@ -138,7 +137,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
   const { updateObjects, makeRandomID, performOperation, isBusy } = useContext(DatasetContext);
-  const { spawnTab } = useContext(TabbedWorkspaceContext);
 
   const [ editedItemData, setEditedItemData ] = useState<RegisterItem["data"] | null>(null);
   const itemDataHasChanges = JSON.stringify(editedItemData) !== JSON.stringify(item.data);
@@ -280,11 +278,8 @@ export const ItemDetail: React.VoidFunctionComponent<{
         ),
         _dangerouslySkipValidation: true,
       });
-      if (activeCR.id === globallyActiveCRID) {
-        spawnTab(`${Protocols.ITEM_DETAILS}:${itemRefToItemPath(newRef, activeCR.id)}`);
-      }
     } else {
-      throw new Error("Newly created item did not pass validation (this is likely a bug in RegistryKit");
+      throw new Error("Newly created item did not pass validation (this is likely a bug in RegistryKit)");
     }
   }, [
     updateObjects,
