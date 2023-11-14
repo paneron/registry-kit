@@ -245,7 +245,12 @@ ProposalBrowserProps<CR>) {
                       fill
                       itemRenderer={ChangeProposalItemView}
                       onItemSelect={handleItemSelect}>
-                    <Button fill rightIcon="chevron-down" icon={icon} css={css`white-space: nowrap;`}>
+                    <Button
+                        fill
+                        rightIcon="chevron-down"
+                        icon={icon}
+                        title="Switch between items in this proposal"
+                        css={css`white-space: nowrap;`}>
                       {selectedItemSummary}
                     </Button>
                   </Select>
