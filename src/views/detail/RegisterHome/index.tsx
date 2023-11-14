@@ -29,7 +29,7 @@ import { TabContentsWithHeader } from '../../util';
 import { Proposals as ProposalsBlock } from './Proposal';
 import HomeBlock, { HomeBlockCard, HomeBlockActions } from './Block';
 import CurrentProposalBlock from './ActiveProposalDetails';
-import ItemDrawer from '../../ItemDrawer';
+import ItemSearchDrawer from '../../ItemSearchDrawer';
 
 
 const RegisterHome: React.VoidFunctionComponent<Record<never, never>> =
@@ -451,7 +451,7 @@ function () {
           </HomeBlockCard>
         })}
 
-        <ItemDrawer
+        <ItemSearchDrawer
           isOpen={jumpTo && activeItemSelector ? true : false}
           onClose={() => activateItemSelector(null)}
           availableClassIDs={typeof activeItemSelector === 'string' ? [activeItemSelector] : []}

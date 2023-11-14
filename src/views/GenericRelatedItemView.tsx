@@ -13,7 +13,7 @@ import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
 import { isDrafted } from '../types/cr';
 import { Protocols } from './protocolRegistry';
-import ItemSearchDrawer from './ItemDrawer';
+import ItemSearchDrawer from './ItemSearchDrawer';
 
 
 const DUMMY_REF = {

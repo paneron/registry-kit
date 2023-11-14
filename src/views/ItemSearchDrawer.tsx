@@ -14,7 +14,7 @@ import { itemPathToItemRef } from './itemPathUtils';
 const ItemSearchDrawer: React.FC<{
   isOpen: boolean
   onClose: () => void
-  onChooseItem: (itemRef: InternalItemReference) => void
+  onChooseItem?: (itemRef: InternalItemReference) => void
   availableClassIDs: string[]
 }> = function ({
   isOpen, onClose, onChooseItem,
@@ -39,7 +39,7 @@ const ItemSearchDrawer: React.FC<{
   ), [classCriteria]);
 
   const handleOpenItem = useCallback((itemPath) => {
-    onChooseItem(itemPathToItemRef(subregisters !== undefined, itemPath));
+    onChooseItem?.(itemPathToItemRef(subregisters !== undefined, itemPath));
     onClose();
   }, [onChooseItem, onClose]);
 
@@ -55,7 +55,7 @@ const ItemSearchDrawer: React.FC<{
         availableClassIDs={availableClassIDs}
         implicitCriteria={implicitCriteria}
         stateName="superseding-item-selector-search"
-        onOpenItem={handleOpenItem}
+        onOpenItem={onChooseItem ? handleOpenItem : undefined}
       />
     </Drawer>
   );
