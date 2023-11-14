@@ -408,6 +408,14 @@ function () {
   const [activeItemSelector, activateItemSelector] =
     useState<keyof typeof itemClasses | true | null>(null);
 
+  const handleProposeNew = proposeBlankItem
+    ? async function handleProposeNew(clsID: string) {
+        const itemRef = await proposeBlankItem(clsID);
+        selectProposal(itemRefToItemPath(itemRef));
+      }
+    : null;
+  
+
   const itemSelectorBlocks = useMemo(() => {
     return (
       <>
@@ -418,9 +426,9 @@ function () {
             text: "Find item…",
             selected: activeItemSelector === clsID,
           }];
-          if (activeCRIsEditable && proposeBlankItem) {
+          if (activeCRIsEditable && handleProposeNew) {
             actions.push({
-              onClick: () => proposeBlankItem(clsID),
+              onClick: () => handleProposeNew(clsID),
               icon: 'add',
               text: "Propose new",
               intent: 'primary',
