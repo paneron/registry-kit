@@ -23,8 +23,10 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
       if (View) {
         cls.views[viewID as keyof ItemClassConfiguration<any>["views"]] = function WrappedRegisterItemView(...props) {
           return (
-            <ErrorBoundary viewName={`Detail view for ${cls.meta.title}`}>
-              <View {...props} inline={viewID === 'listItemView'} />
+            <ErrorBoundary
+                viewName={`Detail view for ${cls.meta.title}`}
+                inline={viewID === 'listItemView'}>
+              <View {...props} />
             </ErrorBoundary>
           );
         };
