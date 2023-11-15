@@ -97,6 +97,7 @@ export function isRegisterItem(val: any): val is RegisterItem<any> {
     val &&
     val.hasOwnProperty('id') &&
     val.hasOwnProperty('data') &&
+    typeof val.data !== 'undefined' &&
     val.hasOwnProperty('status') &&
     ITEM_STATUSES.indexOf(val.status) >= 0
   );
