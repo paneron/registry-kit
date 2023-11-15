@@ -21,7 +21,7 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
     for (const [viewID, view] of Object.entries(cls.views)) {
       const View = view as any;
       if (View) {
-        cls.views[viewID as keyof ItemClassConfiguration<any>["views"]] = function WrappedRegisterItemView(...props) {
+        cls.views[viewID as keyof ItemClassConfiguration<any>["views"]] = function WrappedRegisterItemView(props) {
           return (
             <ErrorBoundary
                 viewName={`Detail view for ${cls.meta.title}`}
