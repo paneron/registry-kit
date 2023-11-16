@@ -427,7 +427,11 @@ function ({ proposal, itemRef, item, itemBefore, onChange }) {
   const ListItemView = cls?.views?.listItemView;
 
   if (ListItemView) {
-    return <>
+    return <span css={css`
+      display: inline-flex;
+      flex-flow: row nowrap;
+      align-items: baseline;
+    `}>
       <ListItemView
         itemRef={itemRef}
         itemData={item.data}
@@ -435,7 +439,7 @@ function ({ proposal, itemRef, item, itemBefore, onChange }) {
       />
       &emsp;
       <small>{cls.meta.title}</small>
-    </>;
+    </span>;
   } else {
     return <ErrorState
       viewName="list item view"

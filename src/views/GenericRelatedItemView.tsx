@@ -192,6 +192,10 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
             overflow: hidden;
             text-overflow: ellipsis;
 
+            display: inline-flex;
+            flex-flow: row nowrap;
+            align-items: flex-end;
+
             max-width: 70%;
           }
         `}
