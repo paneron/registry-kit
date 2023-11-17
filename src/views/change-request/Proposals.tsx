@@ -164,7 +164,7 @@ ProposalBrowserProps<CR>) {
       itemBefore: undefined,
       itemRef: itemPathToItemRef(subregisters !== undefined, itemPath),
     }))
-  ), [proposals, getCurrentItem, getProposedItem]);
+  ), [proposals, getCurrentItem, getProposedItem, subregisters !== undefined]);
 
   const haveSelectedItem =
     selectedProposal
