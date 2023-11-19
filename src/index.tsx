@@ -59,8 +59,7 @@ import GenericRelatedItemView from './views/GenericRelatedItemView';
 import { PropertyDetailView } from './views/util';
 import CRITERIA_CONFIGURATION from './views/FilterCriteria/CRITERIA_CONFIGURATION';
 
-export default {
-  makeRegistryExtension,
+export {
   itemRefToItemPath,
   incompleteItemRefToItemPathPrefix,
   BrowserCtx,
