@@ -91,6 +91,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     availableClassIDs ?? ((itemRef?.classID ?? '') !== '' ? [itemRef!.classID] : [])
   ), [availableClassIDs?.join(','), itemRef?.classID]);
 
+  const itemClassTitle = cfg.title.trim() || null;
+
   const hasItem = item !== null && classConfigured && isRegisterItem(item);
   const itemIsMissing = itemID !== '' && (item === null && !itemResult.isUpdating);
   const willShowItemView = hasItem || itemIsMissing || !onChange;
@@ -103,24 +105,23 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
   }, [onJump, jumpTo]);
 
   const itemView: JSX.Element | null = useMemo(() => {
-    let itemView: JSX.Element | null;
-
-    if (hasItem) {
-      itemView = <>
-        <Item
+    const classView = <small css={css`letter-spacing: -.01em`}>
+      {itemClassTitle
+        ? itemClassTitle
+        : <em>unknown class</em>}
+    </small>;
+    const itemView = hasItem
+      ? <Item
           itemRef={{ classID, itemID, subregisterID }}
           itemData={item.data}
-        />&emsp;<small>{cfg.title ?? 'unknown class'}</small>
-      </>;
-    } else {
-      if (itemIsMissing) {
-        itemView = <span>Item not found: {itemID ?? 'N/A'}</span>;
-      } else {
-        itemView = <span>Item not specified</span>;
-      }
-    }
-    return itemView;
-  }, [itemID, classID, subregisterID, item, hasItem, itemIsMissing]);
+        />
+      : itemIsMissing
+          ? <span css={css`overflow: hidden; text-overflow: ellipsis;`}>
+              Not found: {itemID ?? 'N/A'}
+            </span>
+          : <span>Not specified</span>;
+    return <>{itemView}&emsp;{classView}</>;
+  }, [itemID, classID, itemClassTitle, subregisterID, item?.data, hasItem, itemIsMissing]);
 
   const itemButtons = useMemo(() => {
     const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
@@ -166,14 +167,16 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     return itemButtons;
   }, [itemID, itemResult.isUpdating, onCreateNew, onChange, onClear]);
 
+  const itemTitle = hasItem
+    ? `${itemClassTitle ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
+    : undefined;
+
   //log.debug("Rendering generic related item view: got item", item);
   return (
     <ControlGroup
         dir="ltr"
         className={className}
-        title={hasItem
-          ? `${cfg.title ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
-          : undefined}
+        title={itemTitle}
         {...controlGroupProps}>
 
       <InputGroup
@@ -185,7 +188,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
           /* leftElement which displays itemView */
           .bp4-input-left-container {
             top: unset;
-            bottom: .45em;
+            bottom: .42em;
             padding-left: 10px;
             padding-right: 5px;
             white-space: nowrap;
@@ -194,16 +197,14 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
             display: inline-flex;
             flex-flow: row nowrap;
-            align-items: flex-end;
+            align-items: baseline;
 
             max-width: 70%;
           }
         `}
         leftElement={itemView}
         value={itemID ?? ''}
-        title={hasItem
-          ? `${cfg.title ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
-          : undefined}
+        title={itemTitle}
       />
 
       {canJump
