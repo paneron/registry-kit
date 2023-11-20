@@ -39,6 +39,9 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
       <RegistryView
         itemClassConfiguration={opts.itemClassConfiguration}
         subregisters={opts.subregisters}
+        defaultSearchCriteria={opts.defaultSearchCriteria}
+        keyExpression={opts.keyExpression}
+        getQuickSearchPredicate={opts.getQuickSearchPredicate}
       />
     );
   };
