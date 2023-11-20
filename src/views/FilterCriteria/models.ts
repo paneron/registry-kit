@@ -79,6 +79,9 @@ export interface Criterion {
   /** Key in criteria configuration that defines how to work with this criterion. */
   key: CriterionKey;
 }
+function isCriterion(val: any): val is Criterion {
+  return val && typeof val.query === 'string' && isCriteriaKey(val.key);
+}
 
 /** Register metadata that may be needed to display filter criteria. */
 export interface CommonOpts {
@@ -92,7 +95,13 @@ export interface CriteriaGroup {
 }
 
 export function isCriteriaGroup(val: any): val is CriteriaGroup {
-  return val && val.hasOwnProperty('require') && val.hasOwnProperty('criteria');
+  return val
+    && val.hasOwnProperty('require')
+    && ['all', 'any', 'none'].indexOf(val.require) >= 0
+    && val.hasOwnProperty('criteria')
+    && val.criteria
+    && typeof val.criteria.find === 'function'
+    && val.criteria.find((c: any) => !isCriterion(c) && !isCriteriaGroup(c)) === undefined;
 }
 
 // TODO: Deprecate in favour of `BLANK_CRITERIA`?
