@@ -58,6 +58,7 @@ import { itemRefToItemPath, incompleteItemRefToItemPathPrefix } from './views/it
 import GenericRelatedItemView from './views/GenericRelatedItemView';
 import { PropertyDetailView } from './views/util';
 import CRITERIA_CONFIGURATION from './views/FilterCriteria/CRITERIA_CONFIGURATION';
+import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
 
 export {
   itemRefToItemPath,
@@ -66,4 +67,5 @@ export {
   CRITERIA_CONFIGURATION,
   GenericRelatedItemView,
   PropertyDetailView,
+  useSingleRegisterItemData,
 };
