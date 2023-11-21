@@ -8,7 +8,7 @@ import { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/use
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
-import { type CriteriaGroup, BLANK_CRITERIA } from '../../FilterCriteria/models';
+import { type CriteriaGroup, isCriteriaGroup, BLANK_CRITERIA } from '../../FilterCriteria/models';
 import criteriaGroupToQueryExpression from '../../FilterCriteria/criteriaGroupToQueryExpression';
 import { RAW_SUBSTRING, CUSTOM_CONDITION } from '../../FilterCriteria/CRITERIA_CONFIGURATION';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
@@ -31,6 +31,14 @@ interface State {
   query: Query;
   quickSubstringQuery: string;
   selectedItemPath: string | null;
+}
+function isState(val: any): val is State {
+  return val
+    && val.query
+    && val.query.criteria
+    && isCriteriaGroup(val.query.criteria)
+    && typeof val.quickSubstringQuery === 'string'
+    && (val.selectedItemPath === null || typeof val.selectedItemPath === 'string')
 }
 type Action =
   | { type: 'update-query'; payload: { query: Query; }; }
@@ -68,7 +76,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
   const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     stateName ?? 'search-sidebar',
     undefined,
-    undefined,
+    isState,
     (prevState, action) => {
       switch (action.type) {
         case 'update-query':
