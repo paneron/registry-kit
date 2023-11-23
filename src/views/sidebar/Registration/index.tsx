@@ -35,7 +35,7 @@ export const ChangeRequestHistoryBlock: React.FC<Record<never, never>> = functio
 
 
 const CR_BASE_QUERY = 'objPath.indexOf("/proposals/") === 0 && objPath.endsWith("main.yaml")';
-const DISPOSED_CR_QUERY = 'obj.timeDisposed !== undefined && obj.timeDisposed !== null';
+export const DISPOSED_CR_QUERY = 'obj.timeDisposed !== undefined && obj.timeDisposed !== null';
 
 
 interface ChangeRequestBlockState {
@@ -50,14 +50,15 @@ type ChangeRequestBlockAction =
   | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
 
-const ChangeRequestListBlock: React.FC<{ impliedQuery: string }> = function ({ impliedQuery }) {
+export const ChangeRequestListBlock: React.FC<{ impliedQuery: string, itemPath?: string }> = function ({ impliedQuery, itemPath: _itemPath }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab, focusedTabURI } = useContext(TabbedWorkspaceContext);
   const { selectedRegisterItem } = useContext(BrowserCtx);
 
-  const itemPath = selectedRegisterItem
-    ? itemRefToItemPath(selectedRegisterItem.ref)
-    : selectedRegisterItem;
+  const itemPath = _itemPath ?? (
+    selectedRegisterItem
+      ? itemRefToItemPath(selectedRegisterItem.ref)
+      : selectedRegisterItem);
       // ^ Adopt undefined value if no data is available, null if item is not selected
 
   const [ state, dispatch, ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<ChangeRequestBlockState, ChangeRequestBlockAction>)(

@@ -39,6 +39,7 @@ import { proposalToTagProps } from '../../change-request/util';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
+import ProposalHistoryDrawer from '../../ProposalHistoryDrawer';
 import { RelatedItems } from './RelatedItems';
 
 
@@ -380,8 +381,16 @@ export const ItemDetail: React.VoidFunctionComponent<{
     supersedingItemsTooltip,
   ]);
 
+  const [ historyDrawerOpenState, setHistoryDrawerOpenState ] = useState(false);
+
   const actions = useMemo(() => {
-    const actions: TabContentsWithHeaderProps['actions'] = [];
+    const actions: TabContentsWithHeaderProps['actions'] = [{
+      children: "View history",
+      active: historyDrawerOpenState,
+      icon: 'history',
+      disabled: isBusy,
+      onClick: () => setHistoryDrawerOpenState(true),
+    }];
 
     const isEditingItemData = editedItemData !== null;
     const itemHasProposal = proposal !== null;
@@ -526,6 +535,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
     editedItemData === null, itemDataHasChanges,
     isEditingProposal,
     performOperation, handleSetProposal,
+    historyDrawerOpenState,
   ]);
 
   // If there’s a CR context without active CR,
@@ -553,6 +563,11 @@ export const ItemDetail: React.VoidFunctionComponent<{
         actions={actions}>
       <Card css={css`position: absolute; border-radius: 0; inset: ${compactHeader ? '0' : '10px'}; overflow-y: auto;`}>
         <Helmet><title>{windowTitle}</title></Helmet>
+        <ProposalHistoryDrawer
+          isOpen={historyDrawerOpenState}
+          onClose={() => setHistoryDrawerOpenState(false)}
+          itemPath={itemPath}
+        />
         {details}
       </Card>
     </TabContentsWithHeader>
