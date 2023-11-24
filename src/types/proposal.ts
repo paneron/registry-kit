@@ -61,10 +61,15 @@ export interface ChangeRequest {
 export type DraftChangeRequest =
   Pick<ChangeRequest, 'proposals' | 'justification' | 'controlBodyNotes' | 'sponsor'>;
 
+export const ChangeProposalType = {
+  ADDITION: 'addition',
+  CLARIFICATION: 'clarification',
+  AMENDMENT: 'amendment',
+} as const;
 export const PROPOSAL_TYPES = [
-  'addition',
-  'clarification',
-  'amendment',
+  ChangeProposalType.ADDITION,
+  ChangeProposalType.CLARIFICATION,
+  ChangeProposalType.AMENDMENT,
 ] as const;
 
 interface BaseProposal {
@@ -75,36 +80,58 @@ interface BaseProposal {
 }
 
 export interface Addition extends BaseProposal {
-  type: 'addition'
+  type: typeof ChangeProposalType.ADDITION
   ///** New item data. */
   //payload: Payload
 }
 
 export interface Clarification extends BaseProposal {
-  type: 'clarification'
+  type: typeof ChangeProposalType.CLARIFICATION
   ///** Updated item data */
   //payload: Payload
 }
 
+export const AmendmentType = {
+  SUPERSESSION: 'supersession',
+  RETIREMENT: 'retirement',
+  INVALIDATION: 'invalidation',
+} as const;
+export type AmendmentTypeType = typeof AmendmentType[keyof typeof AmendmentType];
 export const AMENDMENT_TYPES = [
-  'supersession',
-  'retirement',
-  'invalidation',
+  AmendmentType.SUPERSESSION,
+  AmendmentType.RETIREMENT,
+  AmendmentType.INVALIDATION,
 ] as const;
+
 interface BaseAmendment extends BaseProposal {
-  type: 'amendment'
-  amendmentType: typeof AMENDMENT_TYPES[number]
+  type: typeof ChangeProposalType.AMENDMENT
+  amendmentType: AmendmentTypeType
 }
 export interface Retirement extends BaseAmendment {
-  amendmentType: 'retirement'
+  amendmentType: typeof AmendmentType.RETIREMENT
 }
 export interface Supersession extends BaseAmendment {
-  amendmentType: 'supersession'
+  amendmentType: typeof AmendmentType.SUPERSESSION
   supersedingItemIDs: string[]
 }
 export interface Invalidation extends BaseAmendment {
-  amendmentType: 'invalidation'
+  amendmentType: typeof AmendmentType.INVALIDATION
 }
 export type Amendment = Supersession | Retirement | Invalidation
 
 export type ChangeProposal = Amendment | Clarification | Addition
+
+export function isProposal(val: any): val is ChangeProposal {
+  return PROPOSAL_TYPES.indexOf(val?.type) >= 0;
+}
+export function isAmendment(val: ChangeProposal): val is Amendment {
+  return (
+    val.type === ChangeProposalType.AMENDMENT
+    && AMENDMENT_TYPES.indexOf((val as Amendment).amendmentType) >= 0);
+}
+export function isAddition(val: ChangeProposal): val is Addition {
+  return (val.type === ChangeProposalType.ADDITION);
+}
+export function isClarification(val: ChangeProposal): val is Clarification {
+  return (val.type === ChangeProposalType.CLARIFICATION);
+}
