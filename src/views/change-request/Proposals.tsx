@@ -306,7 +306,7 @@ ProposalBrowserProps<CR>) {
             `}
             description={`${cpi.proposal.type} proposal`}
             key={cpi.itemPath}>
-          <ProposalType item={cpi as any} />
+          <ProposalType proposal={cpi.proposal} />
           <div css={css`padding: 5px; flex-grow: 1;`}>
             {cpi.item !== null
               ? <H5 css={css`margin: 0; overflow: hidden; text-overflow: ellipsis;`}>
@@ -331,11 +331,11 @@ ProposalBrowserProps<CR>) {
 
 function ProposalType({ item }: { item: ChangeProposalItem & { item: RegisterItem<any> } }) {
   const proposalConfig = 
-    item.proposal.type === 'amendment'
-      ? PROPOSAL_VIEWS[item.proposal.amendmentType]
-      : PROPOSAL_VIEWS[item.proposal.type];
+    proposal.type === 'amendment'
+      ? PROPOSAL_VIEWS[proposal.amendmentType]
+      : PROPOSAL_VIEWS[proposal.type];
   //const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
-  const tagProps = proposalToTagProps(item.proposal);
+  const tagProps = proposalToTagProps(proposal);
   return (
     <Tag
       minimal
@@ -355,7 +355,7 @@ const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
       <MenuItem
         active={modifiers.active}
         disabled={modifiers.disabled}
-        labelElement={<ProposalType item={i} />}
+        labelElement={<ProposalType proposal={i.proposal} />}
         key={item.itemPath}
         onClick={handleClick}
         icon={getProposalIcon(item.proposal)}
