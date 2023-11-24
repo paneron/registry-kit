@@ -329,7 +329,7 @@ ProposalBrowserProps<CR>) {
 };
 
 
-function ProposalType({ item }: { item: ChangeProposalItem & { item: RegisterItem<any> } }) {
+export function ProposalType({ proposal }: { proposal: ChangeProposal }) {
   const proposalConfig = 
     proposal.type === 'amendment'
       ? PROPOSAL_VIEWS[proposal.amendmentType]
