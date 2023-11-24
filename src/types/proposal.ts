@@ -121,17 +121,38 @@ export type Amendment = Supersession | Retirement | Invalidation
 
 export type ChangeProposal = Amendment | Clarification | Addition
 
-export function isProposal(val: any): val is ChangeProposal {
+export function isBaseProposal(val: any): val is BaseProposal {
   return PROPOSAL_TYPES.indexOf(val?.type) >= 0;
 }
-export function isAmendment(val: ChangeProposal): val is Amendment {
+export function isProposal(val: any): val is ChangeProposal {
+  return (isBaseProposal(val) && (
+    isAddition(val)
+    || isClarification(val)
+    || isAmendment(val)));
+}
+export function isAddition(val: BaseProposal): val is Addition {
+  return (val.type === ChangeProposalType.ADDITION);
+}
+export function isClarification(val: BaseProposal): val is Clarification {
+  return (val.type === ChangeProposalType.CLARIFICATION);
+}
+export function isBaseAmendment(val: BaseProposal): val is BaseAmendment {
   return (
     val.type === ChangeProposalType.AMENDMENT
     && AMENDMENT_TYPES.indexOf((val as Amendment).amendmentType) >= 0);
 }
-export function isAddition(val: ChangeProposal): val is Addition {
-  return (val.type === ChangeProposalType.ADDITION);
+export function isAmendment(val: any): val is Amendment {
+  return (isBaseAmendment(val) && (
+    isRetirement(val)
+    || isSupersession(val)
+    || isInvalidation(val)));
 }
-export function isClarification(val: ChangeProposal): val is Clarification {
-  return (val.type === ChangeProposalType.CLARIFICATION);
+export function isRetirement(val: BaseAmendment): val is Retirement {
+  return val.amendmentType === AmendmentType.RETIREMENT;
+}
+export function isSupersession(val: BaseAmendment): val is Supersession {
+  return val.amendmentType === AmendmentType.SUPERSESSION;
+}
+export function isInvalidation(val: BaseAmendment): val is Invalidation {
+  return val.amendmentType === AmendmentType.INVALIDATION;
 }
