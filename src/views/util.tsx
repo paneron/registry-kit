@@ -326,8 +326,8 @@ function ({ title, smallTitle, classification, actions, layout, layoutOptions, c
               if (props.hasOwnProperty('length') && (props as ButtonProps[]).length !== undefined) {
                 return (
                   <ButtonGroup key={idx}>
-                    {(props as ButtonProps[]).map(p =>
-                      <Action {...p} />
+                    {(props as ButtonProps[]).map((p, idx) =>
+                      <Action {...p} key={idx} />
                     )}
                   </ButtonGroup>
                 );
@@ -344,7 +344,7 @@ function ({ title, smallTitle, classification, actions, layout, layoutOptions, c
 
 export type ActionProps = ButtonProps & ({ popup?: JSX.Element, tooltip?: string });
 /** Mostly a button, but with an optional popup. */
-const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
+const Action: React.FC<ActionProps & { key?: number | string }> = function ({ popup, tooltip, ...props }) {
   const btn = <BaseButton
     {...props}
     intent={props.disabled ? undefined : props.intent}
@@ -356,7 +356,7 @@ const Action: React.FC<ActionProps> = function ({ popup, tooltip, ...props }) {
 
   if (popup && !props.disabled) {
     return (
-      <Popover content={popup} placement="top" minimal interactionKind="click">
+      <Popover key={props.key} content={popup} placement="top" minimal interactionKind="click">
         {btn}
       </Popover>
     );
