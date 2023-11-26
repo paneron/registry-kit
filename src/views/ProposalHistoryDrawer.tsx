@@ -28,7 +28,6 @@ const ProposalHistoryDrawer: React.FC<{
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const [ selectedItemPath, setSelectedItemPath ] = useState<string | null>(null);
   const query = `return (${DISPOSED_CR_QUERY}) && obj.items["${itemPath}"] !== undefined`;
-  const extraItemViewData = useMemo(() => ({ itemPath }), [itemPath]);
   return (
     <Drawer
         isOpen={isOpen}
@@ -43,7 +42,7 @@ const ProposalHistoryDrawer: React.FC<{
 	onOpenItem={useCallback((itemPath =>
 	  spawnTab(`${Protocols.CHANGE_REQUEST}:${itemPath}`)
 	), [spawnTab])}
-	extraItemViewData={extraItemViewData}
+	extraItemViewData={useMemo(() => ({ itemPath }), [itemPath])}
       />
     </Drawer>
   );
