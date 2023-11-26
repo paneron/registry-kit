@@ -163,7 +163,6 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
     (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
     [dispatch]);
 
-
   const handleOpenItem = useCallback(
     onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
     [onOpenItem, spawnTab]);
