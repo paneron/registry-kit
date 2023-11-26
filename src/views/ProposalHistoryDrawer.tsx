@@ -7,7 +7,7 @@ import { Drawer } from '@blueprintjs/core';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
 import type { InternalItemReference } from '../types';
-import { type SomeCR, hasSubmitterInput, isDisposed, hadBeenProposed } from '../types/cr';
+import { type SomeCR, State, hasSubmitterInput, isDisposed, hadBeenProposed } from '../types/cr';
 import { isProposal } from '../types/proposal';
 import { ProposalType } from './change-request/Proposals';
 import { Datestamp } from '../views/util';
@@ -27,7 +27,14 @@ const ProposalHistoryDrawer: React.FC<{
 }) {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const [ selectedItemPath, setSelectedItemPath ] = useState<string | null>(null);
-  const query = `return (${DISPOSED_CR_QUERY}) && obj.items["${itemPath}"] !== undefined`;
+  // Return disposed CRs
+  // that were either accepted or accepted on appeal
+  // and have the item in question.
+  const query = `return (
+    (${DISPOSED_CR_QUERY})
+    && (obj.state === "${State.ACCEPTED}" || obj.state === "${State.ACCEPTED_ON_APPEAL}")
+    && obj.items["${itemPath}"] !== undefined
+  )`;
   return (
     <Drawer
         isOpen={isOpen}
