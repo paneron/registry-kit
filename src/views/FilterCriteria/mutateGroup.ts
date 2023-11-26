@@ -24,8 +24,20 @@ export default function mutateGroup(
   mutation: TreeMutation<CriteriaGroup | Criterion>,
 ) {
 
-  if (path.length < 1 && mutation.action === 'edit') {
-    (criteria[0] as CriteriaGroup).require = (mutation.item as CriteriaGroup).require;
+  if (path.length < 1) {
+    if (!criteria[0]?.hasOwnProperty('criteria')) {
+      throw new Error("Top-level item is not a group");
+    }
+
+    if (mutation.action === 'edit') {
+      // Adjust root criteria group requirement (any/all/none)
+      (criteria[0] as CriteriaGroup).require = (mutation.item as CriteriaGroup).require;
+    } else if (mutation.action === 'delete') {
+      // We MUST NOT delete the singular root critera.
+      // (Calling code depends on there being exactly one top-level group.)
+      // However, we can delete all nested criteria.
+      (criteria[0] as CriteriaGroup).criteria.splice(0);
+    }
   }
   for (const [curIdx, c] of criteria.entries()) {
     if (curIdx === path[path.length - 1]) {
