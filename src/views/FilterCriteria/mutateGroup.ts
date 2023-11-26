@@ -7,11 +7,18 @@ type TreeMutation<T> =
   { action: 'edit'; idx: number; item: T; };
 
 
-/** Mutates given criteria tree in place. */
+/**
+ * Mutates given criteria tree in place.
+ * If `path` is empty, guarantees to return a list with at least one item.
+ * (There’s only one top-level element.)
+ */
 export default function mutateGroup(
   criteria: (CriteriaGroup | Criterion)[],
 
-  /** Here path must be parent node path in reverse (top-level index coming last). */
+  /**
+   * Parent node path in reverse (top-level index coming last).
+   * Empty path would indicate top-level (which is single and cannot be deleted).
+   */
   path: number[],
 
   mutation: TreeMutation<CriteriaGroup | Criterion>,
