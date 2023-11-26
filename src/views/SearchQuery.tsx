@@ -79,7 +79,6 @@ const SearchQuery: React.FC<{
     <ControlGroup fill vertical className={className}>
       <InputGroup
         fill
-        small
         inputRef={quickSearchInputRef}
         disabled={!quickSearchIsEnabled}
         value={hasAdvancedQuery ? '' : quickSearchString}
@@ -101,6 +100,7 @@ const SearchQuery: React.FC<{
         <Button
           fill
           small
+          minimal
           title="Edit advanced search query"
           icon='filter'
           onClick={!hasAdvancedQuery

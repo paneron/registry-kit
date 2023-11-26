@@ -78,7 +78,7 @@ export default function criteriaToNodes(
         icon: defaultIcon,
         label:
           <CriteriaGroupLabel
-            css={css`margin: 2.5px 0`}
+            css={css`margin: 2.5px`}
             criteriaGroup={cg}
             onUpdate={opts.onEditItem
               ? ((op) => opts.onEditItem!(path, idx, { ...cg, require: op }, true))
@@ -131,7 +131,7 @@ export default function criteriaToNodes(
                 true)}>
             criteria
           </Button>
-        : <ControlGroup vertical css={css`margin-bottom: 2.5px;`}>
+        : <ControlGroup vertical css={css`margin: 2.5px 0;`}>
             <Select
               options={criterionTypeOptions}
               value={ci.key}

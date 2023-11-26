@@ -180,7 +180,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
         onQuickSearchStringChange={useCallback((
           substring => dispatch({ type: 'update-quick-substring-query', payload: { substring } })
         ), [dispatch])}
-        css={css`padding: 5px;`}
+        css={css`padding: 2px;`}
       />
       <div css={css`flex: 1;`}>
         <SearchResultList
