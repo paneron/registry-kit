@@ -113,7 +113,6 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
 
   const effectiveQueryExpression = useMemo(() => {
     const quickSearchString = (state.quickSubstringQuery ?? '').trim();
-    console.log("quick search predicate", getQuickSearchPredicate?.(quickSearchString));
     const withSearchString: CriteriaGroup =
       state.query.criteria.criteria.length < 1 && quickSearchString !== ''
         ? {
