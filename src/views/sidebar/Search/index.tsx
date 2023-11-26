@@ -111,7 +111,8 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
     }
   }, [selectedItemPath, dispatch]);
 
-  const effectiveQueryExpression = useMemo(() => {
+  // Why are we memoing this? It’s just a string and seems not too slow to compute.
+  const effectiveQueryExpression: string = useMemo(() => {
     const quickSearchString = (state.quickSubstringQuery ?? '').trim();
     const withSearchString: CriteriaGroup =
       state.query.criteria.criteria.length < 1 && quickSearchString !== ''
