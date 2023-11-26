@@ -46,11 +46,14 @@ export default function criteriaToNodes(
     const disabled = opts.implied === true;
     const deleteButton: JSX.Element | null =
       idx < (cs.length - 1) && opts.onDeleteItem
-        ? <Button minimal small
+        ? <Button
+            minimal
+            small
             onClick={() => opts.onDeleteItem!(path, idx)}
             title="Delete this criterion or criteria block"
             disabled={isRoot}
-            icon="cross" />
+            icon="cross"
+          />
         : null;
     const addGroupButton: JSX.Element | null = opts.onAddGroup
       ? <Button
@@ -58,7 +61,8 @@ export default function criteriaToNodes(
           small
           title="Add nested criteria block"
           icon="add-to-artifact"
-          onClick={() => opts.onAddGroup!([...path, idx])} />
+          onClick={() => opts.onAddGroup!([...path, idx])}
+        />
       : null;
 
     if (isCriteriaGroup(c)) {
@@ -72,17 +76,20 @@ export default function criteriaToNodes(
         hasCaret: true,
         isExpanded: true,
         icon: defaultIcon,
-        label: <CriteriaGroupLabel
-          css={css`margin: 2.5px 0`}
-          criteriaGroup={cg}
-          onUpdate={opts.onEditItem
-            ? ((op) => opts.onEditItem!(path, idx, { ...cg, require: op }, true))
-            : undefined} />,
-        secondaryLabel: <ButtonGroup>
-          {opts.implied && isRoot ? <>(implied)</> : null}
-          {addGroupButton}
-          {deleteButton}
-        </ButtonGroup>,
+        label:
+          <CriteriaGroupLabel
+            css={css`margin: 2.5px 0`}
+            criteriaGroup={cg}
+            onUpdate={opts.onEditItem
+              ? ((op) => opts.onEditItem!(path, idx, { ...cg, require: op }, true))
+              : undefined}
+          />,
+        secondaryLabel:
+          <ButtonGroup>
+            {opts.implied && isRoot ? <>(implied)</> : null}
+            {addGroupButton}
+            {deleteButton}
+          </ButtonGroup>,
         childNodes: criteriaToNodes(
           opts.onEditItem
             ? [...cg.criteria, { key: 'custom', query: '' }]
@@ -139,7 +146,8 @@ export default function criteriaToNodes(
                     );
                   }
                 }
-                : undefined} />
+                : undefined}
+            />
             <Widget
               itemClasses={opts.itemClasses}
               availableClassIDs={opts.availableClassIDs}
@@ -149,15 +157,17 @@ export default function criteriaToNodes(
                 path,
                 idx,
                 { key: ci.key, query: cfg.toQuery(val, { subregisters, itemClasses }) },
-                true)} />
+                true)}
+            />
           </ControlGroup>;
       return {
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
         label,
-        secondaryLabel: <ButtonGroup>
-          {deleteButton}
-        </ButtonGroup>,
+        secondaryLabel:
+          <ButtonGroup>
+            {deleteButton}
+          </ButtonGroup>,
       };
 
     }

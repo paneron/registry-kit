@@ -126,7 +126,8 @@ const SearchQuery: React.FC<{
               itemClasses={itemClasses}
               availableClassIDs={classIDs}
               subregisters={subregisters}
-              css={css`max-height: 50vh; overflow-y: auto;`} />
+              css={css`max-height: 50vh; overflow-y: auto;`}
+            />
             <div
                 key="query"
                 css={css`
