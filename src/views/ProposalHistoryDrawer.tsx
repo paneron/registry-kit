@@ -64,7 +64,7 @@ const ProposalHistoryItem: React.FC<{
   const justification = hasSubmitterInput(objectData) ? objectData.justification : 'N/A';
   const change_ = extraData?.itemPath ? objectData.items[extraData?.itemPath] : undefined;
   const change = isProposal(change_) ? change_ : null;
-  return <span title={`${justification} (proposal ID: ${objectData.id})`}>
+  return <span title={`Accepted proposal “${justification}” (proposal ID: ${objectData.id})`}>
     {change ? <ProposalType proposal={change} /> : null}
     {isDisposed(objectData)
       ? <><Datestamp date={objectData.timeDisposed} title="Disposed" />: </>
