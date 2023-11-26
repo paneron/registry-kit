@@ -95,25 +95,26 @@ const SearchQuery: React.FC<{
           minimal
           icon="cross"
           title="Clear quick search" />}
-        onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)} />
+        onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)}
+      />
       <ButtonGroup fill>
         <Button
-          fill
-          small
-          minimal
-          title="Edit advanced search query"
-          icon='filter'
-          onClick={!hasAdvancedQuery
-            ? (() => {
-                onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
-                toggleEditingAdvanced(true);
-              })
-            : () => toggleEditingAdvanced(v => !v)}
-          active={editingAdvanced && hasAdvancedQuery}
-          disabled={!hasAdvancedQuery && !onCriteriaChange}
-          rightIcon={rootCriteria.criteria.length > 0
-            ? <Tag intent="success" round>on</Tag>
-            : <Tag round>off</Tag>}>
+            fill
+            small
+            minimal
+            title="Edit advanced search query"
+            icon='filter'
+            onClick={!hasAdvancedQuery
+              ? (() => {
+                  onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
+                  toggleEditingAdvanced(true);
+                })
+              : () => toggleEditingAdvanced(v => !v)}
+            active={editingAdvanced && hasAdvancedQuery}
+            disabled={!hasAdvancedQuery && !onCriteriaChange}
+            rightIcon={rootCriteria.criteria.length > 0
+              ? <Tag intent="success" round>on</Tag>
+              : <Tag round>off</Tag>}>
           Advanced
         </Button>
       </ButtonGroup>
