@@ -45,13 +45,13 @@ export default function criteriaToNodes(
 
     const disabled = opts.implied === true;
     const deleteButton: JSX.Element | null =
-      idx < (cs.length - 1) && opts.onDeleteItem
+      opts.onDeleteItem
         ? <Button
             minimal
             small
             onClick={() => opts.onDeleteItem!(path, idx)}
             title="Delete this criterion or criteria block"
-            disabled={isRoot}
+            disabled={opts.implied}
             icon="cross"
           />
         : null;
@@ -164,10 +164,11 @@ export default function criteriaToNodes(
         id: `${path.join('-')}-${idx}-${opts.implied ? 'implied' : ''}`,
         disabled,
         label,
-        secondaryLabel:
-          <ButtonGroup>
-            {deleteButton}
-          </ButtonGroup>,
+        secondaryLabel: !isPlaceholder
+          ? <ButtonGroup>
+              {deleteButton}
+            </ButtonGroup>
+          : undefined,
       };
 
     }
