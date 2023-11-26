@@ -62,7 +62,6 @@ const ProposalHistoryItem: React.FC<{
   objectPath: string,
 }> = function ({ objectData, extraData }) {
   const justification = hasSubmitterInput(objectData) ? objectData.justification : 'N/A';
-  console.debug("Extra data", extraData);
   const change_ = extraData?.itemPath ? objectData.items[extraData?.itemPath] : undefined;
   const change = isProposal(change_) ? change_ : null;
   return <span title={`${justification} (proposal ID: ${objectData.id})`}>
