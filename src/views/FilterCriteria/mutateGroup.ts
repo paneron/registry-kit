@@ -39,6 +39,8 @@ export default function mutateGroup(
       (criteria[0] as CriteriaGroup).criteria.splice(0);
     }
   }
+
+  // Other adjustments
   for (const [curIdx, c] of criteria.entries()) {
     if (curIdx === path[path.length - 1]) {
       path.pop();
