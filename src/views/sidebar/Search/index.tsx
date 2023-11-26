@@ -185,12 +185,12 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
       />
       <div css={css`flex: 1;`}>
         <SearchResultList
-            queryExpression={datasetObjectSearchQueryExpression}
-            keyExpression={keyExpression}
-            selectedItemPath={state.selectedItemPath}
-            onSelectItem={handleSelectItem}
-            onOpenItem={handleOpenItem}
-          />
+          queryExpression={datasetObjectSearchQueryExpression}
+          keyExpression={keyExpression}
+          selectedItemPath={state.selectedItemPath}
+          onSelectItem={handleSelectItem}
+          onOpenItem={handleOpenItem}
+        />
       </div>
     </div>
   );
