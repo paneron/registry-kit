@@ -87,7 +87,7 @@ const SearchQuery: React.FC<{
         placeholder="Quick search"
         title={!hasAdvancedQuery
           ? "Search for a substring occurring anywhere within serialized item data."
-          : "Advanced query overrides quick search."}
+          : "Advanced query overrides quick search. Delete advanced query to re-enable."}
         css={css`width: 200px; ${quickSearchString !== '' && !hasAdvancedQuery ? 'input { font-weight: bold; }' : ''}`}
         rightElement={<Button
           disabled={!onQuickSearchStringChange || quickSearchString === '' || hasAdvancedQuery}
