@@ -141,7 +141,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
               ref: selectedItemRef,
               itemClass: itemClassConfiguration[selectedItemRef.classID],
             }
-        : undefined
+          : undefined
       : null
   ), [selectedItemRef, maybeSelectedRegisterItemData]);
 
