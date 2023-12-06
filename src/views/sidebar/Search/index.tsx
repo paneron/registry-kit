@@ -49,7 +49,7 @@ const initialState: State = {
   query: { criteria: BLANK_CRITERIA },
   quickSubstringQuery: '',
   selectedItemPath: null,
-};
+} as const;
 
 const Search: React.FC<{
   /**
