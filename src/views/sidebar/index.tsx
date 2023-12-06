@@ -22,7 +22,7 @@ export const sidebarIDs = [
 
 export type SidebarID = typeof sidebarIDs[number];
 
-export const sidebarConfig: SuperSidebarConfig<SidebarID> = {
+export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
   Browse: {
     icon: () => <Icon icon="list" />,
     title: "Register items",
