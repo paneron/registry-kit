@@ -26,7 +26,6 @@ import {
 import { REGISTER_METADATA_FILENAME } from '../common';
 
 import GenericRelatedItemView from './GenericRelatedItemView';
-import { sidebarConfig, type SidebarID, sidebarIDs } from './sidebar';
 import { BrowserCtx } from './BrowserCtx';
 import { _getRelatedClass } from './util';
 import RegisterHome from './detail/RegisterHome';
@@ -39,9 +38,9 @@ import { useItemRef, itemPathInCR } from './itemPathUtils';
 export { GenericRelatedItemView };
 
 
-const TabbedWorkspaceContextProvider = makeTabbedWorkspaceContextProvider<Protocol, SidebarID>(
-  'Browse',
-  sidebarIDs,
+const TabbedWorkspaceContextProvider = makeTabbedWorkspaceContextProvider<Protocol, []>(
+  undefined,
+  [],
   protocolRegistry);
 
 
@@ -89,7 +88,7 @@ function RegistryWorkspace () {
 
   return <TabbedWorkspace
     css={css`flex: 1 1 auto;`}
-    sidebarConfig={sidebarConfig}
+    sidebarConfig={undefined as any} // no sidebarIDs allwos this, but wrapping in memo() loses generic typing.
     sidebarPosition={globalSettings.sidebarPosition}
     sidebarIDs={[]}
     newTabPrompt={<RegisterHome />}
