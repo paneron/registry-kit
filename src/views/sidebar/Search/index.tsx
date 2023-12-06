@@ -70,7 +70,13 @@ const Search: React.FC<{
 memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { keyExpression, getQuickSearchPredicate, itemClasses, subregisters, selectedRegisterItem } = useContext(BrowserCtx);
+  const {
+    keyExpression,
+    getQuickSearchPredicate,
+    itemClasses,
+    subregisters,
+    selectedRegisterItem,
+  } = useContext(BrowserCtx);
   const { changeRequest } = useContext(ChangeRequestContext);
 
   const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
