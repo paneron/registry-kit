@@ -71,6 +71,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const {
+    // TODO: defaultSearchCriteria,
     keyExpression,
     getQuickSearchPredicate,
     itemClasses,
