@@ -51,6 +51,28 @@ const initialState: State = {
   selectedItemPath: null,
 } as const;
 
+function reducer(prevState: State, action: Action) {
+  switch (action.type) {
+    case 'update-query':
+      return {
+        ...prevState,
+        query: action.payload.query,
+      };
+    case 'update-quick-substring-query':
+      return {
+        ...prevState,
+        quickSubstringQuery: action.payload.substring,
+      };
+    case 'select-item':
+      return {
+        ...prevState,
+        selectedItemPath: action.payload.itemPath,
+      };
+    default:
+      throw new Error("Unexpected search state");
+  }
+}
+
 const Search: React.FC<{
   /**
    * Criteria that will always apply.
@@ -84,27 +106,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
     stateName ?? 'search-sidebar',
     undefined,
     isState,
-    (prevState, action) => {
-      switch (action.type) {
-        case 'update-query':
-          return {
-            ...prevState,
-            query: action.payload.query,
-          };
-        case 'update-quick-substring-query':
-          return {
-            ...prevState,
-            quickSubstringQuery: action.payload.substring,
-          };
-        case 'select-item':
-          return {
-            ...prevState,
-            selectedItemPath: action.payload.itemPath,
-          };
-        default:
-          throw new Error("Unexpected search state");
-      }
-    },
+    reducer,
     initialState,
     null);
 
