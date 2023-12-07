@@ -30,6 +30,28 @@ type Action =
   | { type: 'choose-next-state'; payload: { state: CR.StateType } }
   | { type: 'update-next-state-input'; payload: Record<string, any> }
 
+function reducer(prevState: State, action: Action) {
+  switch (action.type) {
+    case 'unset-next-state':
+      return {
+        ...prevState,
+        chosenNextState: undefined,
+      };
+    case 'choose-next-state':
+      return {
+        ...prevState,
+        chosenNextState: action.payload.state,
+      };
+    case 'update-next-state-input':
+      return {
+        ...prevState,
+        stateInput: action.payload,
+      };
+    default:
+      throw new Error("Unexpected state");
+  }
+}
+
 export interface TransitionOptions<C extends CR.SomeCR> {
   cr: C
   transitions: PossibleTransitionForCR<C>[]
@@ -64,27 +86,7 @@ function TransitionOptions<C extends CR.SomeCR>
     `${cr.id}-${cr.state}`,
     undefined,
     undefined,
-    (prevState, action) => {
-      switch (action.type) {
-        case 'unset-next-state':
-          return {
-            ...prevState,
-            chosenNextState: undefined,
-          };
-        case 'choose-next-state':
-          return {
-            ...prevState,
-            chosenNextState: action.payload.state,
-          };
-        case 'update-next-state-input':
-          return {
-            ...prevState,
-            stateInput: action.payload,
-          };
-        default:
-          throw new Error("Unexpected state");
-      }
-    },
+    reducer,
     initialState,
     null);
 
