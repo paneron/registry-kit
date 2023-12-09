@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { ValueHook } from '@riboseinc/paneron-extension-kit/types';
+import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemPathToItemRef } from '../itemPathUtils';
-import { InternalItemReference } from '../../types';
+import type { InternalItemReference } from '../../types';
 
 
 export default function useItemRef(itemPath: string):

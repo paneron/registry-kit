@@ -3,7 +3,7 @@
 
 import React, { useContext, useEffect, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, RadioGroup, Radio, FormGroup, TextArea, TextAreaProps, Intent, Colors } from '@blueprintjs/core';
+import { Button, RadioGroup, Radio, FormGroup, TextArea, type TextAreaProps, Intent, Colors } from '@blueprintjs/core';
 import { Tooltip2 as Tooltip } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';

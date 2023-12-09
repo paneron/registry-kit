@@ -2,8 +2,8 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx } from '@emotion/react';
-import React, { ReactNode, ReactNodeArray } from 'react';
-import { CriteriaGroup, CommonOpts, isCriteriaGroup } from './models';
+import React, { type ReactNode, type ReactNodeArray } from 'react';
+import { type CriteriaGroup, type CommonOpts, isCriteriaGroup } from './models';
 import { CRITERIA_CONFIGURATION } from "./CRITERIA_CONFIGURATION";
 
 /* Building query summary */

@@ -3,9 +3,9 @@
 
 import { jsx, css } from '@emotion/react';
 import React, { useEffect, useState, useMemo } from 'react';
-import { Button, ButtonGroup, TreeNodeInfo, Tree } from '@blueprintjs/core';
-import { ItemClassConfigurationSet, Subregisters } from '../../types';
-import { CriteriaGroup, makeBlankCriteria, Criterion, CompositionOperator, COMPOSITION_OPERATORS } from './models';
+import { Button, ButtonGroup, type TreeNodeInfo, Tree } from '@blueprintjs/core';
+import type { ItemClassConfigurationSet, Subregisters } from '../../types';
+import { type CriteriaGroup, makeBlankCriteria, type Criterion, type CompositionOperator, COMPOSITION_OPERATORS } from './models';
 import mutateGroup from './mutateGroup';
 import criteriaToNodes from './criteriaToNodes';
 

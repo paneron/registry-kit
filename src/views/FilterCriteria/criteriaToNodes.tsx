@@ -3,9 +3,9 @@
 
 import { jsx, css } from '@emotion/react';
 import React from 'react';
-import { Button, ButtonGroup, OptionProps, TreeNodeInfo, ControlGroup } from '@blueprintjs/core';
 import { Select } from '@riboseinc/paneron-extension-kit/widgets/Sidebar/PropertyView';
-import { ItemClassConfigurationSet, Subregisters } from '../../types';
+import { Button, ButtonGroup, type OptionProps, type TreeNodeInfo, ControlGroup } from '@blueprintjs/core';
+import type { ItemClassConfigurationSet, Subregisters } from '../../types';
 import { CriteriaGroup, Criterion, isCriteriaGroup, isCriteriaKey } from './models';
 import { CriteriaGroupLabel } from './index';
 import { CRITERIA_CONFIGURATION } from './CRITERIA_CONFIGURATION';
