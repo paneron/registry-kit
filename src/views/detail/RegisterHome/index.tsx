@@ -356,7 +356,7 @@ function () {
   }, [activeCR, registerMetadata, canDelete, deleteCR, handleOpenProposal, stakeholder]);
 
   const registerMetaBlock = useMemo(() => {
-    if (!activeCRBlock && stakeholder) {
+    if (!activeCRBlock) {
       return (
         <HomeBlock
           View={MetaSummary}
@@ -385,7 +385,7 @@ function () {
     } else {
       return null;
     }
-  }, [!activeCRBlock, registerMetadata, stakeholder]);
+  }, [!activeCRBlock, registerMetadata]);
 
   const [selectedProposal, selectProposal] = useState<string | null>(null);
   const proposedChangeBlocks = useMemo(() => {
