@@ -295,7 +295,7 @@ function () {
   ), [createMode, createCR]);
 
   const proposalBlock = useMemo(() => {
-    if (registerMetadata /*&& actionableProposals.find(p => p[1] && p[1].length > 0)*/) {
+    if (registerMetadata && (actionableProposals ?? []).find(p => p[1] && p[1].length > 0)) {
       return (
         <HomeBlock
           View={ProposalsBlock}
