@@ -107,6 +107,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
   keyExpression,
   defaultSearchCriteria,
   getQuickSearchPredicate,
+  alterApprovedCR,
   customViews,
   children,
 }) {
@@ -253,6 +254,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           offline: remoteUsername === undefined ? true : undefined,
 
           subregisters,
+          alterApprovedCR,
           itemClasses: itemClassConfiguration,
 
           jumpTo: spawnTab,

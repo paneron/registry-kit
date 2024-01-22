@@ -62,9 +62,10 @@ export interface TransitionOptions<C extends CR.SomeCR> {
 //export const TransitionOptions: C extends CR.Base ? C["state"] extends keyof CR.Transitions ? React.FC<{ cr: CR.Base }> : never : never = function ({ cr }) {
 function TransitionOptions<C extends CR.SomeCR>
 ({ cr, transitions, stakeholder, className }: TransitionOptions<C>) {
-  const { subregisters } = useContext(BrowserCtx);
+  const { subregisters, alterApprovedCR } = useContext(BrowserCtx);
   const {
     getObjectData,
+    getMapReducedData,
     updateObjects,
     performOperation,
     operationKey,
@@ -150,13 +151,22 @@ function TransitionOptions<C extends CR.SomeCR>
         map(([itemPath, ]) => itemPathInCR(itemPath, cr.id)),
     })).data as Record<string, RegisterItem<any> | null>;
     //console.debug("Got new item data", newItemData);
+    const maybeAlteredCR = alterApprovedCR
+      ? await alterApprovedCR(
+          cr.id,
+          cr.items,
+          origItemData,
+          newItemData,
+          { getMapReducedData })
+      : { proposals: cr.items, origItemData, newItemData };
+    //console.debug("Got altered item data", newItemData);
     return await proposalsToObjectChangeset(
       cr.id,
       subregisters !== undefined,
-      cr.items,
-      origItemData,
-      newItemData);
-  }, [cr.id, JSON.stringify(cr.items), subregisters === undefined, getObjectData]);
+      maybeAlteredCR.proposals,
+      maybeAlteredCR.origItemData,
+      maybeAlteredCR.newItemData);
+  }, [cr.id, JSON.stringify(cr.items), subregisters === undefined, getObjectData, getMapReducedData, alterApprovedCR]);
 
   const handleTransition = useCallback(
   async function (transitionCfg: typeof selectedTransitionCfg, stateInput: CR.StateInput) {

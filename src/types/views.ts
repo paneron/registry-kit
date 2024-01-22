@@ -3,6 +3,7 @@ import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
 import type { ObjectDatasetRequest, ObjectDatasetResponse, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 import type { CriteriaGroup } from '../views/FilterCriteria/models';
+import type { AlterApprovedCR } from './cr';
 
 
 // Hooks
@@ -154,6 +155,12 @@ extends RegisterConfiguration<Items> {
    * to entities like register item, change request, etc. handled by RegistryKit.
    */
   customViews?: CustomViewConfiguration[]
+
+  /**
+   * Allows to transform item data & proposals
+   * after CB decision but before the changes are applied to the register.
+   */
+  alterApprovedCR?: AlterApprovedCR
 }
 
 export interface CustomViewConfiguration {

@@ -1,6 +1,7 @@
 /** Change request types, states and state transitions. */
 
 import type React from 'react';
+import type { DatasetContext } from '@riboseinc/paneron-extension-kit/types/renderer';
 import type { ProposalSet } from './proposal';
 import { type RegisterStakeholder } from './stakeholder';
 import type { RegisterItem } from './item';
@@ -13,6 +14,8 @@ export function isSubmittedBy(stakeholder: RegisterStakeholder, cr: Base): boole
     stakeholder.gitServerUsername === cr.submittingStakeholderGitServerUsername);
 }
 
+
+type ItemDataset = Record<string, RegisterItem<any> | null>;
 
 
 // =====================
@@ -409,6 +412,19 @@ export type Transition<
   /** Using this extra information */
   P extends Record<string, any> | null = null,
 > = (cr: CR1, payload: P) => Omit<CR2, 'state'>;
+
+
+export type AlterApprovedCR = (
+  crID: string,
+  proposals: ProposalSet,
+  origItemData: ItemDataset,
+  newItemData: ItemDataset,
+  opts: Pick<DatasetContext, 'getMapReducedData'>,
+) => Promise<{
+  proposals: ProposalSet,
+  origItemData: ItemDataset,
+  newItemData: ItemDataset,
+}>
 
 
 /**

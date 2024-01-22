@@ -19,8 +19,11 @@ import { type Protocol } from './protocolRegistry';
 
 
 // TODO(perf): split into smaller contexts
-export interface BrowserCtx
-extends Pick<RegistryViewProps, "defaultSearchCriteria" | "getQuickSearchPredicate" | "customViews"> {
+export interface BrowserCtx extends Pick<RegistryViewProps,
+| "alterApprovedCR"
+| "defaultSearchCriteria"
+| "getQuickSearchPredicate"
+| "customViews"> {
   itemClasses: ItemClassConfigurationSet
   subregisters?: Subregisters
 

@@ -42,6 +42,7 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
         defaultSearchCriteria={opts.defaultSearchCriteria}
         keyExpression={opts.keyExpression}
         getQuickSearchPredicate={opts.getQuickSearchPredicate}
+        alterApprovedCR={opts.alterApprovedCR}
       />
     );
   };
