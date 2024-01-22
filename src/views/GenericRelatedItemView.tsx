@@ -51,6 +51,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
   // If a change request is active
   // and this item is among clarifications or additions
   // then use item path relative to the change request
+  // TODO: make useRegisterItemData() handle active change request
   const affectedByActiveCR = (
     activeChangeRequest &&
     isDrafted(activeChangeRequest) &&

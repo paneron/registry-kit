@@ -140,6 +140,7 @@ export interface ImportableCR {
   proposalDraft: Drafted,
   /** Register item data for additions & clarifications. */
   itemPayloads: Record<string, RegisterItem<any>>,
+  // TODO: Rename ImportableCR.itemPayloads to newItemData
 }
 export function isImportableCR(val: any): val is ImportableCR {
   // TODO: More complete check
