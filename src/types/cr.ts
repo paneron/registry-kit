@@ -217,6 +217,7 @@ export function isWithdrawn(cr: Base): cr is Withdrawn {
   return isInState(cr, State.WITHDRAWN);
 }
 
+/** CR was proposed at least once. */
 export function hadBeenProposed(cr: Base): cr is Base & { timeProposed: Date } {
   return cr && cr.hasOwnProperty('timeProposed') && !!(cr as Proposed).timeProposed;
 }
