@@ -175,15 +175,17 @@ function TransitionOptions<C extends CR.SomeCR>
         ...(transitionCfg.func(cr, stateInput) as Omit<CR.SomeCR, 'state'>),
         state: transitionCfg.targetState,
       };
-      newCR.pastTransitions ||= [];
-      newCR.pastTransitions.push({
-        label: transitionCfg.title,
-        timestamp: new Date(),
-        fromState: cr.state,
-        toState: newCR.state,
-        stakeholder,
-        input: stateInput,
-      });
+      newCR.pastTransitions = [
+        ...(newCR.pastTransitions ?? []),
+        {
+          label: transitionCfg.title,
+          timestamp: new Date(),
+          fromState: cr.state,
+          toState: newCR.state,
+          stakeholder,
+          input: stateInput,
+        },
+      ];
       //console.debug("Transitioning CR", JSON.stringify(cr), JSON.stringify(newCR));
       const changeset: ObjectChangeset = {
         [crIDToCRPath(cr.id)]: {
