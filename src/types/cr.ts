@@ -127,9 +127,9 @@ export function canBeEditedBy(stakeholder: RegisterStakeholder, cr: Base): boole
 export function canBeDeletedBy(stakeholder: RegisterStakeholder, cr: Base): boolean {
   return (
     isCreatedBy(stakeholder, cr)
-    && !((cr as Proposed).timeProposed)
     && isDrafted(cr)
     //&& Object.keys(cr.items).length < 1 // Only allow deleting empty CRs
+    && !hadBeenProposed(cr)  // If it had been proposed, it should be withdrawn instead.
   );
 }
 
