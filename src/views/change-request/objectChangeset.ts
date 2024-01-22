@@ -119,7 +119,7 @@ export async function importedProposalToCRObjectChangeset(
       };
     } else {
       if (!resolvePredicates) {
-        throw new Error("Cannot create object changeset for imported proposal: cannot resolve predicates");
+        throw new Error("Cannot resolve some predicates in imported proposal");
       }
       changeset[itemPathInCR(itemPath, crID)] = {
         oldValue: null,
