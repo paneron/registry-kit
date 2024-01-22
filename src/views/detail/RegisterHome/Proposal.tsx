@@ -180,7 +180,7 @@ export const Proposals: React.VoidFunctionComponent<{
           ? "Proposals"
           : <>
               Proposals
-              {hasActionable
+              {hasActionable || (onCreate && onRefreshProposals)
                 ? <>
                     &nbsp;
                     <Button
@@ -211,6 +211,7 @@ export const Proposals: React.VoidFunctionComponent<{
   }, [
     onCreate, createMode,
     onRefreshProposals,
+    hasActionable,
     register, proposalMenuItems,
   ]);
 
