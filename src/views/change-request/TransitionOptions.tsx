@@ -151,11 +151,11 @@ function TransitionOptions<C extends CR.SomeCR>
     })).data as Record<string, RegisterItem<any> | null>;
     //console.debug("Got new item data", newItemData);
     return await proposalsToObjectChangeset(
-        cr.id,
-        subregisters !== undefined,
-        cr.items,
-        origItemData,
-        newItemData);
+      cr.id,
+      subregisters !== undefined,
+      cr.items,
+      origItemData,
+      newItemData);
   }, [cr.id, JSON.stringify(cr.items), subregisters === undefined, getObjectData]);
 
   const handleTransition = useCallback(
