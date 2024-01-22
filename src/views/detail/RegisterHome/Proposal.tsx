@@ -155,13 +155,13 @@ export const Proposals: React.VoidFunctionComponent<{
   //const [creating, setCreating] = useState(false);
   const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
   const proposalMenuItems = useMemo(() => {
-    return hasActionable
+    return hasActionable || onCreate
       ? <ActionableProposalItems
           actionableProposals={actionableProposals ?? []}
           onSelect={onSelectProposal}
         />
       : null;
-  }, [onSelectProposal, hasActionable, actionableProposals]);
+  }, [onSelectProposal, onCreate, hasActionable, actionableProposals]);
 
   // return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
   //   {proposalMenuItems}
