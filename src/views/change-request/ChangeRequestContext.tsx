@@ -101,9 +101,6 @@ export const ChangeRequestContextProvider: React.FC<{
       ? true
       : false;
 
-  const crItemEntries = Object.entries(changeRequest?.items ?? []).map(i => JSON.stringify(i));
-  const hasItems = crItemEntries.length > 0;
-
   const deleteCR = useMemo((() =>
     !isBusy && canDelete && updateTree
     ? performOperation('deleting proposal', async function handleDelete() {
@@ -118,7 +115,7 @@ export const ChangeRequestContextProvider: React.FC<{
   ), [
     isBusy, performOperation,
     updateTree,
-    hasItems, canDelete,
+    canDelete,
   ]);
 
   const proposeBlankItem = useMemo((() => {

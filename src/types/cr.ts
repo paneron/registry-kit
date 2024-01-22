@@ -128,8 +128,8 @@ export function canBeDeletedBy(stakeholder: RegisterStakeholder, cr: Base): bool
   return (
     isCreatedBy(stakeholder, cr)
     && isEditableState(cr.state)
-    && Object.keys(cr.items).length < 1
     && !((cr as Proposed).timeProposed)
+    //&& Object.keys(cr.items).length < 1 // Only allow deleting empty CRs
   );
 }
 

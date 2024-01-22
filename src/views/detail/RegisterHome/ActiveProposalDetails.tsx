@@ -33,15 +33,17 @@ const CurrentProposalBlock: React.VoidFunctionComponent<{
           icon: 'take-action',
           intent: 'primary',
         }*/]
-      : canDelete
-        ? [{
-            text: "Delete this proposal draft",
-            onClick: onDelete,
-            disabled: !onDelete,
-            icon: 'delete',
-            intent: 'danger',
-          }]
-        : [];
+      : [];
+
+    if (canDelete) {
+      actions.push({
+        text: "Delete this proposal draft",
+        onClick: onDelete,
+        disabled: !onDelete,
+        icon: 'delete',
+        intent: 'danger',
+      });
+    }
 
     actions.push({
       text: "View proposal in a new tab",
