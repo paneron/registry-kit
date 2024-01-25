@@ -57,19 +57,26 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
 };
 
 
+// Re-exports
+
 import { BrowserCtx } from './views/BrowserCtx';
-import { itemRefToItemPath, incompleteItemRefToItemPathPrefix } from './views/itemPathUtils';
+import { itemPathInCR, itemRefToItemPath, incompleteItemRefToItemPathPrefix } from './views/itemPathUtils';
 import GenericRelatedItemView from './views/GenericRelatedItemView';
 import { PropertyDetailView } from './views/util';
 import CRITERIA_CONFIGURATION from './views/FilterCriteria/CRITERIA_CONFIGURATION';
 import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
+import { isAddition } from './types/proposal';
+import type { Payload } from './types/item';
 
 export {
   itemRefToItemPath,
+  itemPathInCR,
   incompleteItemRefToItemPathPrefix,
   BrowserCtx,
   CRITERIA_CONFIGURATION,
   GenericRelatedItemView,
   PropertyDetailView,
   useSingleRegisterItemData,
+  isAddition,
+  Payload,
 };
