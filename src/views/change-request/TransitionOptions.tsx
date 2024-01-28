@@ -457,7 +457,7 @@ const ControlBodyNotesWidget: React.FC<{
   onChange?: (newVal: CR.ControlBodyInput) => void
 }> = function ({ value, onChange }) {
   return (
-    <FormGroup label="Control body decision:">
+    <FormGroup label="Control Body decision:">
       <TransitionInputTextArea
         value={value.controlBodyNotes}
         required
