@@ -202,6 +202,10 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
             max-width: 70%;
           }
+          .bp4-input {
+            color: rgba(125, 125, 125, 0.5);
+            font-family: monospace;
+          }
         `}
         leftElement={itemView}
         value={itemID ?? ''}
