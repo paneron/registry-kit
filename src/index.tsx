@@ -67,6 +67,7 @@ import CRITERIA_CONFIGURATION from './views/FilterCriteria/CRITERIA_CONFIGURATIO
 import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
 import { isAddition } from './types/proposal';
 import type { Payload } from './types/item';
+import { Protocols } from './views/protocolRegistry';
 
 export {
   itemRefToItemPath,
@@ -80,4 +81,5 @@ export {
   useSingleRegisterItemData,
   isAddition,
   Payload,
+  Protocols,
 };
