@@ -103,15 +103,15 @@ export const ChangeRequestContextProvider: React.FC<{
 
   const deleteCR = useMemo((() =>
     !isBusy && canDelete && updateTree
-    ? performOperation('deleting proposal', async function handleDelete() {
-        const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
-        await updateTree({
-          subtreeRoot,
-          newSubtreeRoot: null,
-          commitMessage: 'remove unproposed CR draft',
-        });
-      })
-    : undefined
+      ? performOperation('deleting proposal', async function handleDelete() {
+          const subtreeRoot = crIDToCRPath(changeRequest.id).replace('/main.yaml', '');
+          await updateTree({
+            subtreeRoot,
+            newSubtreeRoot: null,
+            commitMessage: 'remove unproposed CR draft',
+          });
+        })
+      : undefined
   ), [
     isBusy, performOperation,
     updateTree,
