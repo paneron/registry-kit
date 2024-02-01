@@ -68,6 +68,7 @@ import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
 import { isAddition } from './types/proposal';
 import type { Payload } from './types/item';
 import { Protocols } from './views/protocolRegistry';
+import { ChangeRequestContext } from './views/change-request/ChangeRequestContext';
 
 export {
   itemRefToItemPath,
@@ -82,4 +83,5 @@ export {
   isAddition,
   Payload,
   Protocols,
+  ChangeRequestContext,
 };
