@@ -255,8 +255,10 @@ function TransitionOptions<C extends CR.SomeCR>
               intent={canTransition ? 'primary' : undefined}
               onClick={() =>
                 validatedStateInput
-                  ? performOperation('transitioning CR state', handleTransition)
-                    (selectedTransitionCfg, validatedStateInput)
+                  ? performOperation('transitioning CR state', handleTransition)(
+                      selectedTransitionCfg,
+                      validatedStateInput,
+                    )
                   : void 0
               }>
             {selectedTransitionCfg.title}
