@@ -16,6 +16,20 @@ export function isStakeholderRole(val: string): val is StakeholderRoleType {
   return STAKEHOLDER_ROLES.indexOf(val as StakeholderRoleType) >= 0;
 }
 
+export function getStakeholders(
+  allStakeholders: readonly RegisterStakeholder[],
+  gitServerUsername: string,
+): readonly RegisterStakeholder[] {
+  if (allStakeholders.length < 1) {
+    return Object.freeze([]);
+  } else {
+    const normalizedUsername = gitServerUsername.toLowerCase();
+    return Object.freeze(allStakeholders.filter(sh =>
+      sh.parties.find(p => p.gitServerUsername?.toLowerCase() === normalizedUsername)
+    ))
+  }
+}
+
 export function canCreateCR(stakeholder: RegisterStakeholder): boolean {
   return (
     [
