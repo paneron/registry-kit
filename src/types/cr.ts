@@ -3,7 +3,7 @@
 import type React from 'react';
 import type { DatasetContext } from '@riboseinc/paneron-extension-kit/types/renderer';
 import type { ProposalSet } from './proposal';
-import { type RegisterStakeholder } from './stakeholder';
+import type { RegisterStakeholder } from './stakeholder';
 import type { RegisterItem } from './item';
 
 
