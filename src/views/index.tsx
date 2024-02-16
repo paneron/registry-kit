@@ -56,7 +56,7 @@ function RegistryView (props) {
 };
 
 
-const SIDEBAR_WIDTH_SETTING_NAME = 'registryMainSidebarWidthPixels'
+export const SIDEBAR_WIDTH_SETTING_NAME = 'registryMainSidebarWidthPixels'
 
 
 const RegistryWorkspace: React.FC<Record<never, never>> =
