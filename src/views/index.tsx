@@ -46,10 +46,11 @@ const TabbedWorkspaceContextProvider = makeTabbedWorkspaceContextProvider<Protoc
 
 export const RegistryView: React.FC<RegistryViewProps> =
 function RegistryView (props) {
+  const Workspace = useMemo(() => props.CustomWorkspace ?? RegistryWorkspace, []);
   return (
     <TabbedWorkspaceContextProvider stateKey="main-registry-view">
       <BrowserCtxProvider {...props}>
-        <RegistryWorkspace />
+        <Workspace />
       </BrowserCtxProvider>
     </TabbedWorkspaceContextProvider>
   );

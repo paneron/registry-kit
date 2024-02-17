@@ -132,6 +132,9 @@ extends RegisterConfiguration<Items> {
   // TODO: Obsoluete?
   defaultSearchCriteria?: CriteriaGroup
 
+  /** Overrides CustomSidebarConfig, obviously. */
+  CustomWorkspace?: React.FC<Record<never, never>>
+
   /**
    * Default predicate for matching items
    * using quick search.
