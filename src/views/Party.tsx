@@ -10,6 +10,9 @@ import { BrowserCtx } from './BrowserCtx';
 import { registerStakeholderPlain } from './RegisterStakeholder';
 
 
+const PREFERRED_PARTY_SETTING_NAME = 'preferred_party_id';
+
+
 /** Parties that current user can act as, based on chosen remote username. */
 export function useAvailableParties() {
   const { useRemoteUsername } = useContext(DatasetContext);
@@ -28,6 +31,26 @@ export function useAvailableParties() {
 }
 
 
+export function usePreferredPartyID(): string | undefined {
+  const { useSettings } = useContext(DatasetContext);
+  const { value: { settings } } = useSettings();
+  return settings[PREFERRED_PARTY_SETTING_NAME] ?? undefined;
+}
+
+
+export function useCurrentUserPartyID() {
+  const parties = useAvailableParties();
+  const preferPartyID = usePreferredPartyID();
+
+  if (parties.length < 1) {
+    return undefined;
+  }
+
+  if (preferPartyID && parties.includes(preferPartyID)) {
+    return preferPartyID;
+  } else {
+    return parties[0];
+  }
 export const PartyView: React.FC<{
   partyID: string
   markIfCurrentUser?: boolean
