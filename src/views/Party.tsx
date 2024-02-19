@@ -19,6 +19,7 @@ export function useAvailableParties() {
   const { value: { username } } = useRemoteUsername();
   const { registerMetadata } = useContext(BrowserCtx);
   const parties = registerMetadata?.parties;
+  // TODO: Sort party IDs by party name?
   const partyIDs = parties
     ? Object.entries(parties).
         filter(([, party]) => party.gitServerUsername === username).
@@ -27,30 +28,92 @@ export function useAvailableParties() {
     : [];
   return useMemo(
     (() => Object.freeze(partyIDs)),
-    [partyIDs.join(',')]);
+    [partyIDs.join(',')],
+  );
 }
 
-
-export function usePreferredPartyID(): string | undefined {
+function usePreferredPartyID(): string | undefined {
   const { useSettings } = useContext(DatasetContext);
   const { value: { settings } } = useSettings();
   return settings[PREFERRED_PARTY_SETTING_NAME] ?? undefined;
 }
 
+export function setPreferredPartyID(partyID: string) {
+  const { updateSetting } = useContext(DatasetContext);
+  return updateSetting({ key: PREFERRED_PARTY_SETTING_NAME, value: partyID });
+}
 
+/** Retrieves current user’s active party (preferred or first available). */
 export function useCurrentUserPartyID() {
   const parties = useAvailableParties();
   const preferPartyID = usePreferredPartyID();
 
   if (parties.length < 1) {
     return undefined;
-  }
-
-  if (preferPartyID && parties.includes(preferPartyID)) {
+  } else if (preferPartyID && parties.includes(preferPartyID)) {
     return preferPartyID;
   } else {
     return parties[0];
   }
+}
+
+/** Retrieves full party information about all specified party IDs. */
+export function useParties(partyIDs: string[]) {
+  const { registerMetadata } = useContext(BrowserCtx);
+  const allPartyIDs = Object.keys(registerMetadata?.parties ?? {});
+  const parties = partyIDs.length < 1 || allPartyIDs.length < 1
+    ? []
+    : partyIDs.map(partyID => registerMetadata?.parties?.[partyID]).
+        filter(party => party !== undefined).
+        map(p => p!);
+  return useMemo(
+    () => Object.freeze(parties),
+    [partyIDs.join(','), allPartyIDs.join(',')],
+  )
+}
+
+/** Retrieves full party information about current user’s active party. */
+export function useParty() {
+  const { registerMetadata } = useContext(BrowserCtx);
+  const partyID = useCurrentUserPartyID();
+  const parties = registerMetadata?.parties ?? {};
+  const partyIDs = Object.keys(parties);
+  const party = partyID && partyIDs.length > 0
+    ? parties[partyID]
+    : undefined;
+  return useMemo(
+    () => Object.freeze(party),
+    [partyID, partyIDs.join(',')],
+  );
+}
+
+/** Stakeholders that current user’s active party is associated with. */
+export function useStakeholders() {
+  const { registerMetadata } = useContext(BrowserCtx);
+  const party = useParty();
+  // TODO: Sort stakeholders by name?
+  const stakeholders = party && registerMetadata?.stakeholders
+    ? Object.entries(registerMetadata.stakeholders).
+        filter(([stakeholderID, ]) => party.stakeholderIDs.includes(stakeholderID))
+    : [];
+  return useMemo(
+    () => Object.freeze(stakeholders.map(([, s]) => s)),
+    [party, stakeholders.map(([sID, ]) => sID).join(',')],
+  );
+}
+
+
+/** Stakeholder roles that current user’s active party inherit. */
+export function useRoles() {
+  const stakeholders = useStakeholders();
+  const roles = stakeholders.map(s => s.role).sort();
+  return useMemo(
+    () => roles,
+    [roles.join(',')],
+  );
+}
+
+
 export const PartyView: React.FC<{
   partyID: string
   markIfCurrentUser?: boolean
