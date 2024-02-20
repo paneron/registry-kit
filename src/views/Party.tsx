@@ -50,6 +50,8 @@ export function useCurrentUserPartyID() {
 
   if (parties.length < 1) {
     return undefined;
+  } else if (parties.length === 1) {
+    return parties[0];
   } else if (preferPartyID && parties.includes(preferPartyID)) {
     return preferPartyID;
   } else {
