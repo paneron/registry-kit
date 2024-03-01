@@ -55,8 +55,17 @@ export function canImportCR(stakeholder: RegisterStakeholder): boolean {
     stakeholder.gitServerUsername?.trim() !== '';
 }
 
-/** “Abstract” register stakeholder type. */
+interface Affiliation {
+  /** UUID of organization defined in register meta. */
+  organizationID: string;
+
+  /** Role within the organization. */
+  role: 'pointOfCOntact' | 'member';
+}
+
+/** Register stakeholder represents an individual. */
 interface _RegisterStakeholder {
+  /** Stakeholder’s role wrt. the current register. */
   role: StakeholderRoleType
   name: string
 
