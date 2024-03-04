@@ -74,7 +74,10 @@ export interface RegisterItem<P extends Payload = Payload> {
   dateAccepted: Date
   // This is a mandatory property, since until their acceptance items “live” as part of their corresponding change requests
 
-  /** UUID of change request that defined the current version. */
+  /**
+   * UUID of change request that defined the current version.
+   * (Provisional.)
+   */
   amendedInCR?: string
 
   // TODO: Denormalized, should be validated with consistency checks
