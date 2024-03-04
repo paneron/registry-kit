@@ -177,8 +177,23 @@ export const ItemDetail: React.VoidFunctionComponent<{
     ? activeCR.items[itemPath]
     : null) ?? null;
 
+  const proposedSupersedingItemRefs =
+    proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
+      ? proposal.supersedingItemIDs.
+        map(id => ({
+          itemID: id,
+          // Superseding items are always of the same class
+          classID: itemClass.meta.id,
+          // Superseding items are always in the same subregister
+          subregisterID: itemRef.subregisterID,
+        }))
+      : undefined;
+
+  const supersedingItemRefs = proposedSupersedingItemRefs ?? item.supersededBy ?? [];
+  const supersedingItemRefsCacheKey = supersedingItemRefs.map(i => JSON.stringify(i)).toString();
+
   // It’s superseded (whether in current proposal or not)
-  const isSuperseded = item.status === 'superseded';
+  const isSuperseded = /* item.status === 'superseded'; nuh-uh */ supersedingItemRefs.length > 0;
   // Item is valid, proposal is editable, and no change to this item is proposed yet
   const canBeSuperseded = (activeCRIsEditable && !proposal && !editedItemData && item.status === 'valid');
   // This item is being superseded in active proposal
@@ -292,19 +307,6 @@ export const ItemDetail: React.VoidFunctionComponent<{
     item ? JSON.stringify(normalizeObject(item)) : item,
   ]);
 
-  const proposedSupersedingItemRefs =
-    proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
-      ? proposal.supersedingItemIDs.
-        map(id => ({
-          itemID: id,
-          // Superseding items are always of the same class
-          classID: itemClass.meta.id,
-          // Superseding items are always in the same subregister
-          subregisterID: itemRef.subregisterID,
-        }))
-      : undefined;
-  const supersedingItemRefs = proposedSupersedingItemRefs ?? item.supersededBy ?? [];
-  const supersedingItemRefsCacheKey = supersedingItemRefs.map(i => JSON.stringify(i)).toString();
   const supersedingItemsTooltip: HelpTooltipProps = useMemo(() => ({
     icon: 'info-sign',
     content: 
