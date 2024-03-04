@@ -17,19 +17,19 @@ export function isStakeholderRole(val: string): val is StakeholderRoleType {
   return STAKEHOLDER_ROLES.indexOf(val as StakeholderRoleType) >= 0;
 }
 
-export function getStakeholders(
-  allStakeholders: readonly RegisterStakeholder[],
-  gitServerUsername: string,
-): readonly RegisterStakeholder[] {
-  if (allStakeholders.length < 1) {
-    return Object.freeze([]);
-  } else {
-    const normalizedUsername = gitServerUsername.toLowerCase();
-    return Object.freeze(allStakeholders.filter(sh =>
-      sh.parties.find(p => p.gitServerUsername?.toLowerCase() === normalizedUsername)
-    ))
-  }
-}
+//export function getStakeholders(
+//  allStakeholders: readonly RegisterStakeholder[],
+//  gitServerUsername: string,
+//): readonly RegisterStakeholder[] {
+//  if (allStakeholders.length < 1) {
+//    return Object.freeze([]);
+//  } else {
+//    const normalizedUsername = gitServerUsername.toLowerCase();
+//    return Object.freeze(allStakeholders.filter(sh =>
+//      sh.parties.find(p => p.gitServerUsername?.toLowerCase() === normalizedUsername)
+//    ))
+//  }
+//}
 
 export function canCreateCR(stakeholder: RegisterStakeholder): boolean {
   return (
@@ -54,14 +54,6 @@ export function canImportCR(stakeholder: RegisterStakeholder): boolean {
     // Must have a Git server username (current limitation)
     // in order to be able to edit this proposal later.
     stakeholder.gitServerUsername?.trim() !== '';
-}
-
-interface Affiliation {
-  /** UUID of organization defined in register meta. */
-  organizationID: string;
-
-  /** Role within the organization. */
-  role: 'pointOfCOntact' | 'member';
 }
 
 /** Register stakeholder represents an individual. */
