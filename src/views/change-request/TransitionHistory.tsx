@@ -81,6 +81,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         input: {
           registerManagerNotes: cr.registerManagerNotes,
           controlBodyNotes: (cr as any).controlBodyNotes,
+          controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
     }
@@ -98,6 +99,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         timestamp: cr.timeDisposed,
         input: {
           controlBodyNotes: (cr as any).controlBodyNotes,
+          controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
     } else if (CR.isRejected(cr)) {
@@ -107,6 +109,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         timestamp: cr.timeDisposed,
         input: {
           controlBodyNotes: (cr as any).controlBodyNotes,
+          controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
     }

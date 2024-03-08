@@ -330,13 +330,14 @@ const applyControlBodyDecision: CR.Transition<
 | CR.Rejected
 | CR.ReturnedForClarificationByControlBody,
   CR.ControlBodyInput> =
-function applyControlBodyDecision (cr, { controlBodyNotes }) {
+function applyControlBodyDecision (cr, { controlBodyNotes, controlBodyDecisionEvent }) {
   if (!controlBodyNotes?.trim()) {
     throw new Error("Control body decision is required.");
   }
   return {
     ...cr,
     controlBodyNotes,
+    controlBodyDecisionEvent,
   };
 }
 
@@ -459,17 +460,45 @@ const ControlBodyNotesWidget: React.FC<{
   onChange?: (newVal: CR.ControlBodyInput) => void
 }> = function ({ value, onChange }) {
   return (
-    <FormGroup label="Control Body decision:">
+    <FormGroup label="Control Body notes:">
       <TransitionInputTextArea
         value={value.controlBodyNotes}
         required
         onChange={evt =>
           onChange?.({
             controlBodyNotes: evt.currentTarget.value,
+            controlBodyDecisionEvent: value.controlBodyDecisionEvent,
           })
         }
       />
     </FormGroup>
+  );
+};
+
+
+const ControlBodyDecisionWidget: React.FC<{
+  value: CR.ControlBodyInput
+  onChange?: (newVal: CR.ControlBodyInput) => void
+}> = function ({ value, onChange }) {
+  return (
+    <>
+      <ControlBodyNotesWidget
+        value={value}
+        onChange={onChange}
+      />
+      <FormGroup label="Control Body decision event:">
+        <TransitionInputTextArea
+          value={value.controlBodyDecisionEvent}
+          required
+          onChange={evt =>
+            onChange?.({
+              controlBodyNotes: value.controlBodyNotes,
+              controlBodyDecisionEvent: evt.currentTarget.value,
+            })
+          }
+        />
+      </FormGroup>
+    </>
   );
 };
 
@@ -574,7 +603,7 @@ const TRANSITIONS: CR.Transitions = {
       title: "Accept",
       targetState: CR.State.ACCEPTED,
       canBeTransitionedBy: (stakeholder) => ['owner', 'control-body'].indexOf(stakeholder.role) >= 0,
-      Widget: ControlBodyNotesWidget,
+      Widget: ControlBodyDecisionWidget,
       func: (cr, controlBodyInput) => ({
         ...applyControlBodyDecision(cr, controlBodyInput),
         timeDisposed: new Date(),
@@ -584,7 +613,7 @@ const TRANSITIONS: CR.Transitions = {
       title: "Reject",
       targetState: CR.State.REJECTED,
       canBeTransitionedBy: (stakeholder) => ['owner', 'control-body'].indexOf(stakeholder.role) >= 0,
-      Widget: ControlBodyNotesWidget,
+      Widget: ControlBodyDecisionWidget,
       func: (cr, controlBodyInput) => ({
         ...applyControlBodyDecision(cr, controlBodyInput),
         timeDisposed: new Date(),
