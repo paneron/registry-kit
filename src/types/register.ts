@@ -1,4 +1,4 @@
-import { type RegisterStakeholder, isRegisterStakeholder } from './stakeholder';
+import { type RegisterStakeholder, type Organization, isRegisterStakeholder } from './stakeholder';
 import { type Locale } from './util';
 
 
@@ -14,6 +14,10 @@ export interface Register {
 
   version?: Version
   stakeholders: RegisterStakeholder[]
+
+  organizations: {
+    [orgID: string]: Organization
+  }
 }
 
 export function isRegisterMetadata(val: any): val is Register {

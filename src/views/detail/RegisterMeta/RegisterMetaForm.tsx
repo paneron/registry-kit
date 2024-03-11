@@ -19,31 +19,38 @@ import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { FormGroupAsCardInGrid } from '../../../views/util'; 
 import type { Register, RegisterStakeholder, Locale } from '../../../types';
 import { isStakeholderRole } from '../../../types';
-import { STAKEHOLDER_ROLES, StakeholderRole } from '../../../types/stakeholder';
+import { STAKEHOLDER_ROLES, Contact, Organization, StakeholderOrgAffiliation, StakeholderRole } from '../../../types/stakeholder';
 
 
 
 const DUMMY_VERSION: Register["version"] = {
   id: '',
   timestamp: new Date(),
-};
+} as const;
 
-const DUMMY_CONTACT: Register["stakeholders"][number]["parties"][number]["contacts"][number] = {
+const DUMMY_CONTACT: Contact = {
   label: 'email',
   value: '',
-};
+} as const;
 
-const DUMMY_PARTY: Register["stakeholders"][number]["parties"][number] = {
-  name: '',
-  contacts: [DUMMY_CONTACT],
-};
+const DUMMY_ORG: Organization = {
+  name: '<new organization>',
+  logoURL: '',
+} as const;
+ 
+// const DUMMY_PARTY: Register["stakeholders"][number]["parties"][number] = {
+//   name: '',
+//   contacts: [DUMMY_CONTACT],
+// };
 
 const DUMMY_STAKEHOLDER: Register["stakeholders"][number] = {
   role: StakeholderRole.Submitter,
   name: '',
   gitServerUsername: undefined,
-  parties: [DUMMY_PARTY],
-};
+  affiliations: {},
+  contacts: [DUMMY_CONTACT] as Contact[],
+  //parties: [DUMMY_PARTY],
+} as const;
 
 
 const RegisterMetaForm: React.FC<{
@@ -74,6 +81,9 @@ const RegisterMetaForm: React.FC<{
 
   const stakeholders = value.stakeholders ?? [];
 
+  const orgs = value.organizations ?? {};
+  const organizationIDs = Object.keys(orgs);
+
   function makeStakeholderChangeHandler<T extends HTMLInputElement | HTMLSelectElement>(
     idx: number,
     func: (val: string) => Spec<typeof value["stakeholders"][number]>,
@@ -86,6 +96,36 @@ const RegisterMetaForm: React.FC<{
   }
   function handleStakeholderDelete(idx: number) {
     onChange!(update(value, { stakeholders: { $splice: [[idx, 1]] } }));
+  }
+
+  function makeOrgChangeHandler<T extends HTMLInputElement | HTMLSelectElement>(
+    orgID: string,
+    func: (val: string) => Spec<typeof value["organizations"][string]>,
+  ) {
+    return makeFormEventHandler<T>(val => ({ organizations: { [orgID]: func(val) } }));
+  }
+
+  function handleOrgAdd() {
+    const newID = crypto.randomUUID();
+    onChange!({ ...value, organizations: { ...orgs, [newID]: DUMMY_ORG } });
+  }
+  function handleOrgDelete(orgID: string) {
+    onChange!(update(value, { organizations: { $unset: [orgID] } }));
+  }
+
+  function findAffiliations(orgID: string): StakeholderOrgAffiliation[] {
+    return stakeholders.
+      filter(s => s.affiliations?.[orgID] !== undefined).
+      flatMap(s => Object.values(s.affiliations ?? {}));
+  }
+
+  function findAffiliationOptions(s: RegisterStakeholder) {
+    return Object.entries(orgs).
+      filter(([orgID]) => s.affiliations?.[orgID] === undefined).
+      map(([orgID, org]) => ({
+        value: orgID,
+        label: org.name,
+      }));
   }
 
   return (
@@ -187,8 +227,59 @@ const RegisterMetaForm: React.FC<{
 
       <FormGroupAsCardInGrid
           paddingPx={PADDING_PX}
+          label="Organizations:"
+          css={css`min-width: 100%`}
+          helperText={onChange
+            ? <Button onClick={handleOrgAdd} icon="add">Add</Button>
+            : null}>
+        {organizationIDs.length > 0
+          ? <HTMLTable css={css`margin: 0 -${PADDING_PX}px;`}>
+              <thead>
+                <tr css={css`& > * { white-space: nowrap }`}>
+                  <th>Name</th>
+                  <th>Logo URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[ ...Object.entries(value.organizations) ].map(([orgID, s]) =>
+                  <tr key={orgID}>
+                    <td>
+                      <InputGroup
+                        readOnly={!onChange}
+                        rightElement={
+                          <Button
+                            key="delete"
+                            outlined
+                            disabled={!onChange || findAffiliations(orgID).length > 0}
+                            title="Delete this organization"
+                            onClick={() => handleOrgDelete(orgID)}
+                            icon="cross"
+                            intent="warning"
+                          />
+                        }
+                        onChange={makeOrgChangeHandler(orgID, (val) =>
+                          ({ name: { $set: val } })
+                        )}
+                        value={s.name} />
+                    </td>
+                    <td>
+                      <InputGroup
+                        readOnly={!onChange}
+                        onChange={makeOrgChangeHandler(orgID, (val) =>
+                          ({ logoURL: { $set: val } })
+                        )}
+                        value={s.logoURL} />
+                    </td>
+                  </tr>)}
+              </tbody>
+            </HTMLTable>
+          : null}
+      </FormGroupAsCardInGrid>
+
+      <FormGroupAsCardInGrid
+          paddingPx={PADDING_PX}
           label="Stakeholders:"
-          css={css`min-width: max-content`}
+          css={css`min-width: 100%`}
           helperText={onChange
             ? <Button onClick={handleStakeholderAdd} icon="add">Add</Button>
             : null}>
@@ -199,9 +290,7 @@ const RegisterMetaForm: React.FC<{
                   <th>Role</th>
                   <th>Name</th>
                   <th>Git server username</th>
-                  <th>Parties</th>
-                  <th>Name</th>
-                  <th>Email</th>
+                  <th>Affiliations</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,6 +313,17 @@ const RegisterMetaForm: React.FC<{
                         onChange={makeStakeholderChangeHandler(idx, (val) =>
                           ({ name: { $set: val } })
                         )}
+                        rightElement={
+                          <Button
+                            key="delete"
+                            outlined
+                            disabled={!onChange}
+                            title="Delete this stakeholder"
+                            onClick={() => handleStakeholderDelete(idx)}
+                            icon="cross"
+                            intent="warning"
+                          />
+                        }
                         value={s.name} />
                     </td>
                     <td>
@@ -235,69 +335,53 @@ const RegisterMetaForm: React.FC<{
                         value={s.gitServerUsername || ''} />
                     </td>
                     <td>
-                      <ControlGroup vertical={s.parties.length > 1}>
-                        {s.parties.map((party, partyIdx) =>
-                          <ButtonGroup key={partyIdx}>
-                            {s.parties.length < 2
-                              ? <Button
-                                    key="delete"
-                                    outlined
-                                    disabled={!onChange || s.parties.length > 1}
-                                    title="Delete this stakeholder"
-                                    onClick={() => handleStakeholderDelete(idx)}
-                                    icon="cross"
-                                    intent="warning"
-                                  />
-                              : <Button
-                                    key="delete"
-                                    outlined
-                                    disabled={!onChange || s.parties.length < 2 || party.name !== ''}
-                                    title="Delete this party"
-                                    onClick={() => onChange!(update(value, { stakeholders: { [idx]: { parties: { $splice: [[ partyIdx, 1 ]] } } } }))}
-                                    icon="cross"
-                                  />}
-                            {partyIdx === s.parties.length - 1
-                              ? <Button
-                                  key="add"
+                      <ControlGroup vertical>
+                        {Object.entries(s.affiliations ?? {}).
+                            sort(([, aff], [, aff2]) => aff2.role.localeCompare(aff.role)).
+                            map(([orgID, affiliation], _affiliationIdx) =>
+                          <ButtonGroup key={orgID}>
+                            <InputGroup
+                              key="org"
+                              readOnly
+                              value={orgs[orgID]?.name ?? orgID}
+                              rightElement={
+                                <Button
+                                  key="delete"
                                   outlined
                                   disabled={!onChange}
-                                  onClick={() => onChange!(update(value, { stakeholders: { [idx]: { parties: { $push: [DUMMY_PARTY] } } } }))}
-                                  title="Append a party"
-                                  icon="plus"
+                                  title="Delete this affiliation"
+                                  onClick={() => onChange!(update(value, { stakeholders: { [idx]: { affiliations: { $unset: [orgID] } } } }))}
+                                  icon="cross"
                                 />
-                              : null}
+                              }
+                            />
+                            <HTMLSelect
+                              key="set-role"
+                              disabled={!onChange}
+                              value={affiliation.role}
+                              options={[
+                                { value: 'pointOfContact', label: 'point of contact' },
+                                { value: 'member', label: 'member' },
+                              ]}
+                              onChange={(evt) => onChange!(update(value, { stakeholders: { [idx]: { affiliations: { [orgID]: { role: { $set: evt.currentTarget.value as 'pointOfContact' | 'member' } } } } } }))}
+                              title="Specify role in organization"
+                            />
                           </ButtonGroup>
                         )}
-                      </ControlGroup>
-                    </td>
-                    <td>
-                      <ControlGroup vertical={s.parties.length > 1}>
-                        {s.parties.map((party, partyIdx) =>
-                          <InputGroup
-                            key={partyIdx}
-                            readOnly={!onChange}
-                            placeholder="Individual or organization"
-                            onChange={makeStakeholderChangeHandler(idx, (val) =>
-                              ({ parties: { [partyIdx]: { name: { $set: val } } } })
-                            )}
-                            value={(party as { name: string }).name}
-                          />
-                        )}
-                      </ControlGroup>
-                    </td>
-                    <td>
-                      <ControlGroup vertical={s.parties.length > 1}>
-                        {s.parties.map((party, partyIdx) =>
-                          <InputGroup
-                            key={partyIdx}
-                            type="email"
-                            placeholder="Contact email"
-                            readOnly={!onChange}
-                            onChange={makeStakeholderChangeHandler(idx, (val) =>
-                              ({ parties: { [partyIdx]: { contacts: { 0: { value: { $set: val } } } } } })
-                            )}
-                            value={party.contacts[0].value || ''} />
-                        )}
+                        {findAffiliationOptions(s).length > 0 && onChange
+                          ? <HTMLSelect
+                              key="add"
+                              options={[
+                                { label: "Append affiliation…", value: '' },
+                                ...findAffiliationOptions(s),
+                              ]}
+                              value=""
+                              onChange={(evt) => evt.currentTarget.value?.trim() !== ''
+                                ? onChange!(update(value, { stakeholders: { [idx]: { affiliations: { [evt.currentTarget.value]: { $set: { role: 'member' } } } } } }))
+                                : void 0}
+                              title="Append affiliation…"
+                            />
+                          : null}
                       </ControlGroup>
                     </td>
                   </tr>)}

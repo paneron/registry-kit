@@ -56,16 +56,29 @@ export function canImportCR(stakeholder: RegisterStakeholder): boolean {
     stakeholder.gitServerUsername?.trim() !== '';
 }
 
+export interface Contact {
+  label: string
+  value: string
+  notes?: string
+}
+
 /** Register stakeholder represents an individual. */
 interface _RegisterStakeholder {
   /** Stakeholder’s role wrt. the current register. */
   role: StakeholderRoleType
   name: string
 
-  // TODO: Make git server username per-party, instead of stakeholder-global?
   gitServerUsername?: string
 
-  parties: Party[]
+  contacts: Contact[]
+
+  affiliations: {
+    [orgID: string]: StakeholderOrgAffiliation
+  }
+}
+
+export interface StakeholderOrgAffiliation {
+  role: 'pointOfContact' | 'member'
 }
 
 interface Owner extends _RegisterStakeholder {
@@ -96,37 +109,10 @@ export function isSubmitter(val: RegisterStakeholder): val is Submitter {
   return val.role === StakeholderRole.Submitter;
 }
 
-//interface NonEditingStakeholder extends _RegisterStakeholder {
-//  role: 'owner'
-//}
-//export interface EditingStakeholder extends _RegisterStakeholder {
-//  role: 'manager' | 'submitter'
-//}
-
-interface Role {
-  positionName: string
-  name?: never
-  organization: Organization
-}
-
-interface Individual {
-  name: string
-  positionName?: never
-  organization?: Organization
-}
-
 // Either logoURL or name or both must be present on an org here
-type Organization<T = {
-  logoURL: string[];
-  name: string;
-}> = Partial<T> & Pick<T, keyof T>
-
-type Party = (Individual | Role | Organization) & {
-  contacts: { label: string, value: string, notes?: string }[]
-}
-
-export function isIndividualParty(val: any): val is Individual {
-  return typeof val.name === 'string' && !val.hasOwnProperty('positionName');
+export interface Organization {
+  logoURL: string
+  name: string
 }
 
 export type RegisterStakeholder = Owner | ControlBody | Manager | Submitter
