@@ -412,7 +412,7 @@ function ({ paddingPx, ...props }) {
         background: ${Colors.WHITE};
         .bp4-dark & { background: ${Colors.DARK_GRAY3}; }
       `}
-      className={Classes.ELEVATION_3}
+      className={`${Classes.ELEVATION_3} ${props.className}`}
     />
   );
 };
