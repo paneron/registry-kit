@@ -4,7 +4,7 @@
 export const StakeholderRole = {
   Owner: 'owner',
   ControlBody: 'control-body',
-  ControlBodyRevew: 'control-body-reviewer',
+  ControlBodyReview: 'control-body-reviewer',
   Manager: 'manager',
   Submitter: 'submitter',
 } as const;
