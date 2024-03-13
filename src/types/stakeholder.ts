@@ -9,6 +9,14 @@ export const StakeholderRole = {
   Submitter: 'submitter',
 } as const;
 
+export const StakeholderRoleLabels: Record<StakeholderRoleType, string> = {
+  owner: "Owner",
+  'control-body': "Control body approver",
+  'control-body-reviewer': "Control body reviewer",
+  manager: "Manager",
+  submitter: "Proposal submitter",
+}
+
 export type StakeholderRoleType = typeof StakeholderRole[keyof typeof StakeholderRole];
 
 export const STAKEHOLDER_ROLES = Object.values(StakeholderRole) as StakeholderRoleType[];

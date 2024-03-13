@@ -26,6 +26,7 @@ import {
   type Organization,
   type StakeholderOrgAffiliation,
   StakeholderRole,
+  StakeholderRoleLabels,
   type StakeholderRoleType,
 } from '../../../types/stakeholder';
 
@@ -310,13 +311,13 @@ const RegisterMetaForm: React.FC<{
                         selectedItems={[...(s.roles ?? [(s as any).role as string])]}
                         disabled={!onChange || !s.roles}
                         itemDisabled={i => s.roles?.includes(i)}
-                        tagRenderer={i => i}
+                        tagRenderer={i => StakeholderRoleLabels[i]}
                         onRemove={i =>
                           onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
                         }
                         itemRenderer={(i, { handleClick, modifiers: { active, disabled } }) =>
                           <MenuItem
-                            text={i}
+                            text={StakeholderRoleLabels[i]}
                             active={active}
                             disabled={disabled}
                             onClick={handleClick}
