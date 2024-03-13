@@ -22,7 +22,7 @@ const RegisterMeta: React.FC<Record<never, never>> = function () {
   const canChange = updateObjects ? true : false;
   const didChange = registerMetadata && editedMetadata && JSON.stringify(editedMetadata) !== JSON.stringify(registerMetadata);
 
-  const owner = (registerMetadata?.stakeholders ?? []).find(s => s.role === 'owner');
+  const owner = (registerMetadata?.stakeholders ?? []).find(isOwner);
   const stakeholderCanEdit = !owner || (stakeholder && isOwner(stakeholder));
 
   function handleClear() {

@@ -33,12 +33,7 @@ export function isStakeholderRole(val: string): val is StakeholderRoleType {
 
 export function canCreateCR(stakeholder: RegisterStakeholder): boolean {
   return (
-    [
-      StakeholderRole.Submitter,
-      StakeholderRole.Manager,
-      // TODO: Temporary, owners shouldn’t be capable of creating CRs normally:
-      StakeholderRole.Owner,
-    ].indexOf(stakeholder.role as any) >= 0 &&
+    isOwner(stakeholder) || isSubmitter(stakeholder) || isManager(stakeholder) && 
     // Must have a Git server username (current limitation)
     // in order to be able to edit this proposal later.
     stakeholder.gitServerUsername?.trim() !== '');
@@ -46,14 +41,10 @@ export function canCreateCR(stakeholder: RegisterStakeholder): boolean {
 
 export function canImportCR(stakeholder: RegisterStakeholder): boolean {
   return (
-    [
-      StakeholderRole.Manager,
-      // TODO: Temporary, owners shouldn’t be capable of importing CRs normally:
-      StakeholderRole.Owner,
-    ].indexOf(stakeholder.role as any) >= 0) &&
+    isManager(stakeholder) || isOwner(stakeholder) &&
     // Must have a Git server username (current limitation)
     // in order to be able to edit this proposal later.
-    stakeholder.gitServerUsername?.trim() !== '';
+    stakeholder.gitServerUsername?.trim() !== '');
 }
 
 export interface Contact {
@@ -63,9 +54,11 @@ export interface Contact {
 }
 
 /** Register stakeholder represents an individual. */
-interface _RegisterStakeholder {
+export interface RegisterStakeholder {
   /** Stakeholder’s role wrt. the current register. */
-  role: StakeholderRoleType
+  //role: StakeholderRoleType
+  roles: readonly StakeholderRoleType[]
+
   name: string
 
   gitServerUsername?: string
@@ -81,32 +74,24 @@ export interface StakeholderOrgAffiliation {
   role: 'pointOfContact' | 'member'
 }
 
-interface Owner extends _RegisterStakeholder {
-  role: typeof StakeholderRole.Owner
-}
-export function isOwner(val: RegisterStakeholder): val is Owner {
-  return val.role === StakeholderRole.Owner;
+export function isOwner(val: RegisterStakeholder): boolean {
+  return val.roles?.includes(StakeholderRole.Owner);
 }
 
-interface ControlBody extends _RegisterStakeholder {
-  role: typeof StakeholderRole.ControlBody
-}
-export function isControlBody(val: RegisterStakeholder): val is ControlBody {
-  return val.role === StakeholderRole.ControlBody;
+export function isControlBody(val: RegisterStakeholder): boolean {
+  return val.roles?.includes(StakeholderRole.ControlBody);
 }
 
-interface Manager extends _RegisterStakeholder {
-  role: typeof StakeholderRole.Manager
-}
-export function isManager(val: RegisterStakeholder): val is Manager {
-  return val.role === StakeholderRole.Manager;
+export function isControlBodyReviewer(val: RegisterStakeholder): boolean {
+  return val.roles?.includes(StakeholderRole.ControlBodyReview);
 }
 
-interface Submitter extends _RegisterStakeholder {
-  role: typeof StakeholderRole.Submitter
+export function isManager(val: RegisterStakeholder): boolean {
+  return val.roles?.includes(StakeholderRole.Manager);
 }
-export function isSubmitter(val: RegisterStakeholder): val is Submitter {
-  return val.role === StakeholderRole.Submitter;
+
+export function isSubmitter(val: RegisterStakeholder): boolean {
+  return val.roles?.includes(StakeholderRole.Submitter);
 }
 
 // Either logoURL or name or both must be present on an org here
@@ -115,7 +100,7 @@ export interface Organization {
   name: string
 }
 
-export type RegisterStakeholder = Owner | ControlBody | Manager | Submitter
+//export type RegisterStakeholder = Owner | ControlBody | Manager | Submitter
 
 export function isRegisterStakeholder(val: any): val is RegisterStakeholder {
   return (

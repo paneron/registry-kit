@@ -13,13 +13,21 @@ import {
   HTMLSelect,
   Button,
   ButtonGroup,
+  MenuItem,
 } from '@blueprintjs/core';
+import { MultiSelect2 as Select } from '@blueprintjs/select';
 import { DatePicker, TimePrecision } from '@blueprintjs/datetime';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { FormGroupAsCardInGrid } from '../../../views/util'; 
 import type { Register, RegisterStakeholder, Locale } from '../../../types';
-import { isStakeholderRole } from '../../../types';
-import { STAKEHOLDER_ROLES, Contact, Organization, StakeholderOrgAffiliation, StakeholderRole } from '../../../types/stakeholder';
+import {
+  STAKEHOLDER_ROLES,
+  type Contact,
+  type Organization,
+  type StakeholderOrgAffiliation,
+  StakeholderRole,
+  type StakeholderRoleType,
+} from '../../../types/stakeholder';
 
 
 
@@ -44,7 +52,7 @@ const DUMMY_ORG: Organization = {
 // };
 
 const DUMMY_STAKEHOLDER: Register["stakeholders"][number] = {
-  role: StakeholderRole.Submitter,
+  roles: [StakeholderRole.Submitter],
   name: '',
   gitServerUsername: undefined,
   affiliations: {},
@@ -297,15 +305,27 @@ const RegisterMetaForm: React.FC<{
                 {[ ...stakeholders.entries() ].map(([idx, s]) =>
                   <tr key={idx}>
                     <td>
-                      <HTMLSelect
-                        options={STAKEHOLDER_ROLES.map(r => ({ value: r, label: r }))}
-                        disabled={!onChange}
-                        onChange={makeStakeholderChangeHandler<HTMLSelectElement>(idx, (val) =>
-                          isStakeholderRole(val)
-                            ? { role: { $set: val } } as Spec<RegisterStakeholder> // Why do we need to cast this
-                            : {}
-                        )}
-                        value={s.role} />
+                      <Select<StakeholderRoleType>
+                        items={STAKEHOLDER_ROLES}
+                        selectedItems={[...(s.roles ?? [(s as any).role as string])]}
+                        disabled={!onChange || !s.roles}
+                        itemDisabled={i => s.roles?.includes(i)}
+                        tagRenderer={i => i}
+                        onRemove={i =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
+                        }
+                        itemRenderer={(i, { handleClick, modifiers: { active, disabled } }) =>
+                          <MenuItem
+                            text={i}
+                            active={active}
+                            disabled={disabled}
+                            onClick={handleClick}
+                          />
+                        }
+                        onItemSelect={item =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $push: [item] } } } }))
+                        }
+                      />
                     </td>
                     <td>
                       <InputGroup

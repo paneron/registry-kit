@@ -10,6 +10,7 @@ import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-ki
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { BrowserCtx } from '../BrowserCtx';
 import type { RegisterItem, RegisterStakeholder, Supersession } from '../../types';
+import { isOwner, isControlBody, isManager } from '../../types/stakeholder';
 import { itemPathInCR, crIDToCRPath } from '../itemPathUtils';
 import * as CR from '../../types/cr';
 import { proposalsToObjectChangeset } from '../change-request/objectChangeset';
@@ -573,14 +574,14 @@ const TRANSITIONS: CR.Transitions = {
     [CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW]: {
       title: "Submit for control body review",
       targetState: CR.State.SUBMITTED_FOR_CONTROL_BODY_REVIEW,
-      canBeTransitionedBy: (stakeholder) => ['owner', 'manager'].indexOf(stakeholder.role) >= 0,
+      canBeTransitionedBy: (s) => isOwner(s) || isManager(s),
       Widget: RegisterManagerNotesWidget,
       func: applyRegisterManagerDecision,
     },
     [CR.State.RETURNED_FOR_CLARIFICATION]: {
       title: "Return for clarification",
       targetState: CR.State.RETURNED_FOR_CLARIFICATION,
-      canBeTransitionedBy: (stakeholder) => ['owner', 'manager'].indexOf(stakeholder.role) >= 0,
+      canBeTransitionedBy: (s) => isOwner(s) || isManager(s),
       Widget: RegisterManagerNotesWidget,
       func: function applyRegisterManagerReturnDecision(cr, payload) {
         if ((payload.registerManagerNotes ?? '').trim() === '') {
@@ -595,14 +596,14 @@ const TRANSITIONS: CR.Transitions = {
     [CR.State.RETURNED_FOR_CLARIFICATION]: {
       title: "Return for clarification",
       targetState: CR.State.RETURNED_FOR_CLARIFICATION,
-      canBeTransitionedBy: (stakeholder) => ['owner', 'control-body'].indexOf(stakeholder.role) >= 0,
+      canBeTransitionedBy: (s) => isOwner(s) || isControlBody(s),
       Widget: ControlBodyNotesWidget,
       func: applyControlBodyDecision,
     },
     [CR.State.ACCEPTED]: {
       title: "Accept",
       targetState: CR.State.ACCEPTED,
-      canBeTransitionedBy: (stakeholder) => ['owner', 'control-body'].indexOf(stakeholder.role) >= 0,
+      canBeTransitionedBy: (s) => isOwner(s) || isControlBody(s),
       Widget: ControlBodyDecisionWidget,
       func: (cr, controlBodyInput) => ({
         ...applyControlBodyDecision(cr, controlBodyInput),
@@ -612,7 +613,7 @@ const TRANSITIONS: CR.Transitions = {
     [CR.State.REJECTED]: {
       title: "Reject",
       targetState: CR.State.REJECTED,
-      canBeTransitionedBy: (stakeholder) => ['owner', 'control-body'].indexOf(stakeholder.role) >= 0,
+      canBeTransitionedBy: (s) => isOwner(s) || isControlBody(s),
       Widget: ControlBodyDecisionWidget,
       func: (cr, controlBodyInput) => ({
         ...applyControlBodyDecision(cr, controlBodyInput),
@@ -647,14 +648,14 @@ const TRANSITIONS: CR.Transitions = {
     [CR.State.ACCEPTED_ON_APPEAL]: {
       title: "Accept on appeal",
       targetState: CR.State.ACCEPTED_ON_APPEAL,
-      canBeTransitionedBy: (stakeholder) => stakeholder.role === 'owner',
+      canBeTransitionedBy: isOwner,
       Widget: RegisterOwnerNotesWidget,
       func: applyRegisterOwnerDecision,
     },
     [CR.State.REJECTION_UPHELD_ON_APPEAL]: {
       title: "Uphold rejection",
       targetState: CR.State.REJECTION_UPHELD_ON_APPEAL,
-      canBeTransitionedBy: (stakeholder) => stakeholder.role === 'owner',
+      canBeTransitionedBy: isOwner,
       Widget: RegisterOwnerNotesWidget,
       func: applyRegisterOwnerDecision,
     },

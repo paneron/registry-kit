@@ -184,10 +184,10 @@ function () {
 
   // Actionable proposals v2
   const proposalGroups = useMemo(
-    (() => stakeholder?.role
-      ? getActionableProposalGroupsForRole(stakeholder.role)
+    (() => stakeholder?.roles[0]
+      ? stakeholder.roles.flatMap(getActionableProposalGroupsForRole)
       : null),
-    [stakeholder?.role]);
+    [stakeholder?.roles.join(',')]);
 
   const actionableProposalsResult = useMapReducedData({
     chains:
