@@ -300,6 +300,7 @@ const RegisterMetaForm: React.FC<{
                   <th>Name</th>
                   <th>Git server username</th>
                   <th>Affiliations</th>
+                  <th>Contact email</th>
                 </tr>
               </thead>
               <tbody>
@@ -404,6 +405,15 @@ const RegisterMetaForm: React.FC<{
                             />
                           : null}
                       </ControlGroup>
+                    </td>
+                    <td>
+                      <InputGroup
+                        readOnly={!onChange}
+                        type="email"
+                        onChange={makeStakeholderChangeHandler(idx, (val) =>
+                          ({ contacts: { $set: [{ label: 'email', value: val }] } })
+                        )}
+                        value={s.contacts?.[0]?.value || ''} />
                     </td>
                   </tr>)}
               </tbody>
