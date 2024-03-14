@@ -39,11 +39,11 @@ const DUMMY_VERSION: Register["version"] = {
 
 const DUMMY_CONTACT: Contact = {
   label: 'email',
-  value: '',
+  value: 'example@example.com',
 } as const;
 
 const DUMMY_ORG: Organization = {
-  name: '<new organization>',
+  name: 'New organization',
   logoURL: '',
 } as const;
  
@@ -54,7 +54,7 @@ const DUMMY_ORG: Organization = {
 
 const DUMMY_STAKEHOLDER: Register["stakeholders"][number] = {
   roles: [StakeholderRole.Submitter],
-  name: '',
+  name: 'New stakeholder',
   gitServerUsername: undefined,
   affiliations: {},
   contacts: [DUMMY_CONTACT] as Contact[],
