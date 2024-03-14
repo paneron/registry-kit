@@ -27,5 +27,5 @@ function ({ stakeholder, isCurrentUser }) {
 
 
 export function registerStakeholderPlain(stakeholder: RegisterStakeholder): string {
-  return `${stakeholder.name} (${stakeholder.roles.join(', ') ?? '(no roles)'})`;
+  return `${stakeholder.name} (${stakeholder.roles?.join(', ') ?? '(no roles)'})`;
 }

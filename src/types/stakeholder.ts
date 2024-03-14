@@ -83,23 +83,28 @@ export interface StakeholderOrgAffiliation {
 }
 
 export function isOwner(val: RegisterStakeholder): boolean {
-  return val.roles?.includes(StakeholderRole.Owner);
+  return val.roles?.includes(StakeholderRole.Owner)
+    || (val as any).role === StakeholderRole.Owner;
 }
 
 export function isControlBody(val: RegisterStakeholder): boolean {
-  return val.roles?.includes(StakeholderRole.ControlBody);
+  return val.roles?.includes(StakeholderRole.ControlBody)
+    || (val as any).role === StakeholderRole.ControlBody;
 }
 
 export function isControlBodyReviewer(val: RegisterStakeholder): boolean {
-  return val.roles?.includes(StakeholderRole.ControlBodyReview);
+  return val.roles?.includes(StakeholderRole.ControlBodyReview)
+    || (val as any).role === StakeholderRole.ControlBodyReview;
 }
 
 export function isManager(val: RegisterStakeholder): boolean {
-  return val.roles?.includes(StakeholderRole.Manager);
+  return val.roles?.includes(StakeholderRole.Manager)
+    || (val as any).role === StakeholderRole.Manager;
 }
 
 export function isSubmitter(val: RegisterStakeholder): boolean {
-  return val.roles?.includes(StakeholderRole.Submitter);
+  return val.roles?.includes(StakeholderRole.Submitter)
+    || (val as any).role === StakeholderRole.Submitter;
 }
 
 // Either logoURL or name or both must be present on an org here
