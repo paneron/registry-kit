@@ -117,8 +117,11 @@ export interface Organization {
 
 export function isRegisterStakeholder(val: any): val is RegisterStakeholder {
   return (
-    val &&
-    val.hasOwnProperty('role') &&
-    isStakeholderRole(val.role) &&
-    val.hasOwnProperty('name'));
+    val
+    && val.hasOwnProperty('name')
+    && (
+      (val.hasOwnProperty('roles') && val.roles.every(isStakeholderRole))
+      || (val.hasOwnProperty('role') && isStakeholderRole(val.role)) // TODO: obsolete
+    )
+  );
 }
