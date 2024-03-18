@@ -294,9 +294,9 @@ const RegisterMetaForm: React.FC<{
           ? <HTMLTable css={css`margin: 0 -${PADDING_PX}px;`}>
               <thead>
                 <tr css={css`& > * { white-space: nowrap }`}>
-                  <th>Role</th>
                   <th>Name</th>
                   <th>Git server username</th>
+                  <th>Role</th>
                   <th>Affiliations</th>
                   <th>Contact email</th>
                 </tr>
@@ -304,29 +304,6 @@ const RegisterMetaForm: React.FC<{
               <tbody>
                 {[ ...stakeholders.entries() ].map(([idx, s]) =>
                   <tr key={idx}>
-                    <td>
-                      <Select<StakeholderRoleType>
-                        items={STAKEHOLDER_ROLES}
-                        selectedItems={[...(s.roles ?? [(s as any).role as string])]}
-                        disabled={!onChange || !s.roles}
-                        itemDisabled={i => s.roles?.includes(i)}
-                        tagRenderer={i => StakeholderRoleLabels[i]}
-                        onRemove={i =>
-                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
-                        }
-                        itemRenderer={(i, { handleClick, modifiers: { active, disabled } }) =>
-                          <MenuItem
-                            text={StakeholderRoleLabels[i]}
-                            active={active}
-                            disabled={disabled}
-                            onClick={handleClick}
-                          />
-                        }
-                        onItemSelect={item =>
-                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $push: [item] } } } }))
-                        }
-                      />
-                    </td>
                     <td>
                       <InputGroup
                         readOnly={!onChange}
@@ -353,6 +330,29 @@ const RegisterMetaForm: React.FC<{
                           ({ gitServerUsername: { $set: val || undefined } })
                         )}
                         value={s.gitServerUsername || ''} />
+                    </td>
+                    <td>
+                      <Select<StakeholderRoleType>
+                        items={STAKEHOLDER_ROLES}
+                        selectedItems={[...(s.roles ?? [(s as any).role as string])]}
+                        disabled={!onChange || !s.roles}
+                        itemDisabled={i => s.roles?.includes(i)}
+                        tagRenderer={i => StakeholderRoleLabels[i]}
+                        onRemove={i =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
+                        }
+                        itemRenderer={(i, { handleClick, modifiers: { active, disabled } }) =>
+                          <MenuItem
+                            text={StakeholderRoleLabels[i]}
+                            active={active}
+                            disabled={disabled}
+                            onClick={handleClick}
+                          />
+                        }
+                        onItemSelect={item =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $push: [item] } } } }))
+                        }
+                      />
                     </td>
                     <td>
                       <ControlGroup vertical>
