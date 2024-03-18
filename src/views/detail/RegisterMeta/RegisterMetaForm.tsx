@@ -334,10 +334,18 @@ const RegisterMetaForm: React.FC<{
                     <td>
                       <Select<StakeholderRoleType>
                         items={STAKEHOLDER_ROLES}
+                        popoverProps={{
+                          minimal: true,
+                          matchTargetWidth: true,
+                        }}
+                        itemPredicate={(q, i) => i.toLowerCase().indexOf(q.toLowerCase()) >= 0}
+                        resetOnSelect
+                        css={css`max-width: 300px;`}
                         selectedItems={[...(s.roles ?? [(s as any).role as string])]}
                         disabled={!onChange || !s.roles}
                         itemDisabled={i => s.roles?.includes(i)}
                         tagRenderer={i => StakeholderRoleLabels[i]}
+                        tagInputProps={{ tagProps: { className: 'bp4-fill' }}}
                         onRemove={i =>
                           onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
                         }
