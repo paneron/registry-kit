@@ -68,8 +68,6 @@ const RegisterMetaForm: React.FC<{
   className?: string;
 }> = function ({ value, onChange, className }) {
 
-  console.debug("Rendering RegisterMetaForm");
-
   function handleOperatingLanguageChange(fieldName: keyof Omit<Locale, 'characterEncoding'>) {
     return (evt: React.FormEvent<HTMLInputElement>) => {
       const newValue = update(value, { operatingLanguage: op => update(op ?? {}, { [fieldName]: { $set: evt.currentTarget.value } }) });
