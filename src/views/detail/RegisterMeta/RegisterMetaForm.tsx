@@ -285,7 +285,7 @@ const RegisterMetaForm: React.FC<{
 
       <FormGroupAsCardInGrid
           paddingPx={PADDING_PX}
-          label="Stakeholders:"
+          label="Users:"
           css={css`min-width: 100%`}
           helperText={onChange
             ? <Button onClick={handleStakeholderAdd} icon="add">Add</Button>
