@@ -338,31 +338,33 @@ const RegisterMetaForm: React.FC<{
                           minimal: true,
                           matchTargetWidth: true,
                         }}
-                        itemPredicate={(q, i) =>
-                          `${i} ${StakeholderRoleLabels[i]}`.
+                        itemPredicate={(query, roleID) =>
+                          // Match can be in both role ID and role label
+                          `${roleID} ${StakeholderRoleLabels[roleID]}`.
                             toLowerCase().
-                            indexOf(q.toLowerCase()) >= 0
+                            indexOf(query.toLowerCase()) >= 0
                         }
                         resetOnSelect
                         css={css`max-width: 300px;`}
                         selectedItems={[...(s.roles ?? [(s as any).role as string])]}
                         disabled={!onChange || !s.roles}
-                        itemDisabled={i => s.roles?.includes(i)}
-                        tagRenderer={i => StakeholderRoleLabels[i]}
+                        itemDisabled={roleID => s.roles?.includes(roleID)}
+                        tagRenderer={roleID => StakeholderRoleLabels[roleID]}
+                        // Make each role take full width & so stak them vertically
                         tagInputProps={{ tagProps: { className: 'bp4-fill' }}}
-                        onRemove={i =>
-                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(i), 1]] } } } }))
+                        onRemove={roleID =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $splice: [[s.roles.indexOf(roleID), 1]] } } } }))
                         }
-                        itemRenderer={(i, { handleClick, modifiers: { active, disabled } }) =>
+                        itemRenderer={(roleID, { handleClick, modifiers: { active, disabled } }) =>
                           <MenuItem
-                            text={StakeholderRoleLabels[i]}
+                            text={StakeholderRoleLabels[roleID]}
                             active={active}
                             disabled={disabled}
                             onClick={handleClick}
                           />
                         }
-                        onItemSelect={item =>
-                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $push: [item] } } } }))
+                        onItemSelect={roleID =>
+                          onChange!(update(value, { stakeholders: { [idx]: { roles: { $push: [roleID] } } } }))
                         }
                       />
                     </td>
