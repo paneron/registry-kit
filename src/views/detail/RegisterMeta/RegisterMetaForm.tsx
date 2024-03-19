@@ -338,7 +338,11 @@ const RegisterMetaForm: React.FC<{
                           minimal: true,
                           matchTargetWidth: true,
                         }}
-                        itemPredicate={(q, i) => i.toLowerCase().indexOf(q.toLowerCase()) >= 0}
+                        itemPredicate={(q, i) =>
+                          `${i} ${StakeholderRoleLabels[i]}`.
+                            toLowerCase().
+                            indexOf(q.toLowerCase()) >= 0
+                        }
                         resetOnSelect
                         css={css`max-width: 300px;`}
                         selectedItems={[...(s.roles ?? [(s as any).role as string])]}
