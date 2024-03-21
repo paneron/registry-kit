@@ -15,7 +15,7 @@ export const StakeholderRoleLabels: Record<StakeholderRoleType, string> = {
   'control-body-reviewer': "Control body reviewer",
   manager: "Manager",
   submitter: "Proposal submitter",
-}
+};
 
 export type StakeholderRoleType = typeof StakeholderRole[keyof typeof StakeholderRole];
 
