@@ -183,8 +183,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
       <InputGroup
         fill={hasItem}
         readOnly={!onChange && !onClear}
-        onChange={() => void 0}
         inputRef={inputRef}
+        onChange={useCallback(() => void 0, [])}
         css={css`
           /* leftElement which displays itemView */
           .bp4-input-left-container {
