@@ -172,6 +172,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     ? `${itemClassTitle ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
     : undefined;
 
+  const closePeekingDrawer = useCallback(
+    (() => setPeekingDrawerState(false)),
+    [setPeekingDrawerState]);
   //log.debug("Rendering generic related item view: got item", item);
   return (
     <ControlGroup
@@ -222,7 +225,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
       <ItemSearchDrawer
         isOpen={selectDialogState}
-        onClose={() => setSelectDialogState(false)}
+        onClose={useCallback(
+          () => setSelectDialogState(false),
+          [setSelectDialogState])}
         onChooseItem={onChange}
         availableClassIDs={classIDs}
       />
@@ -230,8 +235,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
       {itemRef
         ? <ItemDetailsDrawer
             isOpen={peekingDrawerState}
-            onClose={() => setPeekingDrawerState(false)}
             itemRef={itemRef}
+            onClose={closePeekingDrawer}
           />
         : null}
 
