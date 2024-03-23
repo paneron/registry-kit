@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useContext } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { Button, ButtonGroup, Drawer, DrawerSize } from '@blueprintjs/core';
 import type { InternalItemReference } from '../types';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
@@ -34,7 +34,9 @@ const ItemDetailDrawer: React.FC<{
       <ButtonGroup fill>
         <Button
           icon="open-application"
-          onClick={() => { onClose(); spawnTab(`${Protocols.ITEM_DETAILS}:${path}`); }}
+          onClick={useCallback(
+            () => { onClose(); spawnTab(`${Protocols.ITEM_DETAILS}:${path}`); },
+            [onClose])}
           text="Open in a tab"
         />
         <Button
