@@ -15,8 +15,9 @@ const ItemDetailDrawer: React.FC<{
   itemRef: InternalItemReference
   isOpen: boolean
   usePortal?: boolean
+  portalContainer?: HTMLElement
   onClose: () => void
-}> = function ({ itemRef, usePortal, isOpen, onClose }) {
+}> = function ({ itemRef, usePortal, portalContainer, isOpen, onClose }) {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const path = itemRefToItemPath(itemRef);
 
@@ -24,6 +25,7 @@ const ItemDetailDrawer: React.FC<{
     <Drawer
         isOpen={isOpen}
         usePortal={usePortal}
+        portalContainer={portalContainer}
         onClose={onClose}
         enforceFocus={false}
         size={DrawerSize.LARGE}
