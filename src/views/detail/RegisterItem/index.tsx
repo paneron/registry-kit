@@ -134,7 +134,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
   className?: string
   compactHeader?: boolean
 }> = memo(function ({ item, itemRef, itemClass, className, compactHeader }) {
-  const { subregisters, activeChangeRequestID: globallyActiveCRID } = useContext(BrowserCtx);
+  const { subregisters, useRegisterItemData, activeChangeRequestID: globallyActiveCRID } = useContext(BrowserCtx);
 
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
   const { updateObjects, makeRandomID, performOperation, isBusy } = useContext(DatasetContext);
@@ -152,6 +152,8 @@ export const ItemDetail: React.VoidFunctionComponent<{
         itemData={editedItemData}
         itemRef={itemRef}
         onChange={!isBusy ? setEditedItemData : undefined}
+        // TODO: make importing context from registry-kit work in new-style extension
+        useRegisterItemData={useRegisterItemData}
       />
     );
   } else {
@@ -160,6 +162,8 @@ export const ItemDetail: React.VoidFunctionComponent<{
       <DetailView
         itemRef={itemRef}
         itemData={item.data}
+        // TODO: make importing context from registry-kit work in new-style extension
+        useRegisterItemData={useRegisterItemData}
       />
     );
   }
