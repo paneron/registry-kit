@@ -3,7 +3,7 @@
 
 import React, { memo, useMemo, useCallback, useContext, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, IconName, Menu, MenuItem, MenuDivider, Tree, TreeNodeInfo } from '@blueprintjs/core';
+import { Button, IconName, Menu, MenuItem, MenuDivider, Tree, type TreeNodeInfo } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
