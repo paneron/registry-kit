@@ -600,4 +600,4 @@ const ItemTitle: React.FC<{ uri: string }> = function ({ uri }) {
 export default {
   main: MaybeItemDetail,
   title: ItemTitle,
-};
+} as const;

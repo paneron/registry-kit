@@ -40,7 +40,7 @@ const ItemClassTitle: React.FC<{ uri: string }> = function ({ uri }) {
 export default {
   main: MaybeItemClass,
   title: ItemClassTitle,
-};
+} as const;
 
 
 const ItemClass: React.VoidFunctionComponent<{
