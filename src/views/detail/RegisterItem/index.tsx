@@ -594,7 +594,7 @@ const ItemTitle: React.FC<{ uri: string }> = function ({ uri }) {
     itemRef={ref ?? DUMMY_REF}
     itemData={itemData}
   />;
-}
+};
 
 
 export default {
