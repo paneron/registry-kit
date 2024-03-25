@@ -12,6 +12,8 @@ import Browse from './Browse';
 import Search from './Search';
 import { PendingChangeRequestsBlock, ChangeRequestHistoryBlock } from './Registration';
 import { ExportOptions, ImportOptions } from './ExportImport';
+//import Browse from './Browse';
+import ItemClassTree from '../../item-classes/Tree';
 
 
 export const sidebarIDs = [
@@ -32,7 +34,7 @@ export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
         Preset searches
         <HelpTooltip content="Browse register items by pre-made categories" />
       </div>,
-      content: <Browse css={css`position: absolute; inset: 0;`} />,
+      content: <ItemClassTree />,
       nonCollapsible: false,
       // These have to have height specified due to absolute positioning.
       height: 400,
