@@ -10,17 +10,11 @@ import {
   type IconName,
 } from '@blueprintjs/core';
 import type { Criterion, CriteriaGroup } from '../FilterCriteria/models';
-import {
-  type ItemClassConfiguration,
-} from '../../types';
+import { type ItemClassConfiguration } from '../../types';
 import useItemClassConfig from '../hooks/useItemClassConfig';
 import Search from '../sidebar/Search';
-import {
-  RegisterHelmet as Helmet,
-} from '../util';
-import {
-  TabContentsWithHeader,
-} from '../util';
+import { RegisterHelmet as Helmet } from '../util';
+import { TabContentsWithHeader } from '../util';
 
 
 const MaybeItemClass: React.VoidFunctionComponent<{ uri: string }> =
