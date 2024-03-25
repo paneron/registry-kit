@@ -45,7 +45,7 @@ interface ChangeRequestBlockState {
 const initialState: ChangeRequestBlockState = {
   quickSubstringQuery: '',
   selectedItemPath: null,
-};
+} as const;
 type ChangeRequestBlockAction =
   | { type: 'update-quick-substring-query'; payload: { substring: string; }; }
   | { type: 'select-item'; payload: { itemPath: string | null; }; }
