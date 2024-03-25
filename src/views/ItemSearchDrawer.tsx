@@ -54,7 +54,7 @@ const ItemSearchDrawer: React.FC<{
         style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
         availableClassIDs={availableClassIDs}
         implicitCriteria={implicitCriteria}
-        stateName="superseding-item-selector-search"
+        stateName="item-browser-search"
         onOpenItem={onChooseItem ? handleOpenItem : undefined}
       />
     </Drawer>
