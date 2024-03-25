@@ -132,6 +132,9 @@ extends RegisterConfiguration<Items> {
   // TODO: Obsoluete?
   defaultSearchCriteria?: CriteriaGroup
 
+  /** Group item classes */
+  itemClassGroups?: Record<string, readonly (keyof Items)[]>
+
   /** Overrides CustomSidebarConfig, obviously. */
   CustomWorkspace?: React.FC<Record<never, never>>
 

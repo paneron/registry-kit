@@ -38,6 +38,7 @@ function () {
   const {
     registerMetadata, stakeholder,
     itemClasses,
+    itemClassGroups,
     setActiveChangeRequestID,
     jumpTo,
   } = useContext(BrowserCtx);
@@ -418,39 +419,52 @@ function () {
   
 
   const itemSelectorBlocks = useMemo(() => {
+    const groups = itemClassGroups
+      ? itemClassGroups
+      : { '': Object.keys(itemClasses) };
     return (
       <>
-        {Object.entries(itemClasses).map(([clsID, cls]) => {
-          const actions: MenuItemProps[] = [{
-            onClick: () => activateItemSelector(clsID),
-            icon: 'search',
-            text: "Find item…",
-            selected: activeItemSelector === clsID,
-          }];
-          if (activeCRIsEditable && handleProposeNew) {
-            actions.push({
-              onClick: () => handleProposeNew(clsID),
-              icon: 'add',
-              text: "Propose new",
-              intent: 'primary',
-            });
-          }
-          return <HomeBlockCard
-              key={clsID}
-              css={css`flex-basis: calc(25% - 10px*3/4); flex-shrink: 0;`}
-              description={`Search items of class ${cls.meta.title}`}>
-            <Tag minimal>Class</Tag>
-            <div css={css`padding: 5px; flex-grow: 1;`}>
-              <H5 css={css`margin: 0;`}>{cls.meta.title}</H5>
-              {cls.meta.description && cls.meta.description !== cls.meta.title
-                ? <p css={css`margin: 10px 0 0 0;`}>
-                    {cls.meta.description ?? "(no description)"}
-                  </p>
-                : null}
-            </div>
-            <HomeBlockActions actions={actions} />
-          </HomeBlockCard>
-        })}
+        {Object.entries(groups).map(([groupLabel, clsIDs]) =>
+          <>
+            {groupLabel
+              ? <GridHeader>{groupLabel}:</GridHeader>
+              : null}
+            {clsIDs.map((clsID: string) => {
+              const cls = itemClasses[clsID];
+              const actions: MenuItemProps[] = [{
+                onClick: () => spawnTab(`${Protocols.ITEM_CLASS}:${clsID}`),
+                icon: 'search',
+                text: "Find item…",
+                selected: activeItemSelector === clsID,
+              }];
+              if (activeCRIsEditable && handleProposeNew) {
+                actions.push({
+                  onClick: () => handleProposeNew(clsID),
+                  icon: 'add',
+                  text: "Propose new",
+                  intent: 'primary',
+                });
+              }
+              return <HomeBlockCard
+                  key={clsID}
+                  css={css`flex-basis: calc(25% - 10px*3/4); flex-shrink: 0;`}
+                  description={`Search items of class ${cls?.meta.title ?? clsID}`}>
+                <Tag minimal>Class</Tag>
+                <div css={css`padding: 5px; flex-grow: 1;`}>
+                  <H5 css={css`margin: 0;`}>{cls.meta.title}</H5>
+                  {cls
+                    ? cls.meta.description && cls.meta.description !== cls.meta.title
+                        ? <p css={css`margin: 10px 0 0 0;`}>
+                            {cls.meta.description ?? "(no description)"}
+                          </p>
+                        : null
+                    : "(no class information available)"}
+                </div>
+                <HomeBlockActions actions={actions} />
+              </HomeBlockCard>
+            })}
+          </>
+        )}
 
         <ItemSearchDrawer
           isOpen={jumpTo && activeItemSelector ? true : false}
@@ -480,9 +494,11 @@ function () {
 
       {proposedChangeBlocks}
 
-      <GridHeader>
-        Register Items:
-      </GridHeader>
+      {!itemClassGroups
+        ? <GridHeader>
+            Register Items:
+          </GridHeader>
+        : null}
 
       {itemSelectorBlocks}
 

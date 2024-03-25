@@ -104,6 +104,7 @@ function RegistryWorkspace () {
 
 const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvider ({
   itemClassConfiguration,
+  itemClassGroups,
   subregisters,
   keyExpression,
   defaultSearchCriteria,
@@ -257,6 +258,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           subregisters,
           alterApprovedCR,
           itemClasses: itemClassConfiguration,
+          itemClassGroups,
 
           jumpTo: spawnTab,
 

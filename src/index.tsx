@@ -38,6 +38,7 @@ export const makeRegistryExtension: RegistryExtensionMaker = function (opts) {
     return (
       <RegistryView
         itemClassConfiguration={opts.itemClassConfiguration}
+        itemClassGroups={opts.itemClassGroups}
         subregisters={opts.subregisters}
         CustomWorkspace={opts.CustomWorkspace}
         defaultSearchCriteria={opts.defaultSearchCriteria}
