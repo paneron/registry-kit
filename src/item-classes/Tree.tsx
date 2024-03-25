@@ -77,6 +77,7 @@ const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = functio
   return <GenericStatefulTree
     getNodes={getNodes}
     stateKey="item-browser"
+    onItemDoubleClick={(node) => spawnTab(`${Protocols.ITEM_CLASS}:${node.id}`)}
   />;
 };
 
