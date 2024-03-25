@@ -96,4 +96,4 @@ const ItemClass: React.VoidFunctionComponent<{
       </Card>
     </TabContentsWithHeader>
   );
-}
+};
