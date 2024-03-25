@@ -3,8 +3,7 @@
 
 import React, { memo, useMemo, useCallback, useContext, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, IconName, Menu, MenuItem, MenuDivider, Tree, type TreeNodeInfo } from '@blueprintjs/core';
-import { Popover2 } from '@blueprintjs/popover2';
+import { IconName, Menu, MenuItem, MenuDivider, Tree, type TreeNodeInfo } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
@@ -13,6 +12,7 @@ import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/Searc
 import type { CriteriaGroup } from '../../FilterCriteria/models';
 import criteriaGroupToQueryExpression from '../../FilterCriteria/criteriaGroupToQueryExpression';
 import CRITERIA_CONFIGURATION from '../../FilterCriteria/CRITERIA_CONFIGURATION';
+import { MoreMenu, ItemClassMenu } from '../../util';
 import { itemRefToItemPath } from '../../itemPathUtils';
 import { getRegisterItemQuery } from '../../itemQueryUtils';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
@@ -378,15 +378,6 @@ memo(function ({ stateName, onOpenItem, className, style }) {
 });
 
 
-const MoreMenu: React.FC<Record<never, never>> = memo(function ({ children }) {
-  return (
-    <Popover2 minimal content={<>{children}</>}>
-      <Button icon="more" small minimal />
-    </Popover2>
-  );
-});
-
-
 const SubregisterMenu: React.FC<{
   cfg: { title: string, itemClasses: string[] };
   itemClasses: BrowserCtx["itemClasses"];
@@ -405,29 +396,6 @@ const SubregisterMenu: React.FC<{
             />
           </MenuItem>
         )}
-    </Menu>
-  );
-});
-
-
-const ItemClassMenu: React.FC<{
-  cfg: BrowserCtx["itemClasses"][string];
-  onCreate?: () => void;
-}> = memo(function ({ cfg, onCreate }) {
-  return (
-    <Menu>
-      <MenuDivider title="About this class" />
-      <MenuItem multiline disabled css={css`max-width: 400px`} text={cfg.meta.description} />
-      {onCreate
-        ? <>
-            <MenuDivider title="Quick actions" />
-            <MenuItem
-              text="Propose new"
-              intent="primary"
-              onClick={onCreate} icon="plus"
-            />
-          </>
-        : null}
     </Menu>
   );
 });

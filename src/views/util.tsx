@@ -12,6 +12,7 @@ import {
   FormGroup, type FormGroupProps,
   H2, H4,
   Button as BaseButton, type ButtonProps,
+  Menu, MenuDivider, MenuItem,
   ButtonGroup,
   Tag, type TagProps,
   Colors,
@@ -416,3 +417,35 @@ function ({ paddingPx, ...props }) {
     />
   );
 };
+
+
+export const MoreMenu: React.FC<Record<never, never>> = memo(function ({ children }) {
+  return (
+    <Popover minimal content={<>{children}</>}>
+      <BaseButton icon="more" small minimal />
+    </Popover>
+  );
+});
+
+
+export const ItemClassMenu: React.FC<{
+  cfg: ItemClassConfiguration<any>;
+  onCreate?: () => void;
+}> = memo(function ({ cfg, onCreate }) {
+  return (
+    <Menu>
+      <MenuDivider title="About this class" />
+      <MenuItem multiline disabled css={css`max-width: 400px`} text={cfg.meta.description} />
+      {onCreate
+        ? <>
+            <MenuDivider title="Quick actions" />
+            <MenuItem
+              text="Propose new"
+              intent="primary"
+              onClick={onCreate} icon="plus"
+            />
+          </>
+        : null}
+    </Menu>
+  );
+});
