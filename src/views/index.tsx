@@ -27,7 +27,7 @@ import { REGISTER_METADATA_FILENAME } from '../common';
 
 import GenericRelatedItemView from './GenericRelatedItemView';
 import { BrowserCtx } from './BrowserCtx';
-import { _getRelatedClass } from './util';
+import { formatDate, _getRelatedClass } from './util';
 import RegisterHome from './detail/RegisterHome';
 import protocolRegistry, { Protocols, type Protocol } from './protocolRegistry';
 import {
@@ -64,7 +64,10 @@ const RegistryWorkspace: React.FC<Record<never, never>> =
 function RegistryWorkspace () {
   const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
+  const { registerMetadata } = useContext(BrowserCtx);
   const { useSettings, updateSetting, useGlobalSettings } = useContext(DatasetContext);
+
+  const { id: vID, timestamp: vDate } = registerMetadata?.version ?? { id: null, timestamp: null };
 
   const globalMode: TabbedWorkspaceProps<any>['globalMode'] = useMemo(
     (() => activeChangeRequest
@@ -75,8 +78,15 @@ function RegistryWorkspace () {
           intent: 'danger',
           onClick: () => spawnTab(`${Protocols.CHANGE_REQUEST}:/proposals/${activeChangeRequest.id}/main.yaml`),
         }
-      : undefined),
-    [activeChangeRequest?.id, spawnTab],
+      : {
+          content: <>
+            Viewing register at version {vID ?? 'N/A'},
+            published {vDate ? formatDate(vDate) : 'N/A'}
+          </>,
+          intent: 'none',
+          minimal: true,
+        }),
+    [activeChangeRequest?.id, JSON.stringify(registerMetadata?.version), spawnTab],
   );
 
   const { value: { settings } } = useSettings();
