@@ -5,6 +5,7 @@ import React, { useContext, useCallback, useState, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { jsx, css } from '@emotion/react';
 
+import { Colors } from '@blueprintjs/core';
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import TabbedWorkspace, { type TabbedWorkspaceProps } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace';
@@ -97,18 +98,55 @@ function RegistryWorkspace () {
     ? stored as number
     : undefined;
 
-  return <TabbedWorkspace
-    css={css`flex: 1 1 auto;`}
-    sidebarConfig={undefined as any} // no sidebarIDs allwos this, but wrapping in memo() loses generic typing.
-    sidebarPosition={globalSettings.sidebarPosition}
-    sidebarIDs={[]}
-    newTabPrompt={<RegisterHome />}
-    globalMode={globalMode}
-    sidebarWidth={sidebarWidth}
-    onSidebarResize={useCallback((width) => {
-      updateSetting({ key: SIDEBAR_WIDTH_SETTING_NAME, value: width })
-    }, [updateSetting])}
-  />
+  return (
+    <div css={css`flex: 1 1 auto; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+      <header css={css`
+            min-height: 2em;
+            flex: 0;
+            line-height: 1;
+            font-size: 200%;
+            background: ${Colors.LIGHT_GRAY2};
+            padding: .5em 20px;
+            .bp4-dark & {
+              background: ${Colors.DARK_GRAY2};
+            }
+            display: flex;
+            flex-flow: row nowrap;
+          `}>
+        <h1 css={css`
+              line-height: unset !important;
+              font-size: unset !important;
+              font-weight: bold;
+              color: ${Colors.DARK_GRAY5};
+              .bp4-dark & {
+                color: ${Colors.LIGHT_GRAY3};
+              }
+              margin: 0;
+              flex: 1;
+              letter-spacing: -.025em;
+            `}>
+          {registerMetadata?.name ?? 'Register'}
+        </h1>
+        <span css={css`font-size: 50%; display: flex; gap: 10px; align-self: flex-end;`}>
+          <a>Documentation</a>
+          •
+          <a>Feedback</a>
+        </span>
+      </header>
+      <TabbedWorkspace
+        css={css`flex: 1 1 auto;`}
+        sidebarConfig={sidebarConfig}
+        sidebarPosition={globalSettings.sidebarPosition}
+        sidebarIDs={useMemo(() => ['Browse'], [])}
+        newTabPrompt={<RegisterHome />}
+        globalMode={globalMode}
+        sidebarWidth={sidebarWidth}
+        onSidebarResize={useCallback((width) => {
+          updateSetting({ key: SIDEBAR_WIDTH_SETTING_NAME, value: width })
+        }, [updateSetting])}
+      />
+    </div>
+  );
 };
 
 
