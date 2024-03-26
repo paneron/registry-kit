@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useContext, useCallback, useMemo, useState } from 'react';
+import React, { useRef, useContext, useCallback, useMemo, useState } from 'react';
 import { InputGroup, Button, ControlGroup, type ControlGroupProps, type ButtonProps } from '@blueprintjs/core';
 import {
   type GenericRelatedItemViewProps,
@@ -172,10 +172,15 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     ? `${itemClassTitle ?? 'unknown class'} item ${itemID ?? 'with unknown ID'}`
     : undefined;
 
+  /** Input ref for using within this component */
+  const cbRef = useRef<HTMLDivElement | null>(null);
+  const _drawerContainerRef = useRef<HTMLElement | null>(null);
   const closePeekingDrawer = useCallback(
     (() => setPeekingDrawerState(false)),
     [setPeekingDrawerState]);
+
   const _itemRef = useMemo(() => itemRef, [JSON.stringify(itemRef)]);
+
   //log.debug("Rendering generic related item view: got item", item);
   return (
     <ControlGroup
@@ -183,6 +188,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         className={className}
         title={itemTitle}
         {...controlGroupProps}>
+
+      <div ref={cbRef} />
 
       <InputGroup
         fill={hasItem}
@@ -238,6 +245,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
             isOpen={peekingDrawerState}
             onClose={closePeekingDrawer}
             itemRef={_itemRef}
+            portalContainer={_drawerContainerRef.current ?? undefined}
           />
         : null}
 
