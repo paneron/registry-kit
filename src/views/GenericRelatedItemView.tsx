@@ -175,6 +175,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
   const closePeekingDrawer = useCallback(
     (() => setPeekingDrawerState(false)),
     [setPeekingDrawerState]);
+  const _itemRef = useMemo(() => itemRef, [JSON.stringify(itemRef)]);
   //log.debug("Rendering generic related item view: got item", item);
   return (
     <ControlGroup
@@ -232,11 +233,11 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         availableClassIDs={classIDs}
       />
 
-      {itemRef
+      {_itemRef
         ? <ItemDetailsDrawer
             isOpen={peekingDrawerState}
-            itemRef={itemRef}
             onClose={closePeekingDrawer}
+            itemRef={_itemRef}
           />
         : null}
 
