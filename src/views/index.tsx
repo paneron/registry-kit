@@ -138,7 +138,7 @@ function RegistryWorkspace () {
         sidebarConfig={sidebarConfig}
         sidebarPosition={globalSettings.sidebarPosition}
         sidebarIDs={useMemo(() => ['Browse'], [])}
-        newTabPrompt={<RegisterHome />}
+        newTabPrompt={newTabPrompt}
         globalMode={globalMode}
         sidebarWidth={sidebarWidth}
         onSidebarResize={useCallback((width) => {
@@ -148,6 +148,9 @@ function RegistryWorkspace () {
     </div>
   );
 };
+
+
+const newTabPrompt = <RegisterHome />;
 
 
 const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvider ({
