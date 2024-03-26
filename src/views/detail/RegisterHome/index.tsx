@@ -478,7 +478,7 @@ function () {
 
   return (
     <TabContentsWithHeader
-        title={registerMetadata?.name ?? 'Register'}
+        title={<></>}
         layoutOptions={{ gapPx: itemGapPx, stretch: true }}
         layout="card-grid">
 
