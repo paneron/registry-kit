@@ -35,6 +35,7 @@ import {
   ChangeRequestContext,
   ChangeRequestContextProvider,
 } from './change-request/ChangeRequestContext';
+import { sidebarConfig, sidebarConfigForStakeholder } from './sidebar';
 import { useItemRef, itemPathInCR } from './itemPathUtils';
 export { GenericRelatedItemView };
 
@@ -65,7 +66,7 @@ const RegistryWorkspace: React.FC<Record<never, never>> =
 function RegistryWorkspace () {
   const { changeRequest: activeChangeRequest } = useContext(ChangeRequestContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { registerMetadata } = useContext(BrowserCtx);
+  const { registerMetadata, stakeholder } = useContext(BrowserCtx);
   const { useSettings, updateSetting, useGlobalSettings } = useContext(DatasetContext);
 
   const { id: vID, timestamp: vDate } = registerMetadata?.version ?? { id: null, timestamp: null };
@@ -97,6 +98,10 @@ function RegistryWorkspace () {
   const sidebarWidth: number | undefined = stored && typeof stored === 'number'
     ? stored as number
     : undefined;
+
+  const activeSidebarConfig = useMemo(
+    (() => stakeholder ? sidebarConfigForStakeholder : sidebarConfig),
+    [stakeholder]);
 
   return (
     <div css={css`flex: 1 1 auto; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
@@ -135,7 +140,7 @@ function RegistryWorkspace () {
       </header>
       <TabbedWorkspace
         css={css`flex: 1 1 auto;`}
-        sidebarConfig={sidebarConfig}
+        sidebarConfig={activeSidebarConfig}
         sidebarPosition={globalSettings.sidebarPosition}
         sidebarIDs={useMemo(() => ['Browse'], [])}
         newTabPrompt={newTabPrompt}

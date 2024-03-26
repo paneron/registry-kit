@@ -2,6 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 //import React from 'react';
+import update from 'immutability-helper';
 import { jsx, css } from '@emotion/react';
 import { Icon } from '@blueprintjs/core';
 
@@ -90,3 +91,18 @@ export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
   //   }],
   // },
 };
+
+export const sidebarConfigForStakeholder: SuperSidebarConfig<typeof sidebarIDs> = update(
+  sidebarConfig, {
+    Browse: {
+      blocks: {
+        $splice: [[0, 0, {
+          key: 'proposals',
+          title: "Pending proposals",
+          content: <ActionableCRTree />,
+          nonCollapsible: false,
+          height: 200,
+        }]]
+      }
+    }
+  });
