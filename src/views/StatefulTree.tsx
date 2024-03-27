@@ -11,13 +11,11 @@ import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-ki
 export type ItemOrGroupTreeNode = TreeNodeInfo<{ type: 'group' | 'item' }>;
 
 export interface State {
-  //selectedFolderID: string | null
   selectedItemID: string | null
   expandedItemIDs: readonly string[]
 }
 
 const initialState: State = {
-  //selectedFolderID: null,
   selectedItemID: null,
   expandedItemIDs: [],
 } as const;
