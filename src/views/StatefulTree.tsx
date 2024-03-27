@@ -37,7 +37,7 @@ type Action =
  */
 export const GenericStatefulTree: React.FC<{
   /** Called with given state, and must return the list of tree nodes. */
-  getNodes: (state: State) => ItemOrGroupTreeNode[]
+  getNodes: (state: State) => readonly ItemOrGroupTreeNode[]
   /** Key to disambiguate stored state (see usePersistentDatasetStateReducer). */
   stateKey: string
   onItemDoubleClick?: (node: TreeNodeInfo<any>) => void
