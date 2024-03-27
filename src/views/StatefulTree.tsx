@@ -8,6 +8,11 @@ import { Tree, type TreeNodeInfo } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 
+
+/**
+ * A Blueprint tree node that carries extra data
+ * denoting whether it’s a group or a leaf item.
+ */
 export type ItemOrGroupTreeNode = TreeNodeInfo<{ type: 'group' | 'item' }>;
 
 export interface State {
@@ -26,14 +31,20 @@ type Action =
   | { type: 'exit-item'; payload: { itemID: string; }; }
 
 
-/** A tree that also uses persistent state reducer. */
+/**
+ * A tree that also uses Paneron’s dataset persistent reducer
+ * to handle open/closed & selected item state preservation.
+ */
 export const GenericStatefulTree: React.FC<{
+  /** Called with given state, and must return the list of tree nodes. */
   getNodes: (state: State) => ItemOrGroupTreeNode[]
+  /** Key to disambiguate stored state (see usePersistentDatasetStateReducer). */
   stateKey: string
   onItemDoubleClick?: (node: TreeNodeInfo<any>) => void
   className?: string
 }> =
 function ({ getNodes, stateKey, onItemDoubleClick, className }) {
+  // TODO: This component shouldn’t know about dataset, persistent reducer hook can be supplied?
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
 
   const [ state, dispatch, ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
