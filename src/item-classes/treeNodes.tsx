@@ -26,7 +26,7 @@ export function getMaybeGroupedItemClassesAsTreeNodes<T extends RegistryViewProp
   },
 ): ItemOrGroupTreeNode[] {
   if (!itemClassGroups) {
-    return getItemClassesAsTreeNodes(itemClasses, Object.keys(itemClasses));
+    return getItemClassesAsTreeNodes(itemClasses, Object.keys(itemClasses), opts);
   } else {
     return Object.entries(itemClassGroups).map(([groupLabel, clsIDs]) => {
       const hasSelectedClass = opts?.selectedItemID && clsIDs.includes(opts.selectedItemID);
