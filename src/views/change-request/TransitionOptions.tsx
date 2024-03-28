@@ -259,6 +259,7 @@ function TransitionOptions<C extends CR.SomeCR>
               placement='bottom'
               targetTagName='div'
               intent='warning'
+              css={css`flex: 1;`}
               content={<>{stateInputValidationErrors}</>}>
             <selectedTransitionCfg.Widget
               value={Object.keys(state.stateInput).length > 0
