@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, RadioGroup, Radio, FormGroup, TextArea, type TextAreaProps, Intent, Colors } from '@blueprintjs/core';
 import { Tooltip2 as Tooltip } from '@blueprintjs/popover2';
@@ -83,6 +83,8 @@ function TransitionOptions<C extends CR.SomeCR>
     stateInput: {},
   })), [transitions]);
 
+  const [ waitingForCooldown, setWaitingForCooldown ] = useState(false);
+
   const [ state, dispatch, stateRecalled ] =
   (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     `${cr.id}-${cr.state}`,
@@ -132,6 +134,22 @@ function TransitionOptions<C extends CR.SomeCR>
       return [undefined, "no CR or no transition selected"];
     }
   }, [JSON.stringify(cr), selectedTransitionCfg, state.stateInput]);
+
+  const handleSetStateInput = useCallback((payload: any) => {
+    dispatch({
+      type: 'update-next-state-input',
+      payload,
+    });
+    setWaitingForCooldown(true);
+  }, [dispatch, setWaitingForCooldown]);
+
+  useEffect(() => {
+    if (waitingForCooldown) {
+      const timeout = setTimeout(() => setWaitingForCooldown(false), 5000);
+      return function cleanUp() { clearTimeout(timeout) };
+    }
+    return function noop() {};
+  }, [waitingForCooldown, setWaitingForCooldown]);
 
   const getItemChangesetAsApproved = useCallback(
   async function (cr: CR.Accepted | CR.AcceptedOnAppeal): Promise<ObjectChangeset> {
@@ -206,7 +224,12 @@ function TransitionOptions<C extends CR.SomeCR>
     }
   }, [updateObjects, JSON.stringify(stakeholder), JSON.stringify(cr)]);
 
-  const canTransition = selectedTransitionCfg !== undefined && !isBusy && validatedStateInput !== undefined;
+  const canTransition = (
+    selectedTransitionCfg !== undefined
+    && !isBusy
+    && validatedStateInput !== undefined
+    && !waitingForCooldown
+  );
 
   return (
     <div css={css`display: flex; flex-flow: column nowrap;`} className={className}>
@@ -242,10 +265,7 @@ function TransitionOptions<C extends CR.SomeCR>
                 ? state.stateInput
                 : cr}
               onChange={!isBusy
-                ? (payload) => dispatch({
-                    type: 'update-next-state-input',
-                    payload,
-                  })
+                ? handleSetStateInput
                 : undefined}
             />
           </Tooltip>
