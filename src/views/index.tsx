@@ -35,6 +35,7 @@ import {
   ChangeRequestContext,
   ChangeRequestContextProvider,
 } from './change-request/ChangeRequestContext';
+import useRegisterVersion from './hooks/useRegisterVersion';
 import { sidebarConfig, sidebarConfigForStakeholder } from './sidebar';
 import { useItemRef, itemPathInCR } from './itemPathUtils';
 export { GenericRelatedItemView };
@@ -69,7 +70,13 @@ function RegistryWorkspace () {
   const { registerMetadata, stakeholder } = useContext(BrowserCtx);
   const { useSettings, updateSetting, useGlobalSettings } = useContext(DatasetContext);
 
-  const { id: vID, timestamp: vDate } = registerMetadata?.version ?? { id: null, timestamp: null };
+  let version: string;
+  try {
+    version = formatDate(useRegisterVersion());
+  } catch (e) {
+    console.error("Failed to get register version", e);
+    version = 'N/A';
+  }
 
   const globalMode: TabbedWorkspaceProps<any>['globalMode'] = useMemo(
     (() => activeChangeRequest
@@ -82,13 +89,12 @@ function RegistryWorkspace () {
         }
       : {
           content: <>
-            Viewing register at version {vID ?? 'N/A'},
-            published {vDate ? formatDate(vDate) : 'N/A'}
+            Viewing register as of <span title="Date of latest accepted proposal">{version}</span>
           </>,
           intent: 'none',
           minimal: true,
         }),
-    [activeChangeRequest?.id, JSON.stringify(registerMetadata?.version), spawnTab],
+    [activeChangeRequest?.id, spawnTab, version],
   );
 
   const { value: { settings } } = useSettings();
