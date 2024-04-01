@@ -4,10 +4,12 @@ import RegisterItemClass from './detail/RegisterItemClass';
 import RegisterMeta from './detail/RegisterMeta';
 import ChangeRequest from './detail/ChangeRequest';
 import CustomView from './detail/CustomView';
+import ProposalWork from './detail/ProposalWork';
 
 export const Protocols = {
   ITEM_DETAILS: 'itemdetails',
   ITEM_CLASS: 'itemclass',
+  PROPOSAL_WORK: 'proposalwork',
   REGISTER_META: 'registermeta',
   CHANGE_REQUEST: 'changerequest',
   CUSTOM_VIEW: 'customview',
@@ -27,6 +29,7 @@ const protocolRegistry: ProtocolRegistry<Protocol> = {
   [Protocols.ITEM_DETAILS]: RegisterItem,
   [Protocols.ITEM_CLASS]: RegisterItemClass,
   [Protocols.REGISTER_META]: RegisterMeta,
+  [Protocols.PROPOSAL_WORK]: ProposalWork,
   [Protocols.CHANGE_REQUEST]: ChangeRequest,
   [Protocols.CUSTOM_VIEW]: CustomView,
 };
