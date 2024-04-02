@@ -15,7 +15,7 @@ function ({ stakeholder, isCurrentUser }) {
   return <>
     <Icon icon="person" />
     &nbsp;
-    <span css={css`white-space: nowrap;`}>{registerStakeholderPlain(stakeholder)}</span>
+    <span css={css`white-space: break-word;`}>{registerStakeholderPlain(stakeholder)}</span>
     &nbsp;
     {isCurrentUser
       ? <Tag round minimal intent="primary" css={css`display: inline;`}>
