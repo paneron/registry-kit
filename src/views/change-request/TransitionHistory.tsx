@@ -10,7 +10,7 @@ import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/uti
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
 import { Val } from '../diffing/InlineDiff';
-import { RegisterStakeholderListItem } from '../RegisterStakeholder';
+import { registerStakeholderPlain } from '../RegisterStakeholder';
 import * as CR from '../../types/cr';
 import { type RegisterStakeholder } from '../../types/stakeholder';
 import { STATE_COLOR } from './TransitionOptions';
@@ -161,12 +161,29 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
 export const TransitionsAndStatus: React.VoidFunctionComponent<{
   pastTransitions: TransitionHistoryEntry[]
   isFinal?: boolean
-}> = function ({ pastTransitions, isFinal }) {
+  detailed?: boolean
+}> = function ({ pastTransitions, isFinal, detailed }) {
   return (
     <>
       {pastTransitions.map((entry, idx) => {
         if (entry) {
           const { label, stakeholder, fromState, toState, input, timestamp } = entry;
+          const details = input || timestamp || stakeholder
+            ? <>
+                {input
+                  ? <div css={css`margin: .25em 0;`}><Val val={normalizeObjectRecursively(input)} /></div>
+                  : null}
+                <small css={css`display: block;`}>
+                  {stakeholder
+                      ? <span>{registerStakeholderPlain(stakeholder)}</span>
+                      : 'unknown stakeholder'}
+                  <br />
+                  at {timestamp
+                    ? (timestamp.toISOString?.() || timestamp)
+                    : 'unknown time'}
+                </small>
+              </>
+            : null;
           return <TransitionEntryWrapper
               title={`Transition ${fromState ? `from ${fromState} ` : ''}to ${toState}`}
               css={css`
@@ -179,7 +196,7 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
                 z-index: 1;
                 ${idx === pastTransitions.length - 1
                   ? `
-                      font-weight: bold;
+                      ${!detailed ? 'font-weight: bold;' : ''}
                       ${isFinal
                         ? `
                             &::before {
@@ -199,19 +216,11 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
               `}
               key={idx}>
             {label}
-            {input || timestamp || stakeholder
-              ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>
-                  {stakeholder
-                    ? <span><RegisterStakeholderListItem stakeholder={stakeholder} /></span>
-                    : null}
-                  {timestamp
-                    ? (timestamp.toISOString?.() || timestamp)
-                    : null}
-                  {input
-                    ? <div><Val val={normalizeObjectRecursively(input)} /></div>
-                    : null}
-                </div>} /></>
-              : undefined}
+            {detailed && details ? details : null}
+            {!detailed && details
+              ? <>&nbsp;<HelpTooltip icon="info-sign" content={<div css={css`display: flex; flex-flow: column nowrap;`}>{details}</div>} />
+                </>
+              : null}
           </TransitionEntryWrapper>
         } else {
           if (idx > 0 && pastTransitions[idx - 1] !== undefined) {
