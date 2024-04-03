@@ -83,7 +83,9 @@ function TransitionOptions<C extends CR.SomeCR>
     stateInput: {},
   })), [transitions]);
 
-  const [ waitingForCooldown, setWaitingForCooldown ] = useState(false);
+  // Set to a number of milliseconds to wait for, e.g. after selecting a new action,
+  // to avoid accidental transitions.
+  const [ waitingForCooldown, setWaitingForCooldown ] = useState(0);
 
   const [ state, dispatch, stateRecalled ] =
   (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
@@ -102,8 +104,13 @@ function TransitionOptions<C extends CR.SomeCR>
     ) ?? undefined
   ), [stateRecalled, state.chosenNextState, transitions]);
 
+  useEffect((() => setWaitingForCooldown(2000)), [state.chosenNextState]);
+
   useEffect(() => {
     if (stateRecalled) {
+      // Don’t pre-select the next state checkbox.
+      // Persisting the state is still useful, since this remembers state input
+      // (such as register manager notes)
       dispatch({ type: 'unset-next-state' });
     }
   }, [stateRecalled]);
@@ -140,12 +147,14 @@ function TransitionOptions<C extends CR.SomeCR>
       type: 'update-next-state-input',
       payload,
     });
-    setWaitingForCooldown(true);
+    setWaitingForCooldown(5000);
   }, [dispatch, setWaitingForCooldown]);
 
   useEffect(() => {
     if (waitingForCooldown) {
-      const timeout = setTimeout(() => setWaitingForCooldown(false), 5000);
+      const timeout = setTimeout(
+        (() => setWaitingForCooldown(v => v > 0 ? (v - 100) : v)),
+        100);
       return function cleanUp() { clearTimeout(timeout) };
     }
     return function noop() {};
