@@ -13,6 +13,7 @@ import type { RegisterStakeholder } from '../../types/stakeholder';
 import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 
 
+/** Proposal meta properties, must be nested within a DL. */
 const Summary: React.FC<{
   cr: SomeCR
   currentStakeholder?: RegisterStakeholder
