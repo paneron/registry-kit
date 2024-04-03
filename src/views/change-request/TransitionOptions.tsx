@@ -292,7 +292,9 @@ function TransitionOptions<C extends CR.SomeCR>
                     )
                   : void 0
               }>
-            {selectedTransitionCfg.title}
+            {waitingForCooldown
+              ? <>Almost ready{Array(Math.floor(3 - (3 / 5000 * waitingForCooldown) + 1)).fill(undefined).map(() => <>.</>)}</>
+              : selectedTransitionCfg.title}
           </Button>
         : null}
     </div>
