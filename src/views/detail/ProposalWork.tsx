@@ -95,49 +95,49 @@ const ActiveProposal: React.VoidFunctionComponent<{
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
         classification={[{ children: <>{proposal.state}</> }]}>
-        <div css={css`display: flex; flex-flow: row nowrap;`}>
+      <div css={css`display: flex; flex-flow: row nowrap;`}>
         <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
-          <div css={css`flex-basis: 70%; position: relative; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-            <DL css={css`padding: 10px 12px 10px 12px; flex-basis: max-content;`}>
-              <div>
-                <dt>Viewing&nbsp;proposal:</dt>
-                <dd css={css`max-height: 40px; overflow-y: auto;`}>
-                  “{proposal.justification.trim() || '(justification N/A)'}”
-                </dd>
-              </div>
-              <Summary
-                cr={proposal}
-                currentStakeholder={stakeholder}
-                registerMetadata={register}
-              />
-            </DL>
-            <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-              <Search
-                css={css`flex: 1;`}
-                //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
-                implicitCriteria={implicitCriteria}
-                stateName={`proposal-${proposal.id}-search`}
-                //onOpenItem={onChooseItem ? handleOpenItem : undefined}
-              />
+        <div css={css`flex-basis: 70%; position: relative; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+          <DL css={css`padding: 10px 12px 10px 12px; flex-basis: max-content;`}>
+            <div>
+              <dt>Viewing&nbsp;proposal:</dt>
+              <dd css={css`max-height: 40px; overflow-y: auto;`}>
+                “{proposal.justification.trim() || '(justification N/A)'}”
+              </dd>
             </div>
+            <Summary
+              cr={proposal}
+              currentStakeholder={stakeholder}
+              registerMetadata={register}
+            />
+          </DL>
+          <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+            <Search
+              css={css`flex: 1;`}
+              //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
+              implicitCriteria={implicitCriteria}
+              stateName={`proposal-${proposal.id}-search`}
+              //onOpenItem={onChooseItem ? handleOpenItem : undefined}
+            />
           </div>
-          <div css={css`flex-basis: 30%; display: flex; flex-flow: column nowrap;`}>
-            <div css={css`flex: 1; overflow-y: auto;`}>
-              <TransitionsAndStatus
-                pastTransitions={getTransitionHistory(proposal)}
-                isFinal={isFinalState(proposal.state)}
-              />
-              {transitions.length > 0
-                ? <TransitionOptions
-                    stakeholder={stakeholder}
-                    transitions={transitions}
-                    cr={proposal}
-                    css={css`flex: 1; height: 80%; padding: 12px;`}
-                  />
-                : null}
-            </div>
         </div>
+        <div css={css`flex-basis: 30%; display: flex; flex-flow: column nowrap;`}>
+          <div css={css`flex: 1; overflow-y: auto;`}>
+            <TransitionsAndStatus
+              pastTransitions={getTransitionHistory(proposal)}
+              isFinal={isFinalState(proposal.state)}
+            />
+            {transitions.length > 0
+              ? <TransitionOptions
+                  stakeholder={stakeholder}
+                  transitions={transitions}
+                  cr={proposal}
+                  css={css`flex: 1; height: 80%; padding: 12px;`}
+                />
+              : null}
           </div>
+        </div>
+      </div>
     </TabContentsWithHeader>
   );
 };
