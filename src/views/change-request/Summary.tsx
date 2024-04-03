@@ -30,6 +30,7 @@ const Summary: React.FC<{
             <dd>
               <RegisterStakeholderListItem
                 stakeholder={crStakeholder}
+                showRole
                 isCurrentUser={(currentStakeholder
                   ? isCreatedBy(currentStakeholder, cr)
                   : false) || undefined}
