@@ -1,16 +1,18 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useCallback, useMemo } from 'react';
 import update from 'immutability-helper';
 import { jsx } from '@emotion/react';
 import { Tree } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit';
+import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import type { SomeCR as CR } from '../../types/cr';
 import { ChangeRequestContext } from '../../views/change-request/ChangeRequestContext';
 import { BrowserCtx } from '../../views/BrowserCtx';
 import { getActionableProposalGroupsForRoles } from './queries';
+import { Protocols } from '../../views/protocolRegistry';
 import {
   type ActionableProposalTreeNode,
   getMapReduceChainsForActionableProposalGroups,
@@ -44,6 +46,7 @@ function ({ className }) {
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const { setActiveChangeRequestID, stakeholder } = useContext(BrowserCtx);
   const { usePersistentDatasetStateReducer, useMapReducedData } = useContext(DatasetContext);
+  const { spawnTab, closeTabWithURI } = useContext(TabbedWorkspaceContext);
 
   const [ state, dispatch, ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     'actionable-proposals',
@@ -144,6 +147,18 @@ function ({ className }) {
     ),
     [activeCR?.id, actionableProposals, state.selectedItemID, state.expandedFolderIDs.join(',')]);
 
+  const activateOrDeactivate = useCallback(((proposalID: string) => {
+    if (proposalID === activeCR?.id) {
+      // deactivate
+      setActiveChangeRequestID?.(null);
+      closeTabWithURI(Protocols.PROPOSAL_WORK);
+    } else {
+      // activate & open proposal dashboard
+      setActiveChangeRequestID?.(proposalID as string)
+      spawnTab(Protocols.PROPOSAL_WORK);
+    }
+  }), [activeCR?.id, setActiveChangeRequestID, spawnTab]);
+
   const eventHandlers = useMemo((() => ({
     onNodeClick: (node: ActionableProposalTreeNode) =>
       node.nodeData?.type === 'group'
@@ -175,11 +190,8 @@ function ({ className }) {
             type: 'enter-folder',
             payload: { folderID: node.id as string },
           })
-        // TODO: Do something like switch to home tab or proposal tab?
-        : node.id === activeCR?.id
-          ? setActiveChangeRequestID?.(null)
-          : setActiveChangeRequestID?.(node.id as string),
-  })), [dispatch, activeCR?.id]);
+        : activateOrDeactivate(node.id as string),
+  })), [dispatch, activateOrDeactivate]);
 
   return <Tree
     className={className}
