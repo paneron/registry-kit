@@ -116,6 +116,7 @@ export function formatDate(date: Date): string {
   try {
     return format(date, 'yyyy-MM-dd');
   } catch (e) {
+    console.error("Failed to format date", date, typeof date);
     return `Invalid date (${e})`;
   }
 }
