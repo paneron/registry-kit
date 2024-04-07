@@ -1,13 +1,17 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useMemo, useContext, memo } from 'react';
+import React, { useMemo, useState, useContext, memo } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   Button,
   NonIdealState,
+  Icon,
+  Checkbox,
 } from '@blueprintjs/core';
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
+import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
+import SuperSidebar from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/SuperSidebar';
 import { BrowserCtx } from '../BrowserCtx';
 import type { CriteriaGroup } from '../FilterCriteria/models';
 import type { Register, RegisterStakeholder } from '../../types';
@@ -75,12 +79,6 @@ const ActiveProposal: React.VoidFunctionComponent<{
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
-  const transitions = useMemo(
-    (() => stakeholder
-      ? getTransitions(proposal, stakeholder)
-      : []),
-    [proposal, stakeholder]);
-
   const implicitCriteria: CriteriaGroup | undefined = useMemo(() => (
     {
       require: 'any',
@@ -95,50 +93,94 @@ const ActiveProposal: React.VoidFunctionComponent<{
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
         classification={[{ children: <>{proposal.state}</> }]}>
-      <div css={css`display: flex; flex-flow: row nowrap;`}>
-        <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
-        <div css={css`flex-basis: 70%; position: relative; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-          <DL css={css`padding: 10px 12px 10px 12px; flex-basis: max-content;`}>
-            <div>
-              <dt>Viewing&nbsp;proposal:</dt>
-              <dd css={css`max-height: 40px; overflow-y: auto;`}>
-                “{proposal.justification.trim() || '(justification N/A)'}”
-              </dd>
-            </div>
-            <Summary
-              cr={proposal}
-              currentStakeholder={stakeholder}
-              registerMetadata={register}
-            />
-          </DL>
-          <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-            <Search
-              css={css`flex: 1;`}
-              //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
-              implicitCriteria={implicitCriteria}
-              stateName={`proposal-${proposal.id}-search`}
-              //onOpenItem={onChooseItem ? handleOpenItem : undefined}
-            />
-          </div>
-        </div>
-        <div css={css`flex-basis: 30%; display: flex; flex-flow: column nowrap;`}>
-          <div css={css`flex: 1; overflow-y: auto;`}>
-            <TransitionsAndStatus
-              pastTransitions={getTransitionHistory(proposal)}
-              isFinal={isFinalState(proposal.state)}
-            />
-            {transitions.length > 0
-              ? <TransitionOptions
+      <Workspace sidebarPosition="right" sidebar={
+        <SuperSidebar
+          sidebarIDs={['meta']}
+          css={css`width: 30% !important; min-width: 300px;`}
+          selectedSidebarID='meta'
+          config={{
+            meta: {
+              icon: () => <Icon icon="document" />,
+              title: "Meta",
+              blocks: [{
+                key: 'summary',
+                title: "Summary",
+                content: <div css={css`padding: 0 5px;`}>
+                  “{proposal.justification?.trim()}”
+                  <br />
+                  <DL>
+                    <Summary
+                      cr={proposal}
+                      currentStakeholder={stakeholder}
+                      registerMetadata={register}
+                    />
+                  </DL>
+                </div>,
+              }, {
+                key: 'transitions',
+                title: "Transitions",
+                content: <TransitionBlockContents
+                  proposal={proposal}
                   stakeholder={stakeholder}
-                  transitions={transitions}
-                  cr={proposal}
-                  css={css`flex: 1; height: 80%; padding: 12px;`}
-                />
-              : null}
-          </div>
+                />,
+              }],
+            },
+          }}
+        />
+      }>
+        <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
+        <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+          <Search
+            css={css`flex: 1;`}
+            //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
+            implicitCriteria={implicitCriteria}
+            stateName={`proposal-${proposal.id}-search`}
+            //onOpenItem={onChooseItem ? handleOpenItem : undefined}
+          />
         </div>
-      </div>
+      </Workspace>
     </TabContentsWithHeader>
   );
 };
 
+
+const TransitionBlockContents: React.VoidFunctionComponent<{
+  proposal: CR
+  stakeholder?: RegisterStakeholder
+}> = function ({ proposal, stakeholder }) {
+  const transitions = useMemo(
+    (() => stakeholder
+      ? getTransitions(proposal, stakeholder)
+      : []),
+    [proposal, stakeholder]);
+
+  const [showDetailedHistory, setShowDetailedHistory] = useState(false);
+
+  const transitionsBlock = useMemo(
+    (() =>
+      <div css={css`overflow-y: auto; max-height: 300px;`}>
+        <Checkbox
+            // NOTE: left margin aligns with transition history bullets…
+            css={css`margin: 5px 15px;`}
+            checked={showDetailedHistory}
+            onChange={(evt) => setShowDetailedHistory(evt.currentTarget.checked)}>
+          Show detailed history
+        </Checkbox>
+        <TransitionsAndStatus
+          pastTransitions={getTransitionHistory(proposal)}
+          isFinal={isFinalState(proposal.state)}
+          detailed={showDetailedHistory}
+        />
+        {!showDetailedHistory && transitions.length > 0
+          ? <TransitionOptions
+              stakeholder={stakeholder}
+              transitions={transitions}
+              cr={proposal}
+              css={css`padding: 12px;`}
+            />
+          : null}
+      </div>),
+    [proposal, transitions, setShowDetailedHistory, showDetailedHistory]);
+
+  return transitionsBlock;
+}
