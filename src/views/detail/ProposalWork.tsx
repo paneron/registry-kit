@@ -18,7 +18,8 @@ import type { Register, RegisterStakeholder } from '../../types';
 import { canCreateCR } from '../../types/stakeholder';
 import { type SomeCR as CR } from '../../types/cr';
 import Summary from '../change-request/Summary';
-import Search from '../sidebar/Search';
+import ProposalSearch from '../../proposals/Search';
+import Search from '../../views/sidebar/Search';
 import { RegisterHelmet as Helmet } from '../util';
 import { ChangeRequestContext } from '../change-request/ChangeRequestContext';
 import { TabContentsWithHeader } from '../util';
@@ -84,7 +85,8 @@ const ActiveProposal: React.VoidFunctionComponent<{
       require: 'any',
       criteria: [{
         key: 'custom',
-        query: `objPath.indexOf("/proposals/${proposal.id}") === 0`,
+        // TODO: Can drop this
+        query: `true`,
       }],
     }
   ), [proposal?.id]);
@@ -135,6 +137,8 @@ const ActiveProposal: React.VoidFunctionComponent<{
             //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
             implicitCriteria={implicitCriteria}
             stateName={`proposal-${proposal.id}-search`}
+            List={ProposalSearch as any}
+            extraData={{ proposal }}
             //onOpenItem={onChooseItem ? handleOpenItem : undefined}
           />
         </div>
