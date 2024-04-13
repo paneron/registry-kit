@@ -82,7 +82,7 @@ const ItemClass: React.VoidFunctionComponent<{
     <TabContentsWithHeader
         title={<>{itemClass.meta.title}</>}
         classification={classification}>
-      <Card css={css`flex: 1; box-shadow: none !important; position: absolute; border-radius: 0; display: flex; flex-flow: column nowrap;`}>
+      <Card css={css`flex: 1; box-shadow: none !important; position: absolute; border-radius: 0; display: flex; flex-flow: column nowrap; padding: 10px;`}>
         <p>{itemClass.meta.description ?? '(no class description available)'}</p>
         <Helmet><title>{itemClass.meta.title}</title></Helmet>
         <Search
