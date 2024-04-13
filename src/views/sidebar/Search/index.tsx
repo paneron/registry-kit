@@ -86,12 +86,18 @@ const Search: React.FC<{
 
   stateName?: string
 
+  List?: ReturnType<typeof makeSearchResultList>,
+  extraData?: Record<string, any>,
+
   className?: string
   style?: React.CSSProperties
 }> =
-memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, className, style }) {
+memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
+
+  const ListComponent = useMemo((() => List ?? RegisterItemSearchResultList), [List]);
+
   const {
     // TODO: defaultSearchCriteria,
     keyExpression,
@@ -192,12 +198,13 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
         css={css`padding: 2px;`}
       />
       <div css={css`flex: 1;`}>
-        <SearchResultList
+        <ListComponent
           queryExpression={datasetObjectSearchQueryExpression}
           keyExpression={keyExpression}
           selectedItemPath={state.selectedItemPath}
           onSelectItem={handleSelectItem}
           onOpenItem={handleOpenItem}
+          extraItemViewData={extraData as any}
         />
       </div>
     </div>
@@ -205,7 +212,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, cla
 });
 
 
-const SearchResultList = makeSearchResultList<RegisterItem<any>>(ListItem, (objPath) => ({
+const RegisterItemSearchResultList = makeSearchResultList<RegisterItem<any>>(ListItem, (objPath) => ({
   name: 'reg. item',
   iconProps: {
     icon: 'document',
