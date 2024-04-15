@@ -150,7 +150,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
                   },
             ],
           }
-        : state.query.criteria
+        : state.query.criteria;
     const withImplicit: CriteriaGroup = implicitCriteria
       ? {
           require: 'all',
