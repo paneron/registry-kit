@@ -152,7 +152,6 @@ export const Proposals: React.VoidFunctionComponent<{
   onRefreshProposals,
   className,
 }) {
-  //const [creating, setCreating] = useState(false);
   const hasActionable = (actionableProposals && actionableProposals.find(p => p[1] && p[1].length > 0));
   const proposalMenuItems = useMemo(() => {
     return hasActionable || onCreate
@@ -162,10 +161,6 @@ export const Proposals: React.VoidFunctionComponent<{
         />
       : null;
   }, [onSelectProposal, onCreate, hasActionable, actionableProposals]);
-
-  // return <Menu css={css`overflow-y: auto; background: none !important`} className={className}>
-  //   {proposalMenuItems}
-  // </Menu>
 
   const stack: Panel<any>[] = useMemo(() => {
     const stack = [];
