@@ -13,7 +13,7 @@ import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import SuperSidebar from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/SuperSidebar';
 import { BrowserCtx } from '../BrowserCtx';
-import type { CriteriaGroup } from '../FilterCriteria/models';
+import { MATCHES_ANY_CRITERIA } from '../FilterCriteria/models';
 import type { Register, RegisterStakeholder } from '../../types';
 import { canCreateCR } from '../../types/stakeholder';
 import { type SomeCR as CR } from '../../types/cr';
@@ -77,17 +77,6 @@ const ActiveProposal: React.VoidFunctionComponent<{
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
-  const implicitCriteria: CriteriaGroup | undefined = useMemo(() => (
-    {
-      require: 'any',
-      criteria: [{
-        key: 'custom',
-        // TODO: Can drop this
-        query: `true`,
-      }],
-    }
-  ), [proposal?.id]);
-
   return (
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
@@ -132,7 +121,7 @@ const ActiveProposal: React.VoidFunctionComponent<{
           <Search
             css={css`flex: 1;`}
             //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
-            implicitCriteria={implicitCriteria}
+            implicitCriteria={MATCHES_ANY_CRITERIA}
             stateName={`proposal-${proposal.id}-search`}
             List={ProposalSearch as any}
             extraData={{ proposal }}

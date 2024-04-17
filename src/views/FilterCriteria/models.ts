@@ -114,3 +114,12 @@ export const BLANK_CRITERIA: CriteriaGroup = {
   require: 'all',
   criteria: [],
 };
+
+/** Useful as no-op default where a valid criteria is required. Matches anything. */
+export const MATCHES_ANY_CRITERIA: CriteriaGroup =  {
+  require: 'any',
+  criteria: [{
+    key: 'custom',
+    query: `true`,
+  }],
+};
