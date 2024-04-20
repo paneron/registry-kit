@@ -8,13 +8,14 @@ import { Tooltip2 as Tooltip } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
-import { BrowserCtx } from '../BrowserCtx';
-import type { RegisterItem, RegisterStakeholder } from '../../types';
-import type { Supersession } from '../../proposals/types';
-import { isOwner, isControlBody, isManager } from '../../types/stakeholder';
-import { itemPathInCR, crIDToCRPath } from '../itemPathUtils';
-import * as CR from '../../proposals/types';
-import { proposalsToObjectChangeset } from '../change-request/objectChangeset';
+import { BrowserCtx } from '../views/BrowserCtx';
+import type { RegisterItem, RegisterStakeholder } from '../types';
+import { isOwner, isControlBody, isManager } from '../types/stakeholder';
+import { itemPathInCR, crIDToCRPath } from '../views/itemPathUtils';
+
+import { proposalsToObjectChangeset } from './objectChangeset';
+import type { Supersession } from './types';
+import * as CR from './types';
 
 
 interface State {

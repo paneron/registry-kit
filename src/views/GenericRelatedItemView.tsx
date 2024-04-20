@@ -9,9 +9,9 @@ import {
   type RelatedItemClassConfiguration,
   isRegisterItem,
 } from '../types';
-import { BrowserCtx } from './BrowserCtx';
-import { ChangeRequestContext } from './change-request/ChangeRequestContext';
+import { ChangeRequestContext } from '../proposals/ChangeRequestContext';
 import { isDrafted } from '../proposals/types';
+import { BrowserCtx } from './BrowserCtx';
 import ItemSearchDrawer from './ItemSearchDrawer';
 import ItemDetailsDrawer from './ItemDetailsDrawer';
 

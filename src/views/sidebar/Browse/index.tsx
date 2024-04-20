@@ -15,8 +15,8 @@ import CRITERIA_CONFIGURATION from '../../FilterCriteria/CRITERIA_CONFIGURATION'
 import { MoreMenu, ItemClassMenu } from '../../util';
 import { itemRefToItemPath } from '../../itemPathUtils';
 import { getRegisterItemQuery } from '../../itemQueryUtils';
-import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
-import { updateCRObjectChangeset } from '../../change-request/objectChangeset';
+import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
+import { updateCRObjectChangeset } from '../../../proposals/objectChangeset';
 import type { RegisterItem, InternalItemReference } from '../../../types';
 import { BrowserCtx } from '../../BrowserCtx';
 import ListItem from '../ListItem';

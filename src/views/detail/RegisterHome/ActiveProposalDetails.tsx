@@ -7,11 +7,11 @@ import { type MenuItemProps } from '@blueprintjs/core';
 
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 
-import Summary from '../../change-request/Summary';
+import MetaProperties from '../../../proposals/MetaProperties';
 import type { Register, RegisterStakeholder } from '../../../types';
 import { type SomeCR as CR } from '../../../proposals/types';
-import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../change-request/TransitionOptions';
-import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
+import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../../proposals/TransitionOptions';
+import TransitionsAndStatus, { getTransitionHistory } from '../../../proposals/TransitionHistory';
 import HomeBlock from './Block';
 
 
@@ -87,7 +87,7 @@ const CurrentProposal: React.VoidFunctionComponent<{
             “{proposal.justification.trim() || '(justification N/A)'}”
           </dd>
         </div>
-        <Summary
+        <MetaProperties
           cr={proposal}
           currentStakeholder={stakeholder}
           registerMetadata={register}

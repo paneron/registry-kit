@@ -40,8 +40,8 @@ import {
 import { proposalToTagProps } from '../../../proposals/ProposalType';
 import ProposalHistoryDrawer from '../../../proposals/HistoryDrawer';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
-import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
-import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
+import { updateCRObjectChangeset, } from '../../../proposals/objectChangeset';
+import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
 import { RelatedItems } from './RelatedItems';
 
 

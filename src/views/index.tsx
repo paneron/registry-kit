@@ -34,7 +34,7 @@ import protocolRegistry, { Protocols, type Protocol } from './protocolRegistry';
 import {
   ChangeRequestContext,
   ChangeRequestContextProvider,
-} from './change-request/ChangeRequestContext';
+} from '../proposals/ChangeRequestContext';
 import useRegisterVersion from './hooks/useRegisterVersion';
 import { sidebarConfig, sidebarConfigForStakeholder } from './sidebar';
 import { useItemRef, itemPathInCR } from './itemPathUtils';

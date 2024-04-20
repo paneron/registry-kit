@@ -9,10 +9,11 @@ import { Icon, Colors } from '@blueprintjs/core';
 import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/util';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
-import { Val } from '../diffing/InlineDiff';
-import { registerStakeholderPlain } from '../RegisterStakeholder';
-import * as CR from '../../proposals/types';
-import { type RegisterStakeholder } from '../../types/stakeholder';
+import { Val } from '../views/diffing/InlineDiff';
+import { registerStakeholderPlain } from '../views/RegisterStakeholder';
+import { type RegisterStakeholder } from '../types/stakeholder';
+
+import * as CR from './types';
 import { STATE_COLOR } from './TransitionOptions';
 
 

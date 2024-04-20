@@ -17,14 +17,14 @@ import { MATCHES_ANY_CRITERIA } from '../FilterCriteria/models';
 import type { Register, RegisterStakeholder } from '../../types';
 import { canCreateCR } from '../../types/stakeholder';
 import { type SomeCR as CR } from '../../proposals/types';
-import Summary from '../change-request/Summary';
+import MetaProperties from '../../proposals/MetaProperties';
 import ProposalSearch from '../../proposals/Search';
 import Search from '../../views/sidebar/Search';
 import { RegisterHelmet as Helmet } from '../util';
-import { ChangeRequestContext } from '../change-request/ChangeRequestContext';
+import { ChangeRequestContext } from '../../proposals/ChangeRequestContext';
 import { TabContentsWithHeader } from '../util';
-import TransitionOptions, { getTransitions, isFinalState } from '../change-request/TransitionOptions';
-import TransitionsAndStatus, { getTransitionHistory } from '../change-request/TransitionHistory';
+import TransitionOptions, { getTransitions, isFinalState } from '../../proposals/TransitionOptions';
+import TransitionsAndStatus, { getTransitionHistory } from '../../proposals/TransitionHistory';
 
 
 const ProposalWork: React.VoidFunctionComponent<Record<never, never>> =
@@ -97,7 +97,7 @@ const ActiveProposal: React.VoidFunctionComponent<{
                   “{proposal.justification?.trim()}”
                   <br />
                   <DL>
-                    <Summary
+                    <MetaProperties
                       cr={proposal}
                       currentStakeholder={stakeholder}
                       registerMetadata={register}

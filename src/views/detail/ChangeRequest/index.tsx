@@ -19,11 +19,11 @@ import { crPathToCRID } from '../../itemPathUtils';
 import {
   ChangeRequestContextProvider,
   ChangeRequestContext,
-} from '../../change-request/ChangeRequestContext';
+} from '../../../proposals/ChangeRequestContext';
 import Proposals from '../../../proposals/ProposalBrowser';
-import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
-import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
-import Summary from '../../change-request/Summary';
+import TransitionOptions, { isFinalState, getTransitions } from '../../../proposals/TransitionOptions';
+import TransitionsAndStatus, { getTransitionHistory } from '../../../proposals/TransitionHistory';
+import Summary from '../../../proposals/MetaProperties';
 import { type SomeCR, hadBeenProposed, isDisposed } from '../../../proposals/types';
 import { Protocols } from '../../protocolRegistry';
 import {

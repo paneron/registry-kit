@@ -11,7 +11,7 @@ import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { type CriteriaGroup, isCriteriaGroup, BLANK_CRITERIA } from '../../FilterCriteria/models';
 import criteriaGroupToQueryExpression from '../../FilterCriteria/criteriaGroupToQueryExpression';
 import { RAW_SUBSTRING, CUSTOM_CONDITION } from '../../FilterCriteria/CRITERIA_CONFIGURATION';
-import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
+import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
 import type { RegisterItem } from '../../../types';
 import { itemRefToItemPath } from '../../itemPathUtils';
 import { getRegisterItemQuery } from '../../itemQueryUtils';

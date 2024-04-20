@@ -14,10 +14,10 @@ import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/obj
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
-import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
-import { crIDToCRPath } from '../../itemPathUtils';
-import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
+import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
+import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../../proposals/objectChangeset';
 import { Proposals as CRProposals } from '../../../proposals/ProposalBrowser';
+import { crIDToCRPath } from '../../itemPathUtils';
 import { isImportableCR, type SomeCR as CR } from '../../../proposals/types';
 import { getActionableProposalGroupsForRole, CR_BASE_QUERY } from '../../../proposals/actionableGroups/queries';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';

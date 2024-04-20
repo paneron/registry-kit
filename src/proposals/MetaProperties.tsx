@@ -7,10 +7,11 @@ import { Tag } from '@blueprintjs/core';
 
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
-import type { Register } from '../../types/register';
-import { isCreatedBy, type SomeCR } from '../../proposals/types';
-import type { RegisterStakeholder } from '../../types/stakeholder';
-import { RegisterStakeholderListItem } from '../RegisterStakeholder';
+import type { Register } from '../types/register';
+import { RegisterStakeholderListItem } from '../views/RegisterStakeholder';
+import type { RegisterStakeholder } from '../types/stakeholder';
+
+import { isCreatedBy, type SomeCR } from './types';
 
 
 /** Proposal meta properties, must be nested within a DL. */

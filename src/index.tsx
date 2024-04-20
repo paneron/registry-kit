@@ -70,7 +70,7 @@ import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
 import { isAddition } from './proposals/types';
 import type { Payload } from './types/item';
 import { Protocols } from './views/protocolRegistry';
-import { ChangeRequestContext } from './views/change-request/ChangeRequestContext';
+import { ChangeRequestContext } from './proposals/ChangeRequestContext';
 import RegisterHome from './views/detail/RegisterHome';
 
 export {

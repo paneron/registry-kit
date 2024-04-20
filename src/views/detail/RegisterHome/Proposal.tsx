@@ -21,7 +21,7 @@ import {
   NonIdealState,
 } from '@blueprintjs/core';
 
-import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
+import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
 import { maybeEllipsizeString } from '../../util';
 import type { Register } from '../../../types';
 import { type SomeCR as CR } from '../../../proposals/types';

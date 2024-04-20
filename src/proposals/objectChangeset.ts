@@ -1,31 +1,33 @@
 import type { Change, Changeset } from '@riboseinc/paneron-extension-kit/types/changes';
 import type { ObjectDataset, ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
+
+import {
+  crIDToCRPath,
+  itemPathInCR,
+  itemPathToItemRef,
+  itemRefToItemPath,
+} from '../views/itemPathUtils';
+import type {
+  InternalItemReference,
+  RegisterItem,
+  ItemClassConfigurationSet,
+} from '../types';
+import { isRegisterItem } from '../types';
+import type { Version as RegisterVersion } from '../types/register';
+
 import type {
   ProposalSet,
   ChangeProposal,
   Amendment,
   Supersession,
-} from '../../proposals/types';
-import type {
-  InternalItemReference,
-  RegisterItem,
-  ItemClassConfigurationSet,
-} from '../../types';
-import { isRegisterItem } from '../../types';
-import type { Version as RegisterVersion } from '../../types/register';
+} from './types';
 import {
   State,
   type Drafted,
   type ReturnedForClarificationByManager,
   type ReturnedForClarificationByControlBody,
   ImportableCR,
-} from '../../proposals/types';
-import {
-  crIDToCRPath,
-  itemPathInCR,
-  itemPathToItemRef,
-  itemRefToItemPath,
-} from '../itemPathUtils';
+} from './types';
 
 
 /** Takes a justification and ID, returns an object changeset. */
@@ -420,7 +422,3 @@ async function proposalToObjectChangeset(
 
   return changeset;
 }
-
-
-// Helper
-
