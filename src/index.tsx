@@ -67,7 +67,7 @@ import GenericRelatedItemView from './views/GenericRelatedItemView';
 import { PropertyDetailView } from './views/util';
 import CRITERIA_CONFIGURATION from './views/FilterCriteria/CRITERIA_CONFIGURATION';
 import useSingleRegisterItemData from './views/hooks/useSingleRegisterItemData';
-import { isAddition } from './proposal/types';
+import { isAddition } from './proposals/types';
 import type { Payload } from './types/item';
 import { Protocols } from './views/protocolRegistry';
 import { ChangeRequestContext } from './views/change-request/ChangeRequestContext';
