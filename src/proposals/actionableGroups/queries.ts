@@ -12,8 +12,6 @@ export function getActionableProposalGroupsForRoles(roles: readonly StakeholderR
 }
 
 
-export const CR_BASE_QUERY = 'objPath.indexOf("/proposals/") === 0 && objPath.endsWith("main.yaml")';
-
 const CR_QUERIES_FOR_ROLES: readonly ActionableProposalGroup[] =
 [
   ['My Drafts', new Set(['submitter', 'manager', 'control-body', 'owner']), function submitterProposals(stakeholder) {

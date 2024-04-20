@@ -10,6 +10,7 @@ import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-ki
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
 import { type Base as BaseCR, hasSubmitterInput, isDisposed, hadBeenProposed } from '../../../proposals/types';
+import { CR_BASE_QUERY, DISPOSED_CR_QUERY } from '../../../proposals/queries';
 import { BrowserCtx } from '../../BrowserCtx';
 import { itemRefToItemPath } from '../../itemPathUtils';
 import { Datestamp } from '../../../views/util';
@@ -32,11 +33,6 @@ export const PendingChangeRequestsBlock: React.FC<Record<never, never>> = functi
 export const ChangeRequestHistoryBlock: React.FC<Record<never, never>> = function () {
   return <ChangeRequestListBlock impliedQuery={DISPOSED_CR_QUERY} />;
 };
-
-
-const CR_BASE_QUERY = 'objPath.indexOf("/proposals/") === 0 && objPath.endsWith("main.yaml")';
-export const DISPOSED_CR_QUERY = 'obj.timeDisposed !== undefined && obj.timeDisposed !== null';
-
 
 interface ChangeRequestBlockState {
   quickSubstringQuery: string;

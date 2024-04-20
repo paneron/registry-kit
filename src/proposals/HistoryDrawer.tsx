@@ -11,7 +11,7 @@ import { type SomeCR, State, hasSubmitterInput, isDisposed, hadBeenProposed } fr
 import { isProposal } from '../proposals/types';
 import { ProposalType } from './ProposalType';
 import { Datestamp } from '../views/util';
-import { DISPOSED_CR_QUERY } from '../views/sidebar/Registration';
+import { DISPOSED_CR_QUERY } from './queries';
 import { Protocols } from '../views/protocolRegistry';
 
 

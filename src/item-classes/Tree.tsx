@@ -7,13 +7,12 @@ import { jsx } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 
+import { ChangeRequestContext, updateCRObjectChangeset } from '../proposals';
 import GenericStatefulTree, { type State as TreeState } from '../views/StatefulTree';
-import { ChangeRequestContext } from '../proposals/ChangeRequestContext';
-import { updateCRObjectChangeset } from '../proposals/objectChangeset';
 import { BrowserCtx } from '../views/BrowserCtx';
-import type { RegisterItem, InternalItemReference } from '../types';
 import { itemRefToItemPath } from '../views/itemPathUtils';
 import { Protocols } from '../views/protocolRegistry';
+import type { RegisterItem, InternalItemReference } from '../types';
 
 import { getMaybeGroupedItemClassesAsTreeNodes } from './treeNodes';
 

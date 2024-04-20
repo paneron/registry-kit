@@ -15,11 +15,16 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { BrowserCtx } from '../../BrowserCtx';
 import { ChangeRequestContext } from '../../../proposals/ChangeRequestContext';
-import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../../proposals/objectChangeset';
-import { Proposals as CRProposals } from '../../../proposals/ProposalBrowser';
-import { crIDToCRPath } from '../../itemPathUtils';
+import {
+  newCRObjectChangeset,
+  importedProposalToCRObjectChangeset,
+  ProposalBrowser,
+  getActionableProposalGroupsForRole,
+  CR_BASE_QUERY,
+} from '../../../proposals';
 import { isImportableCR, type SomeCR as CR } from '../../../proposals/types';
-import { getActionableProposalGroupsForRole, CR_BASE_QUERY } from '../../../proposals/actionableGroups/queries';
+import { crIDToCRPath } from '../../itemPathUtils';
+
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
 import { itemPathToItemRef, itemRefToItemPath } from '../../itemPathUtils';
 import { Protocols } from '../../protocolRegistry';
@@ -392,7 +397,7 @@ function () {
   const proposedChangeBlocks = useMemo(() => {
     if (activeCR) {
       return (
-        <CRProposals
+        <ProposalBrowser
           proposals={activeCR.items}
           selectedItem={selectedProposal}
           onSelectItem={selectProposal}

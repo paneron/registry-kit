@@ -40,7 +40,7 @@ interface ProposalBrowserProps<CR extends Drafted> {
  *
  * If no proposals exist, returns null.
  */
-export function Proposals<CR extends Drafted>
+export function ProposalBrowser<CR extends Drafted>
 ({ proposals, onDeleteProposalForItemAtPath, selectedItem, onSelectItem: selectProposal }:
 ProposalBrowserProps<CR>) {
   const [ preferDiff, setPreferDiff ] = useState(false);
@@ -301,4 +301,4 @@ function stringifiedJSONEqual(i1: any, i2: any): boolean {
   return JSON.stringify(i1) === JSON.stringify(i2);
 }
 
-export default Proposals;
+export default ProposalBrowser;

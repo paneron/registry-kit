@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { CR_BASE_QUERY } from '../../proposals/actionableGroups/queries';
+import { CR_BASE_QUERY } from '../../proposals/queries';
 import { State } from '../../proposals/types';
 
 
