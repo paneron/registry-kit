@@ -3,7 +3,7 @@ import type { ButtonProps, MenuItemProps } from '@blueprintjs/core';
 import type { ObjectDatasetRequest, ObjectDatasetResponse, ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import type { InternalItemReference, Payload, RegisterItem, RegisterItemClass } from './item';
 import type { CriteriaGroup } from '../views/FilterCriteria/models';
-import type { AlterApprovedCR } from './cr';
+import type { AlterApprovedCR } from '../proposals/types';
 
 
 // Hooks

@@ -18,8 +18,7 @@ import { ChangeRequestContext } from '../../change-request/ChangeRequestContext'
 import { crIDToCRPath } from '../../itemPathUtils';
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
 import { Proposals as CRProposals } from '../../change-request/Proposals';
-import { isImportableCR } from '../../../types/cr';
-import { type SomeCR as CR } from '../../../types/cr';
+import { isImportableCR, type SomeCR as CR } from '../../../proposals/types';
 import { getActionableProposalGroupsForRole, CR_BASE_QUERY } from '../../../proposals/actionableGroups/queries';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';
 import { itemPathToItemRef, itemRefToItemPath } from '../../itemPathUtils';

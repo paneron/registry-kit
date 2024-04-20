@@ -12,7 +12,7 @@ import { jsx } from '@emotion/react';
 import { Tag } from '@blueprintjs/core';
 import type { IconName, TreeNodeInfo } from '@blueprintjs/core';
 import type { RegisterStakeholder } from '../../types';
-import type { SomeCR as CR } from '../../types/cr';
+import type { SomeCR as CR } from '../types';
 import type { ActionableProposalGroup } from './types';
 import { CR_BASE_QUERY } from './queries';
 

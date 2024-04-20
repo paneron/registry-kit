@@ -1,5 +1,5 @@
-import { State } from '../../types/cr';
 import type { StakeholderRoleType } from '../../types';
+import { State } from '../types';
 import type { ActionableProposalGroup } from './types';
 
 

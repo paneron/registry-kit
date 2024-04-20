@@ -5,11 +5,12 @@ import React, { memo, useContext, useCallback, useMemo } from 'react';
 import { jsx, css } from '@emotion/react';
 import makeList, { type ItemProps, LabelledListIcon, type ListData } from '@riboseinc/paneron-extension-kit/widgets/List';
 
-import type { SomeCR } from '../types/cr';
-import type { ChangeProposal } from '../types/proposal';
 import type { RegisterItem } from '../types/item';
 import { itemPathToItemRef } from '../views/itemPathUtils';
 import { BrowserCtx } from '../views/BrowserCtx';
+
+import type { SomeCR } from './types';
+import type { ChangeProposal } from './types';
 
 
 export interface ProposalListData {

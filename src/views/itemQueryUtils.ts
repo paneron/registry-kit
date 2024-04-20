@@ -1,4 +1,4 @@
-import type { Base as BaseCR } from '../types/cr';
+import type { Base as BaseCR } from '../proposals/types';
 import { itemPathInCR } from './itemPathUtils';
 
 

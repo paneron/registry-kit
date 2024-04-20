@@ -8,7 +8,7 @@ import { Tag } from '@blueprintjs/core';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
 import type { Register } from '../../types/register';
-import { isCreatedBy, type SomeCR } from '../../types/cr';
+import { isCreatedBy, type SomeCR } from '../../proposals/types';
 import type { RegisterStakeholder } from '../../types/stakeholder';
 import { RegisterStakeholderListItem } from '../RegisterStakeholder';
 

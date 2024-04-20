@@ -4,8 +4,9 @@
 import { jsx } from '@emotion/react';
 import React, { useMemo, useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import { type SomeCR as CR, canBeDeletedBy, canBeEditedBy } from '../../types/cr';
-import type { RegisterItem, Payload, ChangeProposal, InternalItemReference } from '../../types';
+import type { RegisterItem, Payload, InternalItemReference } from '../../types';
+import type { ChangeProposal } from '../../proposals/types';
+import { type SomeCR as CR, canBeDeletedBy, canBeEditedBy } from '../../proposals/types';
 import { isRegisterItem } from '../../types';
 import { BrowserCtx } from '../BrowserCtx';
 import { itemRefToItemPath, crIDToCRPath } from '../itemPathUtils';

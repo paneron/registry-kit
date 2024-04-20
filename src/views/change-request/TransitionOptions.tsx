@@ -9,10 +9,11 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import type { ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import { BrowserCtx } from '../BrowserCtx';
-import type { RegisterItem, RegisterStakeholder, Supersession } from '../../types';
+import type { RegisterItem, RegisterStakeholder } from '../../types';
+import type { Supersession } from '../../proposals/types';
 import { isOwner, isControlBody, isManager } from '../../types/stakeholder';
 import { itemPathInCR, crIDToCRPath } from '../itemPathUtils';
-import * as CR from '../../types/cr';
+import * as CR from '../../proposals/types';
 import { proposalsToObjectChangeset } from '../change-request/objectChangeset';
 
 

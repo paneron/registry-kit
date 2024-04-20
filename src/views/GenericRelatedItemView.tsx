@@ -11,7 +11,7 @@ import {
 } from '../types';
 import { BrowserCtx } from './BrowserCtx';
 import { ChangeRequestContext } from './change-request/ChangeRequestContext';
-import { isDrafted } from '../types/cr';
+import { isDrafted } from '../proposals/types';
 import ItemSearchDrawer from './ItemSearchDrawer';
 import ItemDetailsDrawer from './ItemDetailsDrawer';
 

@@ -20,18 +20,20 @@ import type {
   Addition,
   ChangeProposal,
   Clarification,
-  InternalItemReference,
   Retirement,
   Supersession,
   Invalidation,
+} from '../../proposals/types';
+import type {
+  InternalItemReference,
   Payload,
   RegisterItem,
 } from '../../types';
+import type { Drafted } from '../../proposals/types';
 import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
 import ErrorState from '@riboseinc/paneron-extension-kit/widgets/ErrorState';
-import type { Drafted } from '../../types/cr';
 import { Protocols, type Protocol } from '../protocolRegistry';
-import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../types/proposal';
+import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../proposals/types';
 import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
 import { useItemRef, itemPathToItemRef } from '../itemPathUtils';
 import useItemClassConfig from '../hooks/useItemClassConfig';

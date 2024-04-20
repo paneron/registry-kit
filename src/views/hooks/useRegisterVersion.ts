@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { CR_BASE_QUERY } from '../../proposals/actionableGroups/queries';
-import { State } from '../../types/cr';
+import { State } from '../../proposals/types';
 
 
 export default function useRegisterVersion(): Date {

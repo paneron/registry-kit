@@ -16,7 +16,7 @@ import { BrowserCtx } from '../BrowserCtx';
 import { MATCHES_ANY_CRITERIA } from '../FilterCriteria/models';
 import type { Register, RegisterStakeholder } from '../../types';
 import { canCreateCR } from '../../types/stakeholder';
-import { type SomeCR as CR } from '../../types/cr';
+import { type SomeCR as CR } from '../../proposals/types';
 import Summary from '../change-request/Summary';
 import ProposalSearch from '../../proposals/Search';
 import Search from '../../views/sidebar/Search';

@@ -11,7 +11,7 @@ import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
 import { Val } from '../diffing/InlineDiff';
 import { registerStakeholderPlain } from '../RegisterStakeholder';
-import * as CR from '../../types/cr';
+import * as CR from '../../proposals/types';
 import { type RegisterStakeholder } from '../../types/stakeholder';
 import { STATE_COLOR } from './TransitionOptions';
 

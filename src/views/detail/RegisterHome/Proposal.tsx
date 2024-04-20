@@ -24,7 +24,7 @@ import {
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { maybeEllipsizeString } from '../../util';
 import type { Register } from '../../../types';
-import { type SomeCR as CR } from '../../../types/cr';
+import { type SomeCR as CR } from '../../../proposals/types';
 
 
 const NewProposal: React.VoidFunctionComponent<{

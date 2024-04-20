@@ -9,7 +9,7 @@ import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 
 import Summary from '../../change-request/Summary';
 import type { Register, RegisterStakeholder } from '../../../types';
-import { type SomeCR as CR } from '../../../types/cr';
+import { type SomeCR as CR } from '../../../proposals/types';
 import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../change-request/TransitionOptions';
 import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
 import HomeBlock from './Block';

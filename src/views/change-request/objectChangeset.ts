@@ -1,12 +1,14 @@
 import type { Change, Changeset } from '@riboseinc/paneron-extension-kit/types/changes';
 import type { ObjectDataset, ObjectChangeset } from '@riboseinc/paneron-extension-kit/types/objects';
 import type {
-  InternalItemReference,
-  RegisterItem,
   ProposalSet,
   ChangeProposal,
   Amendment,
   Supersession,
+} from '../../proposals/types';
+import type {
+  InternalItemReference,
+  RegisterItem,
   ItemClassConfigurationSet,
 } from '../../types';
 import { isRegisterItem } from '../../types';
@@ -17,7 +19,7 @@ import {
   type ReturnedForClarificationByManager,
   type ReturnedForClarificationByControlBody,
   ImportableCR,
-} from '../../types/cr';
+} from '../../proposals/types';
 import {
   crIDToCRPath,
   itemPathInCR,

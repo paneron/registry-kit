@@ -9,7 +9,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
-import { type Base as BaseCR, hasSubmitterInput, isDisposed, hadBeenProposed } from '../../../types/cr';
+import { type Base as BaseCR, hasSubmitterInput, isDisposed, hadBeenProposed } from '../../../proposals/types';
 import { BrowserCtx } from '../../BrowserCtx';
 import { itemRefToItemPath } from '../../itemPathUtils';
 import { Datestamp } from '../../../views/util';

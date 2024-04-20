@@ -20,13 +20,15 @@ import { Protocols } from '../../protocolRegistry';
 import {
   type ChangeProposal,
   type Supersession,
-  type RegisterItem,
+} from '../../../proposals/types';
+import {
   type InternalItemReference,
   type ItemClassConfiguration,
+  type RegisterItem,
   isRegisterItem,
   DUMMY_REF,
 } from '../../../types';
-import type { Drafted } from '../../../types/cr';
+import type { Drafted } from '../../../proposals/types';
 import { BrowserCtx } from '../../BrowserCtx';
 import {
   RegisterHelmet as Helmet,

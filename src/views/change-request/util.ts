@@ -1,5 +1,5 @@
 import { type TagProps } from '@blueprintjs/core';
-import { type ChangeProposal } from '../../types/proposal';
+import { type ChangeProposal } from '../../proposals/types';
 
 
 /** Returns props for a Tag that classifies this proposal. */
