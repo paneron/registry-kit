@@ -37,11 +37,11 @@ import {
   type TabContentsWithHeaderProps,
   type ActionProps,
 } from '../../util';
-import { proposalToTagProps } from '../../change-request/util';
+import { proposalToTagProps } from '../../../proposals/ProposalType';
+import ProposalHistoryDrawer from '../../../proposals/HistoryDrawer';
 import { useItemRef, itemRefToItemPath, crIDToCRPath, getCRIDFromProposedItemPath } from '../../itemPathUtils';
 import { updateCRObjectChangeset, } from '../../change-request/objectChangeset';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
-import ProposalHistoryDrawer from '../../ProposalHistoryDrawer';
 import { RelatedItems } from './RelatedItems';
 
 

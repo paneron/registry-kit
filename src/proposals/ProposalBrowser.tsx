@@ -1,58 +1,25 @@
+
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useCallback, memo, useMemo } from 'react';
+import React, { useContext, useState, useCallback, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
-import {
-  ButtonGroup,
-  Button,
-  Drawer, DrawerSize,
-  Classes,
-  Colors,
-  MenuItem, type MenuItemProps, type MenuDividerProps,
-  type IconName,
-  Tag,
-  H5,
-} from '@blueprintjs/core';
-import { type ItemRenderer, Select2 as Select } from '@blueprintjs/select';
-import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
-import type {
-  Addition,
-  ChangeProposal,
-  Clarification,
-  Retirement,
-  Supersession,
-  Invalidation,
-} from '../../proposals/types';
-import type {
-  InternalItemReference,
-  Payload,
-  RegisterItem,
-} from '../../types';
-import type { Drafted } from '../../proposals/types';
+import { Select2 as Select } from '@blueprintjs/select';
+import { ButtonGroup, Button, H5, Drawer, DrawerSize } from '@blueprintjs/core';
+import type { MenuItemProps, MenuDividerProps } from '@blueprintjs/core';
+
 import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
-import ErrorState from '@riboseinc/paneron-extension-kit/widgets/ErrorState';
-import { Protocols, type Protocol } from '../protocolRegistry';
-import { PROPOSAL_TYPES, AMENDMENT_TYPES } from '../../proposals/types';
-import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../BrowserCtx';
-import { useItemRef, itemPathToItemRef } from '../itemPathUtils';
-import useItemClassConfig from '../hooks/useItemClassConfig';
-import { InlineDiffGeneric } from '../diffing/InlineDiff';
-import { proposalToTagProps } from './util';
-import { HomeBlockCard, HomeBlockActions } from '../detail/RegisterHome/Block';
-import { ItemDetail } from '../detail/RegisterItem';
 
+import { useItemRef, itemPathToItemRef } from '../views/itemPathUtils';
+import { HomeBlockCard, HomeBlockActions } from '../views/detail/RegisterHome/Block';
+import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../views/BrowserCtx';
+import { Protocols, type Protocol } from '../views/protocolRegistry';
 
-interface ChangeProposalItem {
-  itemPath: string
-  itemRef: InternalItemReference
-  proposal: ChangeProposal
-  item: RegisterItem<Payload> | null
-  itemBefore: RegisterItem<Payload> | undefined
-}
-function stringifiedJSONEqual(i1: any, i2: any): boolean {
-  return JSON.stringify(i1) === JSON.stringify(i2);
-}
+import type { Drafted } from './types';
+import { type ChangeProposalItem, ChangeProposalItemView, getProposalIcon } from './ProposalItem';
+import ProposalType from './ProposalType';
+import ProposalSummary from './ProposalSummary';
+import ProposalDetail from './ProposalDetail';
 
 
 interface ProposalBrowserProps<CR extends Drafted> {
@@ -330,196 +297,8 @@ ProposalBrowserProps<CR>) {
   );
 };
 
-
-export function ProposalType({ proposal }: { proposal: ChangeProposal }) {
-  const proposalConfig = 
-    proposal.type === 'amendment'
-      ? PROPOSAL_VIEWS[proposal.amendmentType]
-      : PROPOSAL_VIEWS[proposal.type];
-  //const ProposalTypeLabel: React.FC<ProposalProps<any>> = proposalConfig.summary;
-  const tagProps = proposalToTagProps(proposal);
-  return (
-    <Tag
-      minimal
-      {...tagProps}
-      rightIcon={<HelpTooltip content={<>Proposed to be {proposalConfig.hint}</>} />}
-    />
-    
-  );
+function stringifiedJSONEqual(i1: any, i2: any): boolean {
+  return JSON.stringify(i1) === JSON.stringify(i2);
 }
-
-
-const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
-(item, { handleClick, modifiers, query }) => {
-  if (item.item !== null) {
-    const i = item as ChangeProposalItem & { item: RegisterItem<any> };
-    return (
-      <MenuItem
-        active={modifiers.active}
-        disabled={modifiers.disabled}
-        labelElement={<ProposalType proposal={i.proposal} />}
-        key={item.itemPath}
-        onClick={handleClick}
-        icon={getProposalIcon(item.proposal)}
-        text={<ProposalSummary {...i} />} />
-    );
-  } else {
-    return <MenuItem
-      disabled
-      icon="heart-broken"
-      onClick={handleClick}
-      text={`Broken proposal entry at path ${item.itemPath}`}
-    />
-  }
-};
-
-
-interface ProposalProps<P extends ChangeProposal> {
-  proposal: P
-
-  /** Highlight changes. */
-  showDiff?: boolean
-
-  /** In diff mode, only show changed data. (Provisional.) */
-  showOnlyChanged?: boolean
-
-  itemRef: InternalItemReference
-  item: RegisterItem<Payload>
-  itemBefore: P extends Clarification ? RegisterItem<Payload> : undefined
-  onChange?: (newProposal: P) => void
-}
-export const ProposalDetail: React.FC<ProposalProps<ChangeProposal>> =
-memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore, onChange }) {
-  const itemClass = useItemClassConfig(itemRef.classID ?? 'NONEXISTENT_CLASS_ID');
-
-  if (!itemClass) {
-    throw new Error(`Unknown item class “${itemRef.classID}”!`);
-  }
-
-  const view: JSX.Element = showDiff
-    ? <InlineDiffGeneric
-        item1={itemBefore ?? {}}
-        item2={item}
-        css={css`
-          position: absolute; inset: 0; padding: 10px; overflow: auto;
-          background-color: white;
-          .bp4-dark & {
-            background-color: ${Colors.DARK_GRAY2};
-          }
-        `}
-        className={`${Classes.ELEVATION_2} ${Classes.RUNNING_TEXT}`}
-      />
-    : <ItemDetail
-        itemRef={itemRef}
-        item={item}
-        itemClass={itemClass}
-        key={JSON.stringify(itemRef)}
-        compactHeader
-      />;
-
-  return <div css={css`position: absolute; inset: 0; display: flex; flex-flow: column;`}>
-    {view}
-  </div>;
-});
-export const ProposalSummary: React.FC<ProposalProps<ChangeProposal>> =
-function ({ proposal, itemRef, item, itemBefore, onChange }) {
-  const { itemClasses } = useContext(BrowserCtx);
-  const { classID } = itemRef;
-  const cls = itemClasses[classID];
-  const ListItemView = cls?.views?.listItemView;
-
-  if (ListItemView) {
-    return <span css={css`
-      display: inline-flex;
-      flex-flow: row nowrap;
-      align-items: baseline;
-    `}>
-      <ListItemView
-        itemRef={itemRef}
-        itemData={item.data}
-        css={css`text-overflow: ellipsis; overflow: hidden;`}
-      />
-      &emsp;
-      <small>{cls.meta.title}</small>
-    </span>;
-  } else {
-    return <ErrorState
-      viewName="list item view"
-      inline
-      error="unable to load list item view"
-    />;
-  }
-};
-
-
-interface ProposalViewConfig<P extends ChangeProposal> {
-  summary: React.FC<ProposalProps<P>>
-  hint: JSX.Element | string
-}
-
-
-const clarification: ProposalViewConfig<Clarification> = {
-  hint: <>
-    altered to represent the same concept more clearly.
-  </>,
-  summary: memo(({ proposal, item, itemRef }) => <>Clarification</>, () => true),
-};
-
-
-const addition: ProposalViewConfig<Addition> = {
-  hint: <>added to this register.</>,
-  summary: memo(({ proposal, item, itemRef }) => <>Addition</>, () => true),
-};
-
-
-const retirement: ProposalViewConfig<Retirement> = {
-  hint: <>
-    marked as no longer current.
-    (Note that this register is append-only, so the item cannot be removed altogether.)
-  </>,
-  summary: memo(({ proposal, itemRef, item }) => <>Retirement</>, () => true),
-};
-
-
-const supersession: ProposalViewConfig<Supersession> = {
-  hint: <>
-    removed from the register with another item recommended for use in its place.
-    A relation between the superseding and superseded item will be created,
-    though the exact semantics of that relation depend on the register.
-  </>,
-  summary: memo(({ proposal, itemRef, item }) => <>Supersession</>, () => true),
-};
-
-
-const invalidation: ProposalViewConfig<Invalidation> = {
-  hint: <>
-    marked as invalid. The exact semantics of invalidation depend on the register.
-  </>,
-  summary: memo(({ proposal, itemRef, item }) => <>Invalidation</>, () => true),
-}
-
-
-type ProposalOrAmendmentType =
-  | Exclude<typeof PROPOSAL_TYPES[number], 'amendment'>
-  | typeof AMENDMENT_TYPES[number];
-
-
-const PROPOSAL_VIEWS: { [type in ProposalOrAmendmentType]: ProposalViewConfig<any> } = {
-  clarification,
-  addition,
-  retirement,
-  supersession,
-  invalidation,
-} as const;
-
-
-function getProposalIcon(proposal: ChangeProposal): IconName {
-  return proposal.type === 'addition'
-      ? 'add'
-      : proposal.type === 'clarification'
-        ? 'edit'
-        : 'ban-circle';
-}
-
 
 export default Proposals;

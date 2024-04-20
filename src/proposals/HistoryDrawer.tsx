@@ -9,10 +9,10 @@ import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/Searc
 import type { InternalItemReference } from '../types';
 import { type SomeCR, State, hasSubmitterInput, isDisposed, hadBeenProposed } from '../proposals/types';
 import { isProposal } from '../proposals/types';
-import { ProposalType } from './change-request/Proposals';
+import { ProposalType } from './ProposalType';
 import { Datestamp } from '../views/util';
-import { DISPOSED_CR_QUERY } from './sidebar/Registration';
-import { Protocols } from './protocolRegistry';
+import { DISPOSED_CR_QUERY } from '../views/sidebar/Registration';
+import { Protocols } from '../views/protocolRegistry';
 
 
 /** History of changes affecting given item. */

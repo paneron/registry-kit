@@ -17,7 +17,7 @@ import { BrowserCtx } from '../../BrowserCtx';
 import { ChangeRequestContext } from '../../change-request/ChangeRequestContext';
 import { crIDToCRPath } from '../../itemPathUtils';
 import { newCRObjectChangeset, importedProposalToCRObjectChangeset } from '../../change-request/objectChangeset';
-import { Proposals as CRProposals } from '../../change-request/Proposals';
+import { Proposals as CRProposals } from '../../../proposals/ProposalBrowser';
 import { isImportableCR, type SomeCR as CR } from '../../../proposals/types';
 import { getActionableProposalGroupsForRole, CR_BASE_QUERY } from '../../../proposals/actionableGroups/queries';
 import { canImportCR, canCreateCR } from '../../../types/stakeholder';

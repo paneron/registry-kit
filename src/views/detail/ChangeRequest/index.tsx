@@ -20,7 +20,7 @@ import {
   ChangeRequestContextProvider,
   ChangeRequestContext,
 } from '../../change-request/ChangeRequestContext';
-import Proposals from '../../change-request/Proposals';
+import Proposals from '../../../proposals/ProposalBrowser';
 import TransitionOptions, { isFinalState, getTransitions } from '../../change-request/TransitionOptions';
 import TransitionsAndStatus, { getTransitionHistory } from '../../change-request/TransitionHistory';
 import Summary from '../../change-request/Summary';

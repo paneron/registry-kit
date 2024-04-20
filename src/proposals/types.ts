@@ -6,7 +6,12 @@
 import type React from 'react';
 import type { DatasetContext } from '@riboseinc/paneron-extension-kit/types/renderer';
 
-import type { RegisterItem } from '../types/item';
+import type {
+  InternalItemReference,
+  Payload,
+  RegisterItem,
+} from '../types';
+
 import type { RegisterStakeholder } from '../types/stakeholder';
 import type { Citation } from '../types/util';
 
@@ -646,4 +651,23 @@ export type Transitions = {
     [State.REJECTION_UPHELD_ON_APPEAL]:
       TransitionConfig<Appealed, RejectionUpheld, RegisterOwnerInput>;
   };
+}
+
+
+// Utility
+// =======
+
+export interface ProposalProps<P extends ChangeProposal> {
+  proposal: P
+
+  /** Highlight changes. */
+  showDiff?: boolean
+
+  /** In diff mode, only show changed data. (Provisional.) */
+  showOnlyChanged?: boolean
+
+  itemRef: InternalItemReference
+  item: RegisterItem<Payload>
+  itemBefore: P extends Clarification ? RegisterItem<Payload> : undefined
+  onChange?: (newProposal: P) => void
 }
