@@ -24,11 +24,10 @@ export default function useRegisterVersion(): Date {
   });
 
   const result = latestAcceptedProposalDisposedTimestamp.value.unnamedChain as Date;
-  console.debug('getting register version', result, latestAcceptedProposalDisposedTimestamp);
   if (result) {
     return result;
   } else {
-    console.error("Invalid register version value", result);
+    //console.error("Invalid register version value", result);
     throw new Error("Failed to obtain register version (obtained value is not a timestamp)")
   }
 }

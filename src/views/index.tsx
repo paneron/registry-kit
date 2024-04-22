@@ -74,7 +74,7 @@ function RegistryWorkspace () {
   try {
     version = formatDate(useRegisterVersion());
   } catch (e) {
-    console.error("Failed to get register version", e);
+    //console.error("Failed to get register version", e);
     version = 'N/A';
   }
 
