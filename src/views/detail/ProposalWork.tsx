@@ -30,7 +30,7 @@ import TransitionsAndStatus, { getTransitionHistory } from '../../proposals/Tran
 const ProposalWork: React.VoidFunctionComponent<Record<never, never>> =
 memo(function () {
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
-  const { registerMetadata: register, stakeholder, } = useContext(BrowserCtx);
+  const { registerMetadata: register, stakeholder } = useContext(BrowserCtx);
   if (!activeCR || !register || !stakeholder) {
     return <NonIdealState
       icon="clean"
