@@ -10,7 +10,7 @@ import {
 import { BrowserCtx } from '../BrowserCtx';
 import { canCreateCR } from '../../types/stakeholder';
 import { ChangeRequestContext } from '../../proposals/ChangeRequestContext';
-import ProposalWorkspace from '../../proposals/ProposalWorkspace';
+import ProposalTab from '../../proposals/ProposalTab';
 
 
 const ProposalWork: React.VoidFunctionComponent<Record<never, never>> =
@@ -35,7 +35,7 @@ memo(function () {
       </>}
     />;
   } else {
-    return <ProposalWorkspace
+    return <ProposalTab
       proposal={activeCR}
       register={register}
       stakeholder={stakeholder}
