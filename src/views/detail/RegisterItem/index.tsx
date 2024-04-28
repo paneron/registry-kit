@@ -28,6 +28,7 @@ import {
   isRegisterItem,
   DUMMY_REF,
 } from '../../../types';
+import { InlineDiffGeneric } from '../../diffing/InlineDiff';
 import type { Drafted } from '../../../proposals/types';
 import { BrowserCtx } from '../../BrowserCtx';
 import {
@@ -72,6 +73,11 @@ memo(function ({ uri }) {
   }), [itemPath]);
   const itemResponse = useRegisterItemData(itemRequest);
   const itemData = itemResponse.value[itemPath];
+  const previousItemResponse = useRegisterItemData({
+    itemPaths: [itemPath],
+    ignoreActiveCR: true,
+  });
+  const itemDataBefore = previousItemResponse.value[itemPath] ?? undefined;
 
   if (!itemClass) {
     return <NonIdealState
@@ -83,6 +89,7 @@ memo(function ({ uri }) {
   } else if (isRegisterItem(itemData)) {
     return <ItemDetail
       item={itemData}
+      itemBefore={itemDataBefore}
       itemRef={itemRef}
       itemClass={itemClass}
     />;
@@ -128,14 +135,17 @@ memo(function ({ uri }) {
   }
 });
 
+const EMPTY_OBJECT = {} as const;
+
 
 export const ItemDetail: React.VoidFunctionComponent<{
   item: RegisterItem
+  itemBefore?: RegisterItem
   itemRef: InternalItemReference
   itemClass: ItemClassConfiguration<any>
   className?: string
   compactHeader?: boolean
-}> = memo(function ({ item, itemRef, itemClass, className, compactHeader }) {
+}> = memo(function ({ item, itemBefore, itemRef, itemClass, className, compactHeader }) {
   const { subregisters, useRegisterItemData, activeChangeRequestID: globallyActiveCRID } = useContext(BrowserCtx);
 
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
@@ -143,6 +153,25 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   const [ editedItemData, setEditedItemData ] = useState<RegisterItem["data"] | null>(null);
   const itemDataHasChanges = JSON.stringify(editedItemData) !== JSON.stringify(item.data);
+
+  const [ isEditingProposal, setIsEditingProposal ] = useState(false);
+
+  //const [ diffMode, setDiffMode ] = useState<boolean>(false);
+  // TODO: Implement diff mode
+  const diffMode = false;
+
+  const itemPath = itemRefToItemPath(itemRef);
+
+  /** Proposal for the current item. */
+  const proposal = ((activeCR && activeCR.items[itemPath])
+    ? activeCR.items[itemPath]
+    : null) ?? null;
+
+  const [ preferredComparison, setPreferredComparison ] =
+    useState<'prior' | 'diff' | null>(null);
+  const canCompare = proposal?.type === 'clarification' && itemBefore;
+  const showDiff = preferredComparison === 'diff' && canCompare;
+  const showBefore = preferredComparison === 'prior' && canCompare;
 
   // Gather views
   const ListItemView = itemClass.views.listItemView;
@@ -158,30 +187,30 @@ export const ItemDetail: React.VoidFunctionComponent<{
         useRegisterItemData={useRegisterItemData}
       />
     );
+  } else if (showDiff) {
+    details = <InlineDiffGeneric
+      item1={itemBefore ?? EMPTY_OBJECT}
+      item2={item}
+      css={css`
+        position: absolute; inset: 0; padding: 10px; overflow: auto;
+        background-color: white;
+        .bp4-dark & {
+          background-color: ${Colors.DARK_GRAY2};
+        }
+      `}
+      className={`${Classes.ELEVATION_2} ${Classes.RUNNING_TEXT}`}
+    />
   } else {
     const DetailView = itemClass.views.detailView ?? itemClass.views.editView;
     details = (
       <DetailView
         itemRef={itemRef}
-        itemData={item.data}
+        itemData={showBefore ? itemBefore.data : item.data}
         // TODO: make importing context from registry-kit work in new-style extension
         useRegisterItemData={useRegisterItemData}
       />
     );
   }
-
-  const [ isEditingProposal, setIsEditingProposal ] = useState(false);
-
-  //const [ diffMode, setDiffMode ] = useState<boolean>(false);
-  // TODO: Implement diff mode
-  const diffMode = false;
-
-  const itemPath = itemRefToItemPath(itemRef);
-
-  /** Proposal for the current item. */
-  const proposal = ((activeCR && activeCR.items[itemPath])
-    ? activeCR.items[itemPath]
-    : null) ?? null;
 
   const proposedSupersedingItemRefs =
     proposal?.type === 'amendment' && proposal.amendmentType === 'supersession'
@@ -494,6 +523,23 @@ export const ItemDetail: React.VoidFunctionComponent<{
             actions.push([proposeBtn, ...editActions]);
           } else {
             actions.push(proposeBtn);
+            if (canCompare) {
+              actions.push([{
+                disabled: isBusy,
+                children: "Prior version",
+                active: preferredComparison === 'prior',
+                onClick: preferredComparison === 'prior'
+                  ? () => setPreferredComparison(null)
+                  : () => setPreferredComparison('prior'),
+              }, {
+                disabled: isBusy,
+                children: "Diff",
+                active: preferredComparison === 'diff',
+                onClick: preferredComparison === 'diff'
+                  ? () => setPreferredComparison(null)
+                  : () => setPreferredComparison('diff'),
+              }]);
+            }
           }
         } else {
           const proposeBtn: ButtonProps = {
@@ -538,12 +584,21 @@ export const ItemDetail: React.VoidFunctionComponent<{
   }, [
     isBusy,
     itemClass.meta.id,
-    proposal === null, proposal?.type, (proposal as Supersession)?.supersedingItemIDs?.toString(),
+
+    proposal === null,
+    proposal?.type,
+    (proposal as Supersession)?.supersedingItemIDs?.toString(),
+
     activeCRIsEditable,
-    editedItemData === null, itemDataHasChanges,
+
+    editedItemData === null,
+    itemDataHasChanges,
+
     isEditingProposal,
     performOperation, handleSetProposal,
     historyDrawerOpenState,
+
+    canCompare, preferredComparison, setPreferredComparison,
   ]);
 
   // If there’s a CR context without active CR,
