@@ -23,45 +23,51 @@ import TransitionOptions, { getTransitions, isFinalState } from './TransitionOpt
 import TransitionsAndStatus, { getTransitionHistory } from './TransitionHistory';
 
 
+const SIDEBAR_IDS = ['meta'] as const;
+
+
 const ProposalWorkspace: React.VoidFunctionComponent<{
   proposal: CR
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
+  const sidebarConfig = useMemo(() => {
+    return {
+      meta: {
+        icon: () => <Icon icon="document" />,
+        title: "Meta",
+        blocks: [{
+          key: 'summary',
+          title: "Summary",
+          content: <div css={css`padding: 0 5px;`}>
+            “{proposal.justification?.trim()}”
+            <br />
+            <DL>
+              <MetaProperties
+                cr={proposal}
+                currentStakeholder={stakeholder}
+                registerMetadata={register}
+              />
+            </DL>
+          </div>,
+        }, {
+          key: 'transitions',
+          title: "Transitions",
+          content: <TransitionBlockContents
+            proposal={proposal}
+            stakeholder={stakeholder}
+          />,
+        }],
+      },
+    };
+  }, [register, stakeholder, proposal]);
   return (
     <Workspace sidebarPosition="right" sidebar={
       <SuperSidebar
-        sidebarIDs={['meta']}
+        sidebarIDs={SIDEBAR_IDS}
         css={css`width: 30% !important; min-width: 300px;`}
         selectedSidebarID='meta'
-        config={{
-          meta: {
-            icon: () => <Icon icon="document" />,
-            title: "Meta",
-            blocks: [{
-              key: 'summary',
-              title: "Summary",
-              content: <div css={css`padding: 0 5px;`}>
-                “{proposal.justification?.trim()}”
-                <br />
-                <DL>
-                  <MetaProperties
-                    cr={proposal}
-                    currentStakeholder={stakeholder}
-                    registerMetadata={register}
-                  />
-                </DL>
-              </div>,
-            }, {
-              key: 'transitions',
-              title: "Transitions",
-              content: <TransitionBlockContents
-                proposal={proposal}
-                stakeholder={stakeholder}
-              />,
-            }],
-          },
-        }}
+        config={sidebarConfig}
       />
     }>
       <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
