@@ -179,9 +179,10 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
     (itemPath => dispatch({ type: 'select-item', payload: { itemPath }})),
     [dispatch]);
 
-  const handleOpenItem = useCallback(
-    onOpenItem ?? (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
-    [onOpenItem, spawnTab]);
+  const defaultHandleOpenItem = useCallback(
+    (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
+    [spawnTab]);
+  const handleOpenItem = onOpenItem ?? defaultHandleOpenItem;
 
   return (
     <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
