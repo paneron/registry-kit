@@ -25,7 +25,6 @@ import TransitionsAndStatus, { getTransitionHistory } from './TransitionHistory'
 
 const ProposalWorkspace: React.VoidFunctionComponent<{
   proposal: CR
-  onDelete?: () => void
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
