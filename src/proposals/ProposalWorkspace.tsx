@@ -6,9 +6,6 @@ import { jsx, css } from '@emotion/react';
 import {
   Icon,
   Checkbox,
-  UL,
-  type Intent,
-  type IconName,
 } from '@blueprintjs/core';
 
 import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
@@ -16,10 +13,9 @@ import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import SuperSidebar from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/SuperSidebar';
 
 import type { Register, RegisterStakeholder } from '../types';
-import { TabContentsWithHeader, Datestamp } from '../views/util';
 import { RegisterHelmet as Helmet } from '../views/util';
 import { MATCHES_ANY_CRITERIA } from '../views/FilterCriteria/models';
-import { type SomeCR as CR, isDisposed, hadBeenProposed } from './types';
+import { type SomeCR as CR } from './types';
 import MetaProperties from './MetaProperties';
 import ProposalSearch from './Search';
 import Search from '../views/sidebar/Search';
@@ -29,65 +25,11 @@ import TransitionsAndStatus, { getTransitionHistory } from './TransitionHistory'
 
 const ProposalWorkspace: React.VoidFunctionComponent<{
   proposal: CR
+  onDelete?: () => void
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
-  const pending = !isDisposed(proposal);
-  const proposedMarker = <>
-    Proposed: {hadBeenProposed(proposal)
-      ? <Datestamp date={proposal.timeProposed} />
-      : 'not yet'}
-  </>;
-  const disposedMarker = <>
-    Disposed: {!pending
-      ? <Datestamp date={proposal.timeDisposed} />
-      : 'not yet'}
-  </>;
-  const editedMarker = <>Edited: <Datestamp date={proposal.timeEdited} /></>;
-  const classification = useMemo(() => {
-    return [{
-      icon: 'lightbulb' as IconName,
-      children: "Proposal",
-      tooltip: {
-        icon: 'info-sign' as IconName,
-        content: <UL css={css`margin: 0;`}>
-          <li>Proposal ID: {proposal.id}</li>
-        </UL>,
-      },
-    }, {
-      children: pending
-        ? <>pending</>
-        : <>disposed</>,
-    }, {
-      children: proposal.state?.replaceAll('-', ' ') || 'N/A',
-      tooltip: {
-        icon: 'history' as IconName,
-        content: <UL css={css`margin: 0;`}>
-          <li>{editedMarker}</li>
-          <li>{proposedMarker}</li>
-          <li>{disposedMarker}</li>
-        </UL>,
-      },
-      intent: proposal.state === 'accepted'
-        ? 'success'
-        : proposal.state === 'returned-for-clarification'
-          ? 'warning'
-          : proposal.state === 'withdrawn' || proposal.state === 'rejected'
-            ? 'danger'
-            : proposal.state === 'draft'
-              ? undefined
-              : 'primary' as Intent,
-    }];
-  }, [
-    proposal.state,
-    pending,
-    editedMarker, proposedMarker, disposedMarker,
-  ]);
-
   return (
-    <TabContentsWithHeader
-        title={<>{proposal.justification}</>}
-        classification={classification}>
       <Workspace sidebarPosition="right" sidebar={
         <SuperSidebar
           sidebarIDs={['meta']}
@@ -136,7 +78,6 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
           />
         </div>
       </Workspace>
-    </TabContentsWithHeader>
   );
 };
 
