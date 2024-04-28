@@ -87,7 +87,7 @@ function RegistryWorkspace () {
             Viewing register as proposed — contents shown may differ from version in effect
           </>,
           intent: 'danger',
-          onClick: () => spawnTab(`${Protocols.CHANGE_REQUEST}:/proposals/${activeChangeRequest.id}/main.yaml`),
+          onClick: () => spawnTab(Protocols.PROPOSAL_WORK),
         }
       : {
           content: <>
