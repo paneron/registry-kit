@@ -2,18 +2,17 @@
 /** @jsxFrag React.Fragment */
 
 import React, { useEffect, useMemo, useCallback, useContext } from 'react';
-import { jsx, css } from '@emotion/react';
-import { Icon } from '@blueprintjs/core';
+import { jsx } from '@emotion/react';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
-import { type Base as BaseCR, hasSubmitterInput, isDisposed, hadBeenProposed } from '../../../proposals/types';
+import { type Base as BaseCR, type SomeCR } from '../../../proposals/types';
 import { CR_BASE_QUERY, DISPOSED_CR_QUERY } from '../../../proposals/queries';
 import { BrowserCtx } from '../../BrowserCtx';
 import { itemRefToItemPath } from '../../itemPathUtils';
-import { Datestamp } from '../../../views/util';
+import { ProposalAsListItem } from '../../../proposals/ListItem';
 import { Protocols } from '../../protocolRegistry';
 
 
@@ -123,38 +122,7 @@ const CRHistoryItem: React.FC<{
   objectData: BaseCR,
   objectPath: string,
 }> = function ({ objectData }) {
-  const { activeChangeRequestID, setActiveChangeRequestID } = useContext(BrowserCtx);
-  const isActive = activeChangeRequestID === objectData.id;
-  const canToggle = activeChangeRequestID == null || isActive;
-
-  const justification = hasSubmitterInput(objectData) ? objectData.justification : 'N/A';
-
-  return <span title={`${justification} (proposal ID: ${objectData.id})`}>
-    <Icon
-      icon={isActive ? 'record' : 'dot'}
-      css={css`vertical-align: top; ${canToggle ? 'cursor: pointer; transition: all .2s;' : 'opacity: .5;'}`}
-      title={canToggle
-        ? isActive
-          ? "Click to deactivate this proposal"
-          : "Click to activate this proposal"
-        : undefined}
-      onClick={canToggle
-        ? () => setActiveChangeRequestID?.(activeChangeRequestID === objectData.id ? null : objectData.id)
-        : undefined}
-      intent={isActive
-        ? 'danger'
-        : canToggle
-          ? 'primary'
-          : undefined}
-    />
-    &nbsp;
-    {isDisposed(objectData)
-      ? <><Datestamp date={objectData.timeDisposed} title="Disposed" />: </>
-      : hadBeenProposed(objectData)
-        ? <><Datestamp date={objectData.timeProposed} title="Proposed" />: </>
-        : null}
-    {justification}
-  </span>;
+  return <ProposalAsListItem proposal={objectData as SomeCR} />;
 };
 
 
