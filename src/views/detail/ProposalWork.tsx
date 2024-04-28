@@ -47,7 +47,7 @@ memo(function () {
 const ProposalWorkTitle: React.VoidFunctionComponent<Record<never, never>> = function () {
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   return <>{activeCR
-    ? <strong> Active proposal</strong>
+    ? <strong>Active proposal</strong>
     : <>Proposal dashboard</>}</>;
 };
 
