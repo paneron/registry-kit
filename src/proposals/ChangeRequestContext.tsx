@@ -77,9 +77,7 @@ export const ChangeRequestContextProvider: React.FC<{
   const { useObjectData, makeRandomID, updateObjects, updateTree, performOperation, isBusy } = useContext(DatasetContext);
   const { itemClasses, subregisters, stakeholder } = useContext(BrowserCtx);
 
-  const crPath = changeRequestID
-    ? `/proposals/${changeRequestID}/main.yaml`
-    : null;
+  const crPath = changeRequestID ? crIDToCRPath(changeRequestID) : null;
 
   const changeRequest = useObjectData({
     objectPaths: crPath ? [crPath] : [],
