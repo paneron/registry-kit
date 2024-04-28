@@ -20,6 +20,7 @@ import {
 import { Popover2 as Popover } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import HelpTooltip, { type HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { BrowserCtx } from './BrowserCtx';
 import type { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 export { GenericRelatedItemView } from './GenericRelatedItemView';
 
@@ -40,11 +41,12 @@ export function maybeEllipsizeString(
 
 export const RegisterHelmet: React.FC<HelmetProps> = memo(function (props) {
   const { title: datasetTitle } = useContext(DatasetContext);
+  const { registerMetadata } = useContext(BrowserCtx);
 
   return (
     <Helmet
-        titleTemplate={`%s in ${datasetTitle} register`}
-        defaultTitle={`${datasetTitle} register`}>
+        titleTemplate={`%s in ${registerMetadata?.name ?? datasetTitle}`}
+        defaultTitle={`${registerMetadata?.name ?? datasetTitle}`}>
       {props.children}
     </Helmet>
   );
