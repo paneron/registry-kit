@@ -347,6 +347,7 @@ export function hadBeenProposed(cr: Base): cr is Base & { timeProposed: Date } {
 /** A proposal that had been disposed is not pending, not actionable. */
 export function isDisposed(cr: Base): cr is Base & { timeDisposed: Date } {
   return cr && cr.hasOwnProperty('timeDisposed') && !!(cr as Disposed).timeDisposed;
+  // TODO: include status checks, too?
   //return [
   //  State.WITHDRAWN,
   //  State.ACCEPTED,
