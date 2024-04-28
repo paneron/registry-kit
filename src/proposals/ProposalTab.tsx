@@ -18,9 +18,10 @@ import Workspace from './ProposalWorkspace';
 
 const ProposalTab: React.VoidFunctionComponent<{
   proposal: CR
+  onDelete?: () => void
   register: Register
   stakeholder?: RegisterStakeholder
-}> = function ({ proposal, register, stakeholder }) {
+}> = function ({ proposal, onDelete, register, stakeholder }) {
   const pending = !isDisposed(proposal);
   const proposedMarker = <>
     Proposed: {hadBeenProposed(proposal)
@@ -72,10 +73,22 @@ const ProposalTab: React.VoidFunctionComponent<{
     pending,
     editedMarker, proposedMarker, disposedMarker,
   ]);
+
+  const actions = useMemo(() => {
+    const actions = [];
+    if (onDelete) {
+      actions.push({
+        text: "Delete this proposal",
+        onClick: onDelete,
+      });
+    }
+    return actions;
+  }, [onDelete]);
   return (
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
-        classification={classification}>
+        classification={classification}
+        actions={actions}>
       <Workspace proposal={proposal} register={register} stakeholder={stakeholder} />
     </TabContentsWithHeader>
   );

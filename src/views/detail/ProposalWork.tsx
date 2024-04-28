@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, memo } from 'react';
+import React, { useContext, useCallback, memo } from 'react';
 import { jsx } from '@emotion/react';
 import {
   Button,
@@ -15,8 +15,16 @@ import ProposalTab from '../../proposals/ProposalTab';
 
 const ProposalWork: React.VoidFunctionComponent<Record<never, never>> =
 memo(function () {
-  const { changeRequest: activeCR } = useContext(ChangeRequestContext);
-  const { registerMetadata: register, stakeholder } = useContext(BrowserCtx);
+  const { changeRequest: activeCR, deleteCR } = useContext(ChangeRequestContext);
+  const { registerMetadata: register, stakeholder, setActiveChangeRequestID } = useContext(BrowserCtx);
+
+  const handleDelete = useCallback(async () => {
+    if (deleteCR && activeCR && setActiveChangeRequestID) {
+      await deleteCR();
+      setActiveChangeRequestID(null);
+    }
+  }, [deleteCR, setActiveChangeRequestID]);
+
   if (!activeCR || !register || !stakeholder) {
     return <NonIdealState
       icon="clean"
@@ -39,6 +47,7 @@ memo(function () {
       proposal={activeCR}
       register={register}
       stakeholder={stakeholder}
+      onDelete={deleteCR ? handleDelete : undefined}
     />;
   }
 });
