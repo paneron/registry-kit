@@ -4,6 +4,10 @@ import { CR_BASE_QUERY } from '../../proposals/queries';
 import { State } from '../../proposals/types';
 
 
+/**
+ * By “register version” in this case
+ * the date of latest accepted proposal is meant.
+ */
 export default function useRegisterVersion(): Date {
   const { useMapReducedData } = useContext(DatasetContext);
 
