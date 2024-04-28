@@ -35,7 +35,8 @@ export const ChangeProposalItemView: ItemRenderer<ChangeProposalItem> =
         key={item.itemPath}
         onClick={handleClick}
         icon={getProposalIcon(item.proposal)}
-        text={<ProposalSummary {...i} />} />
+        text={<ProposalSummary {...i} />}
+      />
     );
   } else {
     return <MenuItem
