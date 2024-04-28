@@ -29,10 +29,16 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
+  const classification = useMemo(() => {
+    return [{
+      children: <>{proposal.state}</>,
+    }];
+  }, [proposal.state]);
+
   return (
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
-        classification={[{ children: <>{proposal.state}</> }]}>
+        classification={classification}>
       <Workspace sidebarPosition="right" sidebar={
         <SuperSidebar
           sidebarIDs={['meta']}
