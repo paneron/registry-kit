@@ -22,7 +22,7 @@ export interface Citation {
   seriesPage: string | null
 
   edition: string | null
-  editionDate: Date | null
+  editionDate: string | null
 
   otherDetails: string
 
