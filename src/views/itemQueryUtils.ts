@@ -12,8 +12,8 @@ export const REGISTER_ITEM_QUERY = `
 
 
 /**
- * Returns a query that matches given register item object path
- * depending on how it appears in given change request.
+ * Returns a query that matches register item object paths
+ * depending on how they appears in given change request.
  *
  * For additions, object path would be full in-proposal path
  * (the item doesn’t exist in the register “normally”), so we want to match that.
