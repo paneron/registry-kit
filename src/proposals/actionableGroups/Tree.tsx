@@ -155,7 +155,7 @@ function ({ className }) {
     } else {
       // activate & open proposal dashboard
       setActiveChangeRequestID?.(proposalID as string)
-      spawnTab(Protocols.PROPOSAL_WORK);
+      spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
     }
   }), [activeCR?.id, setActiveChangeRequestID, spawnTab]);
 
