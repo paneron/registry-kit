@@ -53,6 +53,10 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
         content: <UL css={css`margin: 0;`}><li>Proposal ID: {proposal.id}</li></UL>,
       },
     }, {
+      children: pending
+        ? <>pending</>
+        : <>disposed</>,
+    }, {
       children: proposal.state?.replaceAll('-', ' ') || 'N/A',
       tooltip: {
         icon: 'history' as IconName,
@@ -71,10 +75,6 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
             : proposal.state === 'draft'
               ? undefined
               : 'primary' as Intent,
-    }, {
-      children: pending
-        ? <>pending</>
-        : <>disposed</>,
     }];
   }, [proposal.state, pending, editedMarker, proposedMarker, disposedMarker]);
 
