@@ -46,6 +46,13 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   const editedMarker = <>Edited: <Datestamp date={proposal.timeEdited} /></>;
   const classification = useMemo(() => {
     const classification = [{
+      icon: 'lightbulb' as IconName,
+      children: "Proposal",
+      tooltip: {
+        icon: 'info-sign' as IconName,
+        content: <UL css={css`margin: 0;`}><li>Proposal ID: {proposal.id}</li></UL>,
+      },
+    }, {
       children: proposal.state?.replaceAll('-', ' ') || 'N/A',
       tooltip: {
         icon: 'history' as IconName,
