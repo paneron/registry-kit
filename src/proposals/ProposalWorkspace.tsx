@@ -35,8 +35,8 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
       children: <>{proposal.state}</>,
     }, {
       children: pending
-        ? <>Pending</>
-        : <>Disposed</>,
+        ? <>pending</>
+        : <>disposed</>,
     }];
     return classification;
   }, [proposal.state, pending]);
