@@ -84,7 +84,7 @@ function RegistryWorkspace () {
     (() => activeChangeRequest
       ? {
           content: <>
-            Viewing register as proposed — contents shown may differ from version in effect
+            Viewing register as proposed per “<span title="Justification of active proposal">{activeChangeRequest.justification}</span>”
           </>,
           intent: 'danger',
           onClick: () => spawnTab(Protocols.PROPOSAL_WORK),
