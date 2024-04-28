@@ -30,7 +30,7 @@ import { REGISTER_METADATA_FILENAME } from '../common';
 
 import GenericRelatedItemView from './GenericRelatedItemView';
 import { BrowserCtx } from './BrowserCtx';
-import { formatDate, _getRelatedClass } from './util';
+import { Datestamp, _getRelatedClass } from './util';
 import RegisterHome from './detail/RegisterHome';
 import protocolRegistry, { Protocols, type Protocol } from './protocolRegistry';
 import {
@@ -72,12 +72,12 @@ function RegistryWorkspace () {
   const { registerMetadata, stakeholder } = useContext(BrowserCtx);
   const { useSettings, updateSetting, useGlobalSettings } = useContext(DatasetContext);
 
-  let version: string;
+  let version: JSX.Element;
   try {
-    version = formatDate(useRegisterVersion());
+    version = <Datestamp date={useRegisterVersion()} showTime useUTC />;
   } catch (e) {
     //console.error("Failed to get register version", e);
-    version = 'N/A';
+    version = <>N/A</>;
   }
 
   const globalMode: TabbedWorkspaceProps<any>['globalMode'] = useMemo(
