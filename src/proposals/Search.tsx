@@ -43,10 +43,14 @@ function ({ onSelect, onOpen, extraData, itemRef: itemPath }) {
   const itemPayload: Record<string, any> | null = registerItem?.data ?? null;
  
   const itemView = itemPayload
-    ? <ListItemView
-        itemData={itemPayload}
-        itemRef={itemRef}
-      />
+    ? <>
+        {clsConfig.title}
+        &emsp;
+        <ListItemView
+          itemData={itemPayload}
+          itemRef={itemRef}
+        />
+      </>
     : <span css={css`opacity: .4`}>
         (missing item data at {itemPath})
       </span>;
