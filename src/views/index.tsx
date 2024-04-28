@@ -5,6 +5,8 @@ import React, { useContext, useCallback, useState, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { jsx, css } from '@emotion/react';
 
+import { Helmet } from 'react-helmet';
+
 import { Colors } from '@blueprintjs/core';
 import type { ValueHook } from '@riboseinc/paneron-extension-kit/types';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
@@ -111,6 +113,7 @@ function RegistryWorkspace () {
 
   return (
     <div css={css`flex: 1 1 auto; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+      <Helmet><title>{registerMetadata?.name ?? "Unnamed registry"}</title></Helmet>
       <header css={css`
             min-height: 2em;
             flex: 0;
