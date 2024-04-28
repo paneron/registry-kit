@@ -3,6 +3,8 @@
 
 //import log from 'electron-log';
 import format from 'date-fns/format';
+import { format as formatTZ, utcToZonedTime } from 'date-fns-tz';
+
 import React, { memo, useContext } from 'react';
 import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
@@ -101,10 +103,12 @@ export const PropertyDetailView: React.FC<FormGroupProps & {
 /** Formats given date as a span with tooltip set to full ISO date & time. */
 export const Datestamp: React.FC<{
   date: Date
+  useUTC?: boolean
+  showTime?: boolean
   title?: string
   className?: string
-}> = function ({ date, title, className }) {
-  const asString = formatDate(date);
+}> = function ({ date, useUTC, showTime, title, className }) {
+  const asString = formatDate(date, { useUTC, showTime });
   return <span
       className={className}
       title={`${title ? `${title}: ` : ''}${date?.toString() ?? 'N/A'}`}>
@@ -113,10 +117,26 @@ export const Datestamp: React.FC<{
 };
 
 
+function formatInTimeZone(date: Date, fmt: string, tz: string) {
+  return formatTZ(
+    utcToZonedTime(date, tz), 
+    fmt, 
+    { timeZone: tz });
+}
+
+
 /** Foramts given date as plain text. */
-export function formatDate(date: Date): string {
+export function formatDate(
+  date: Date,
+  opts?: { useUTC?: boolean, showTime?: boolean },
+): string {
+  const fmt = opts?.showTime
+    ? 'yyyy-MM-dd HH:mm:ss'
+    : 'yyyy-MM-dd';
   try {
-    return format(date, 'yyyy-MM-dd');
+    return opts?.useUTC
+      ? `${formatInTimeZone(date, fmt, 'UTC')} UTC`
+      : format(date, fmt);
   } catch (e) {
     console.error("Failed to format date", date, typeof date);
     return `Invalid date (${e})`;
