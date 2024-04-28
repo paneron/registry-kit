@@ -8,7 +8,7 @@ import {
   Checkbox,
 } from '@blueprintjs/core';
 
-import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
+import { WrappableDL as DL } from '@riboseinc/paneron-extension-kit/widgets/DL';
 import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import SuperSidebar from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/SuperSidebar';
 
@@ -30,7 +30,10 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   proposal: CR
   register: Register
   stakeholder?: RegisterStakeholder
-}> = function ({ proposal, register, stakeholder }) {
+
+  /** If not specified, opening an item will spawn its tab. */
+  onOpenItem?: (itemPath: string | null) => void
+}> = function ({ proposal, register, stakeholder, onOpenItem }) {
   const sidebarConfig = useMemo(() => {
     return {
       meta: {
@@ -79,7 +82,7 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
           stateName={`proposal-${proposal.id}-search`}
           List={ProposalSearch as any}
           extraData={{ proposal }}
-          //onOpenItem={onChooseItem ? handleOpenItem : undefined}
+          onOpenItem={onOpenItem}
         />
       </div>
     </Workspace>

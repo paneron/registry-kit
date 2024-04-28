@@ -2,22 +2,19 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useCallback, useMemo } from 'react';
+import React, { useContext, useCallback, useMemo } from 'react';
 import { ClassNames, jsx, css } from '@emotion/react';
 import { Select2 as Select } from '@blueprintjs/select';
-import { ButtonGroup, Button, H5, Drawer, DrawerSize } from '@blueprintjs/core';
-import type { MenuItemProps, MenuDividerProps } from '@blueprintjs/core';
+import { ButtonGroup, Button, Drawer, DrawerSize } from '@blueprintjs/core';
 
 import ErrorBoundary from '@riboseinc/paneron-extension-kit/widgets/ErrorBoundary';
 
 import { useItemRef, itemPathToItemRef } from '../views/itemPathUtils';
-import { HomeBlockCard, HomeBlockActions } from '../views/detail/RegisterHome/Block';
 import { BrowserCtx, type BrowserCtx as BrowserCtxType } from '../views/BrowserCtx';
 import { Protocols, type Protocol } from '../views/protocolRegistry';
 
 import type { Drafted } from './types';
 import { type ChangeProposalItem, ChangeProposalItemView, getProposalIcon } from './ProposalItem';
-import ProposalType from './ProposalType';
 import ProposalSummary from './ProposalSummary';
 import ProposalDetail from './ProposalDetail';
 
@@ -43,8 +40,6 @@ interface ProposalBrowserProps<CR extends Drafted> {
 export function ProposalBrowser<CR extends Drafted>
 ({ proposals, onDeleteProposalForItemAtPath, selectedItem, onSelectItem: selectProposal }:
 ProposalBrowserProps<CR>) {
-  const [ preferDiff, setPreferDiff ] = useState(false);
-
   const selectedProposal = selectedItem ?? null;
 
   // TODO: Temporarily unsupported
@@ -159,12 +154,6 @@ ProposalBrowserProps<CR>) {
   //  }
   //}, [selectedProposal === null]);
 
-  const canShowDiff: boolean =
-    haveSelectedItem && proposals[selectedProposal]?.type === 'clarification'
-      ? true
-      : false;
-  const showDiff = canShowDiff && preferDiff;
-
   const selectedItemSummary = haveSelectedItem
     ? <ProposalSummary
         itemRef={selectedItemRef}
@@ -191,16 +180,6 @@ ProposalBrowserProps<CR>) {
                 icon='open-application'
                 onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
                 title="Open selected item in a new tab (not applicable to proposed additions)"
-              />
-              <Button
-                active={preferDiff}
-                onClick={() => setPreferDiff(v => !v)}
-                // Diffing only makes sense for clarifications.
-                // Additions are entire new items, and for amendments
-                // item data is unchanged.
-                disabled={!canShowDiff}
-                text="Compare"
-                title="Annotate proposed clarifications for this item"
               />
               <ClassNames>
                 {(({ css: css2 }) =>
@@ -237,7 +216,6 @@ ProposalBrowserProps<CR>) {
                 <ErrorBoundary viewName="Proposal detail">
                   <ProposalDetail
                     itemRef={selectedItemRef}
-                    showDiff={showDiff}
                     //showOnlyChanged={showOnlyChanged}
                     item={(selectedItemProposed ?? selectedItemCurrent)!}
                     itemBefore={selectedItemCurrent ?? undefined}
@@ -249,50 +227,11 @@ ProposalBrowserProps<CR>) {
           </>
         : null}
     </Drawer>
-  ), [proposalCount > 0, haveSelectedItem, selectedItemProposed, selectedItemCurrent, preferDiff, jumpTo, handleItemSelect, selectedProposal && proposals[selectedProposal]]);
+  ), [proposalCount > 0, haveSelectedItem, selectedItemProposed, selectedItemCurrent, jumpTo, handleItemSelect, selectedProposal && proposals[selectedProposal]]);
 
   return (
     <>
       {selectedItemDrawer}
-      {allItems.map(cpi => {
-        const actions: (MenuItemProps | MenuDividerProps)[] = [{
-          onClick: () => selectProposal(cpi.itemPath),
-          text: "Expand",
-          title: "Expand proposed change to see item details",
-          icon: 'maximize',
-        }];
-        if (onDeleteProposalForItemAtPath) {
-          actions.push({
-            text: "Delete this proposal",
-            intent: 'danger',
-            onClick: () => onDeleteProposalForItemAtPath(cpi.itemPath),
-            icon: 'trash',
-          });
-        }
-        return <HomeBlockCard
-            css={css`
-              flex-basis: calc(33.33% - 10px*2/3);
-            `}
-            description={`${cpi.proposal.type} proposal`}
-            key={cpi.itemPath}>
-          <ProposalType proposal={cpi.proposal} />
-          <div css={css`padding: 5px; flex-grow: 1;`}>
-            {cpi.item !== null
-              ? <H5 css={css`margin: 0; overflow: hidden; text-overflow: ellipsis;`}>
-                  <ProposalSummary
-                    itemRef={cpi.itemRef}
-                    proposal={cpi.proposal}
-                    itemBefore={cpi.itemBefore}
-                    item={cpi.item}
-                  />
-                </H5>
-              : <>Problem reading proposed item data.</>}
-          </div>
-          {actions.length > 0
-            ? <HomeBlockActions actions={actions} />
-            : null}
-        </HomeBlockCard>
-      })}
     </>
   );
 };

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   UL,
@@ -14,6 +14,7 @@ import { TabContentsWithHeader, Datestamp } from '../views/util';
 import { type SomeCR as CR, isDisposed, hadBeenProposed } from './types';
 
 import Workspace from './ProposalWorkspace';
+import ProposalBrowser from './ProposalBrowser';
 
 
 const ProposalTab: React.VoidFunctionComponent<{
@@ -74,6 +75,8 @@ const ProposalTab: React.VoidFunctionComponent<{
     editedMarker, proposedMarker, disposedMarker,
   ]);
 
+  const [selectedItem, selectItem] = useState<string | null>(null);
+
   const actions = useMemo(() => {
     const actions = [];
     if (onDelete) {
@@ -90,7 +93,17 @@ const ProposalTab: React.VoidFunctionComponent<{
         title={<>{proposal.justification}</>}
         classification={classification}
         actions={actions}>
-      <Workspace proposal={proposal} register={register} stakeholder={stakeholder} />
+      <Workspace
+        proposal={proposal}
+        register={register}
+        stakeholder={stakeholder}
+        onOpenItem={selectItem}
+      />
+      <ProposalBrowser
+        proposals={proposal.items}
+        onSelectItem={selectItem}
+        selectedItem={selectedItem}
+      />
     </TabContentsWithHeader>
   );
 

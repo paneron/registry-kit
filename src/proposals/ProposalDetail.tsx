@@ -36,6 +36,7 @@ memo(function ({ proposal, showDiff, showOnlyChanged, itemRef, item, itemBefore,
     : <ItemDetail
         itemRef={itemRef}
         item={item}
+        itemBefore={itemBefore}
         itemClass={itemClass}
         key={JSON.stringify(itemRef)}
         compactHeader
