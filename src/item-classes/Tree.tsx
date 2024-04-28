@@ -54,8 +54,8 @@ const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = functio
       ),
       _dangerouslySkipValidation: true,
     });
-    spawnTab(`${Protocols.ITEM_DETAILS}:${itemRefToItemPath(ref, activeCR.id)}`);
-  }, [activeCR, activeCRIsEditable, subregisters === undefined, spawnTab, updateObjects, makeRandomID]);
+    spawnTab(Protocols.PROPOSAL_WORK);
+  }, [activeCR, activeCRIsEditable, subregisters === undefined, updateObjects, makeRandomID]);
 
   const handleAdd: undefined | ((clsID: string) => Promise<void>) = useMemo((() =>
     !subregisters && activeCRIsEditable && performOperation
