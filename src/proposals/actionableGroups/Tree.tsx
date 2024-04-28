@@ -12,7 +12,6 @@ import type { SomeCR as CR } from '../../proposals/types';
 import { ChangeRequestContext } from '../ChangeRequestContext';
 import { BrowserCtx } from '../../views/BrowserCtx';
 import { getActionableProposalGroupsForRoles } from './queries';
-import { Protocols } from '../../views/protocolRegistry';
 import {
   type ActionableProposalTreeNode,
   getMapReduceChainsForActionableProposalGroups,
@@ -46,7 +45,7 @@ function ({ className }) {
   const { changeRequest: activeCR } = useContext(ChangeRequestContext);
   const { setActiveChangeRequestID, stakeholder } = useContext(BrowserCtx);
   const { usePersistentDatasetStateReducer, useMapReducedData } = useContext(DatasetContext);
-  const { spawnTab, closeTabWithURI } = useContext(TabbedWorkspaceContext);
+  const { spawnTab } = useContext(TabbedWorkspaceContext);
 
   const [ state, dispatch, ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
     'actionable-proposals',
@@ -151,11 +150,10 @@ function ({ className }) {
     if (proposalID === activeCR?.id) {
       // deactivate
       setActiveChangeRequestID?.(null);
-      closeTabWithURI(Protocols.PROPOSAL_WORK);
     } else {
       // activate & open proposal dashboard
       setActiveChangeRequestID?.(proposalID as string)
-      spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
+      //spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
     }
   }), [activeCR?.id, setActiveChangeRequestID, spawnTab]);
 
