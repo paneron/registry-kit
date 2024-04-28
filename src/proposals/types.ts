@@ -207,7 +207,7 @@ export interface Base<S extends StateType = StateType>
   items: ProposalSet;
 
   /**
-   * Against to which register version changes were proposed.
+   * Against which register version changes were proposed.
    */
   registerVersion: string;
 
