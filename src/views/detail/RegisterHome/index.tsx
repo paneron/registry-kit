@@ -70,20 +70,20 @@ function () {
   const getNewEmptyCRChangeset:
   undefined | ((idea: string) => Promise<[ObjectChangeset, string]>) =
   useMemo(() => {
-    if (makeRandomID && stakeholder && canCreateCR(stakeholder)) {
+    if (makeRandomID && stakeholder && canCreateCR(stakeholder) && registerVersion?.id) {
       return async function getNewEmptyCRChangeset (newIdea: string) {
         const crID = await makeRandomID();
         return [newCRObjectChangeset(
           crID,
           newIdea,
-          registerVersion!,
+          registerVersion!.id,
           stakeholder!.gitServerUsername!,
         ), crID];
       };
     } else {
       return undefined;
     }
-  }, [makeRandomID, stakeholder, registerVersion]);
+  }, [makeRandomID, stakeholder, registerVersion?.id]);
 
   const getImportedCRChangeset:
   undefined | (() => Promise<[ObjectChangeset, string]>) =

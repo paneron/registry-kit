@@ -13,7 +13,6 @@ import type {
   ItemClassConfigurationSet,
 } from '../types';
 import { isRegisterItem } from '../types';
-import type { Version as RegisterVersion } from '../types/register';
 
 import type {
   ProposalSet,
@@ -34,7 +33,7 @@ import {
 export function newCRObjectChangeset(
   id: string,
   justification: string,
-  registerVersion: RegisterVersion,
+  registerVersion: string,
   stakeholderGitServerUsername: string,
 ): ObjectChangeset {
 
@@ -47,7 +46,7 @@ export function newCRObjectChangeset(
     submittingStakeholderGitServerUsername: stakeholderGitServerUsername,
     items: {},
     state: State.DRAFT,
-    registerVersion: registerVersion!.id,
+    registerVersion,
   };
   const crObjectPath = crIDToCRPath(id);
   return {
