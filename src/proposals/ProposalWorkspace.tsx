@@ -45,7 +45,7 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   </>;
   const editedMarker = <>Edited: <Datestamp date={proposal.timeEdited} /></>;
   const classification = useMemo(() => {
-    const classification = [{
+    return [{
       icon: 'lightbulb' as IconName,
       children: "Proposal",
       tooltip: {
@@ -76,7 +76,6 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
         ? <>pending</>
         : <>disposed</>,
     }];
-    return classification;
   }, [proposal.state, pending, editedMarker, proposedMarker, disposedMarker]);
 
   return (
