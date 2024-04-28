@@ -16,7 +16,7 @@ import type { Register, RegisterStakeholder } from '../types';
 import { TabContentsWithHeader } from '../views/util';
 import { RegisterHelmet as Helmet } from '../views/util';
 import { MATCHES_ANY_CRITERIA } from '../views/FilterCriteria/models';
-import { type SomeCR as CR } from './types';
+import { type SomeCR as CR, isDisposed } from './types';
 import MetaProperties from './MetaProperties';
 import ProposalSearch from './Search';
 import Search from '../views/sidebar/Search';
@@ -29,11 +29,17 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   register: Register
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
+  const pending = !isDisposed(proposal);
   const classification = useMemo(() => {
-    return [{
+    const classification = [{
       children: <>{proposal.state}</>,
+    }, {
+      children: pending
+        ? <>Pending</>
+        : <>Disposed</>,
     }];
-  }, [proposal.state]);
+    return classification;
+  }, [proposal.state, pending]);
 
   return (
     <TabContentsWithHeader
