@@ -344,6 +344,7 @@ export function isWithdrawn(cr: Base): cr is Withdrawn {
 export function hadBeenProposed(cr: Base): cr is Base & { timeProposed: Date } {
   return cr && cr.hasOwnProperty('timeProposed') && !!(cr as Proposed).timeProposed;
 }
+/** A proposal that had been disposed is not pending, not actionable. */
 export function isDisposed(cr: Base): cr is Base & { timeDisposed: Date } {
   return cr && cr.hasOwnProperty('timeDisposed') && !!(cr as Disposed).timeDisposed;
   //return [
