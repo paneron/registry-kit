@@ -84,6 +84,7 @@ const ProposalTab: React.VoidFunctionComponent<{
     }
     return actions;
   }, [onDelete]);
+
   return (
     <TabContentsWithHeader
         title={<>{proposal.justification}</>}
