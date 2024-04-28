@@ -78,7 +78,11 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
               ? undefined
               : 'primary' as Intent,
     }];
-  }, [proposal.state, pending, editedMarker, proposedMarker, disposedMarker]);
+  }, [
+    proposal.state,
+    pending,
+    editedMarker, proposedMarker, disposedMarker,
+  ]);
 
   return (
     <TabContentsWithHeader
