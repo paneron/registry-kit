@@ -50,7 +50,9 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
       children: "Proposal",
       tooltip: {
         icon: 'info-sign' as IconName,
-        content: <UL css={css`margin: 0;`}><li>Proposal ID: {proposal.id}</li></UL>,
+        content: <UL css={css`margin: 0;`}>
+          <li>Proposal ID: {proposal.id}</li>
+        </UL>,
       },
     }, {
       children: pending
