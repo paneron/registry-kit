@@ -23,10 +23,17 @@ function getItemInCRQuery(cr: BaseCR): string {
   //const affectedItemPathsQuoted: string[] = Object.entries(withCR.items).
   //  filter(([, proposal]) => proposal.type === 'clarification' || proposal.type === 'addition').
   //  map(([itemPath, proposal]) => proposal.type === 'clarification' ? `"${itemPath}"` : `/proposals/${withCR.id}/items/${itemPath}`);
-  const affectedItemPathsQuoted: string[] = Object.entries(cr.items).
+  const addedOrClarifiedItemPathsInCR: string[] = Object.entries(cr.items).
     filter(([, proposal]) => proposal.type !== 'amendment').
     map(([itemPath, ]) => `"${itemPathInCR(itemPath, cr.id)}"`);
-  return `[${affectedItemPathsQuoted.join(',')}].indexOf(objPath) >= 0`;
+  const addedOrClarifiedItemPathsNotInCR: string[] = Object.entries(cr.items).
+    filter(([, proposal]) => proposal.type !== 'amendment').
+    map(([itemPath, ]) => `"${itemPath}"`);
+  return `
+    ([${addedOrClarifiedItemPathsInCR.join(',')}].indexOf(objPath) >= 0)
+    ||
+    ([${addedOrClarifiedItemPathsNotInCR.join(',')}].indexOf(objPath) < 0 && (${REGISTER_ITEM_QUERY}))
+  `;
 }
 
 
@@ -41,7 +48,7 @@ function getItemInCRQuery(cr: BaseCR): string {
  */
 export function getRegisterItemQuery(queryExpression: string, withCR?: BaseCR): string {
   const baseQuery = withCR
-    ? `(${getItemInCRQuery(withCR)}) || (${REGISTER_ITEM_QUERY})`
+    ? getItemInCRQuery(withCR)
     : REGISTER_ITEM_QUERY;
   // console.debug("CR QUERY", baseQuery);
 

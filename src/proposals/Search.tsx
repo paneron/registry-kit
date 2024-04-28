@@ -6,7 +6,7 @@ import { jsx, css } from '@emotion/react';
 import makeList, { type ItemProps, LabelledListIcon, type ListData } from '@riboseinc/paneron-extension-kit/widgets/List';
 
 import type { RegisterItem } from '../types/item';
-import { itemPathToItemRef } from '../views/itemPathUtils';
+import { itemPathInCR, itemPathToItemRef } from '../views/itemPathUtils';
 import { BrowserCtx } from '../views/BrowserCtx';
 
 import type { SomeCR } from './types';
@@ -81,9 +81,12 @@ memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectI
   const itemData = proposedItemDataReq.value;
 
   const predicate = useCallback(([objPath, obj]: [string, ChangeProposal]) => {
+    const objPathInCR = itemPathInCR(objPath, extraItemViewData.proposal.id);
     return (
       expressionParsed(objPath, itemData[objPath])
       || expressionParsed(objPath, obj)
+      || expressionParsed(objPathInCR, itemData[objPath])
+      || expressionParsed(objPathInCR, obj)
     );
   }, [queryExpression, itemData]);
 
