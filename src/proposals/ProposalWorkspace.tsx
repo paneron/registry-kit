@@ -30,54 +30,54 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, register, stakeholder }) {
   return (
-      <Workspace sidebarPosition="right" sidebar={
-        <SuperSidebar
-          sidebarIDs={['meta']}
-          css={css`width: 30% !important; min-width: 300px;`}
-          selectedSidebarID='meta'
-          config={{
-            meta: {
-              icon: () => <Icon icon="document" />,
-              title: "Meta",
-              blocks: [{
-                key: 'summary',
-                title: "Summary",
-                content: <div css={css`padding: 0 5px;`}>
-                  “{proposal.justification?.trim()}”
-                  <br />
-                  <DL>
-                    <MetaProperties
-                      cr={proposal}
-                      currentStakeholder={stakeholder}
-                      registerMetadata={register}
-                    />
-                  </DL>
-                </div>,
-              }, {
-                key: 'transitions',
-                title: "Transitions",
-                content: <TransitionBlockContents
-                  proposal={proposal}
-                  stakeholder={stakeholder}
-                />,
-              }],
-            },
-          }}
+    <Workspace sidebarPosition="right" sidebar={
+      <SuperSidebar
+        sidebarIDs={['meta']}
+        css={css`width: 30% !important; min-width: 300px;`}
+        selectedSidebarID='meta'
+        config={{
+          meta: {
+            icon: () => <Icon icon="document" />,
+            title: "Meta",
+            blocks: [{
+              key: 'summary',
+              title: "Summary",
+              content: <div css={css`padding: 0 5px;`}>
+                “{proposal.justification?.trim()}”
+                <br />
+                <DL>
+                  <MetaProperties
+                    cr={proposal}
+                    currentStakeholder={stakeholder}
+                    registerMetadata={register}
+                  />
+                </DL>
+              </div>,
+            }, {
+              key: 'transitions',
+              title: "Transitions",
+              content: <TransitionBlockContents
+                proposal={proposal}
+                stakeholder={stakeholder}
+              />,
+            }],
+          },
+        }}
+      />
+    }>
+      <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
+      <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
+        <Search
+          css={css`flex: 1;`}
+          //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
+          implicitCriteria={MATCHES_ANY_CRITERIA}
+          stateName={`proposal-${proposal.id}-search`}
+          List={ProposalSearch as any}
+          extraData={{ proposal }}
+          //onOpenItem={onChooseItem ? handleOpenItem : undefined}
         />
-      }>
-        <Helmet><title>Working on proposal {proposal.justification}</title></Helmet>
-        <div css={css`padding: 10px; flex: 1; display: flex; flex-flow: column nowrap; overflow: hidden;`}>
-          <Search
-            css={css`flex: 1;`}
-            //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
-            implicitCriteria={MATCHES_ANY_CRITERIA}
-            stateName={`proposal-${proposal.id}-search`}
-            List={ProposalSearch as any}
-            extraData={{ proposal }}
-            //onOpenItem={onChooseItem ? handleOpenItem : undefined}
-          />
-        </div>
-      </Workspace>
+      </div>
+    </Workspace>
   );
 };
 
