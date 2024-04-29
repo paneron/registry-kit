@@ -70,7 +70,7 @@ const NewProposalMenu: React.FC<{
   }, [onCreateBlank, onImport, creatingBlank, previousVersion]);
 
   return <PanelStack
-    css={css`flex: 1; overflow: unset; .bp4-panel-stack-view { background: none; }`}
+    css={css`flex: 1; overflow: unset; .bp4-panel-stack-view { background: none; border: none; }`}
     className={className}
     onClose={() => setCreateMode(false)}
     stack={stack.length > 0
