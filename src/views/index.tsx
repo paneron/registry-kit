@@ -39,7 +39,7 @@ import {
 } from '../proposals/ChangeRequestContext';
 import useRegisterVersion from './hooks/useRegisterVersion';
 import { sidebarConfig, sidebarConfigForStakeholder } from './sidebar';
-import { useItemRef, itemPathInCR } from './itemPathUtils';
+import { useItemRef, itemPathInCR, itemPathNotInCR } from './itemPathUtils';
 export { GenericRelatedItemView };
 
 
@@ -313,6 +313,15 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
   const [activeChangeRequestIDDebounced] = useDebounce(activeChangeRequestID, 200);
   const customViewsMemoized = useMemo((() => customViews ?? []), [customViews]); 
 
+  const handleJumpTo = useCallback((uri: string) => {
+    if (activeChangeRequestID && uri.startsWith(`${Protocols.ITEM_DETAILS}:/proposal`)) {
+      const uriNotInCR = itemPathNotInCR(uri.split(`${Protocols.ITEM_DETAILS}:`)[1]);
+      return spawnTab(`${Protocols.ITEM_DETAILS}:${uriNotInCR}`);
+    } else {
+      return spawnTab(uri);
+    }
+  }, [spawnTab, activeChangeRequestID]);
+
   return (
     <BrowserCtx.Provider
         value={useMemo((() => ({
@@ -325,7 +334,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           itemClasses: itemClassConfiguration,
           itemClassGroups,
 
-          jumpTo: spawnTab,
+          jumpTo: handleJumpTo,
 
           selectedRegisterItem,
 
@@ -346,7 +355,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           registerMetadata,
           remoteUsername,
           subregisters,
-          spawnTab,
+          handleJumpTo,
           useRegisterItemData,
           customViewsMemoized,
           itemClassConfiguration,
