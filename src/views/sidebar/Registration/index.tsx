@@ -104,6 +104,7 @@ export const ChangeRequestListBlock: React.FC<{ impliedQuery: string, itemPath?:
     <ChangeRequestSearchResultList
       queryExpression={query}
       selectedItemPath={state.selectedItemPath}
+      keyExpression="(typeof obj.timeDisposed === 'object' ? (obj.timeDisposed ?? new Date()) : new Date(obj.timeDisposed)).getTime() + (new Date()).getTime()"
       onSelectItem={useCallback((itemPath =>
         dispatch({
           type: 'select-item',
