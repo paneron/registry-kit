@@ -72,11 +72,15 @@ const List = makeList<ProposalListData>(ProposalItem);
 
 export const ProposalSearchResultList: React.FC<SearchResultListProps> =
 memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectItem, onOpenItem, className }) {
-  const { useRegisterItemData } = useContext(BrowserCtx);
+  const { useRegisterItemData, keyExpression } = useContext(BrowserCtx);
   const proposal = extraItemViewData.proposal;
 
   const expressionParsed =
     new Function('objPath', 'obj', queryExpression) as (objPath: string, obj: null | RegisterItem<any> | ChangeProposal) => boolean;
+
+  const keyExpressionParsed = keyExpression
+    ? new Function('obj', `return ${keyExpression}`) as (obj: RegisterItem<any>) => any
+    : null;
 
   const proposedItemDataReq = useRegisterItemData({
     itemPaths: Object.keys(proposal.items),
@@ -94,9 +98,27 @@ memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectI
     );
   }, [queryExpression, itemData]);
 
-  const validItems = Object.entries(proposal.items).filter(predicate);
+  const matchingItems = Object.entries(proposal.items).filter(predicate);
 
-  const matchingItemIDs = validItems.map(([p, ]) => p);
+  const matchingItemsWithKeys = keyExpressionParsed && !proposedItemDataReq.isUpdating
+    ? matchingItems.map(([p, ]) => {
+        try {
+          return [p, keyExpressionParsed(itemData[p]!)];
+        } catch (e) {
+          console.debug("Failed to run key expression", keyExpression, p, itemData[p], e);
+          return [p, p];
+        }
+      })
+    : matchingItems.map(([p, ]) => [p, p]);
+
+  matchingItemsWithKeys.sort((pair1, pair2) =>
+    typeof pair1[1] === 'string'
+      ? pair1[1].localeCompare(pair2[1])
+      : typeof pair1[1] === 'number'
+        ? pair1[1] - pair2[1]
+        : 0);
+
+  const matchingItemIDs = matchingItemsWithKeys.map(([p, ]) => p);
 
   const extraData: ProposalListData = useMemo((() => ({
     extraItemViewData: { proposal, itemData },
