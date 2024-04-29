@@ -5,7 +5,6 @@ import React, { memo, useContext, useCallback, useMemo, useEffect } from 'react'
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
-import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
 import { type CriteriaGroup, isCriteriaGroup, BLANK_CRITERIA } from '../../FilterCriteria/models';
@@ -94,7 +93,6 @@ const Search: React.FC<{
 }> =
 memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
-  const { spawnTab } = useContext(TabbedWorkspaceContext);
 
   const ListComponent = useMemo((() => List ?? RegisterItemSearchResultList), [List]);
 
@@ -105,6 +103,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
     itemClasses,
     subregisters,
     selectedRegisterItem,
+    jumpTo,
   } = useContext(BrowserCtx);
   const { changeRequest } = useContext(ChangeRequestContext);
 
@@ -180,8 +179,8 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
     [dispatch]);
 
   const defaultHandleOpenItem = useCallback(
-    (itemPath => spawnTab(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
-    [spawnTab]);
+    (itemPath => jumpTo?.(`${Protocols.ITEM_DETAILS}:${itemPath}`)),
+    [jumpTo]);
   const handleOpenItem = onOpenItem ?? defaultHandleOpenItem;
 
   return (
