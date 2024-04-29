@@ -12,7 +12,7 @@ import {
   Card, type CardProps,
   Classes,
   FormGroup, type FormGroupProps,
-  H2, H4,
+  H3, H4,
   Button as BaseButton, type ButtonProps,
   Menu, MenuDivider, MenuItem,
   ButtonGroup,
@@ -258,7 +258,7 @@ function ({ title, smallTitle, classification, actions, layout, layoutOptions, c
     `} className={className}>
       {smallTitle
         ? <H4 css={css`margin: 0 ${paddingPx}px;`}>{title}</H4>
-        : <H2 css={css`margin: 0 ${paddingPx}px;`}>{title}</H2>}
+        : <H3 css={css`margin: 0 ${paddingPx}px;`}>{title}</H3>}
       {hasClassification
         ? <div css={css`
             flex: 0;
