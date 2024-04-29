@@ -8,7 +8,7 @@ import { Tree } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
-import type { SomeCR as CR } from '../../proposals/types';
+import type { SomeCR as CR } from '../types';
 import { ChangeRequestContext } from '../ChangeRequestContext';
 import { BrowserCtx } from '../../views/BrowserCtx';
 import { getActionableProposalGroupsForRoles } from './queries';
