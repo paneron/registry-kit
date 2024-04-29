@@ -16,8 +16,6 @@ import {
   MenuItem,
 } from '@blueprintjs/core';
 import { MultiSelect2 as Select } from '@blueprintjs/select';
-import { DatePicker, TimePrecision } from '@blueprintjs/datetime';
-import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { FormGroupAsCardInGrid } from '../../../views/util'; 
 import type { Register, RegisterStakeholder, Locale } from '../../../types';
 import {
@@ -30,12 +28,6 @@ import {
   type StakeholderRoleType,
 } from '../../../types/stakeholder';
 
-
-
-const DUMMY_VERSION: Register["version"] = {
-  id: '',
-  timestamp: new Date(),
-} as const;
 
 const DUMMY_CONTACT: Contact = {
   label: 'email',
@@ -185,50 +177,6 @@ const RegisterMetaForm: React.FC<{
               value={value.operatingLanguage?.languageCode ?? ''}
               onChange={handleOperatingLanguageChange('languageCode')} />
           </ControlGroup>
-        </FormGroup>
-      </FormGroupAsCardInGrid>
-
-      <FormGroupAsCardInGrid
-          label="Version: "
-          // Accommodation for date picker
-          css={css`padding-bottom: 0;`}
-          paddingPx={PADDING_PX}>
-        <FormGroup label="Identifier: ">
-          <InputGroup
-            value={value.version?.id ?? ''}
-            readOnly={!onChange}
-            placeholder="E.g., 1.2"
-            onChange={makeFormEventHandler(val =>
-              ({ version: v => update(v ?? DUMMY_VERSION, { id: { $set: val } }) })
-            )}
-          />
-        </FormGroup>
-        <FormGroup
-            label="Published on: "
-            helperText={
-              <>
-                Date and time are
-                <br />
-                in {Intl.DateTimeFormat().resolvedOptions().timeZone}.
-                {" "}
-                <HelpTooltip content={<>
-                  Times are in your computer’s current time zone.
-                  {onChange
-                    ? " When specifying, make sure to offset accordingly if it is different than register publication time zone."
-                    : null}
-                </>} />
-              </>}>
-          <DatePicker
-            css={css`margin: 0 -${PADDING_PX - 1}px;`}
-            timePrecision={TimePrecision.MINUTE}
-            value={value.version?.timestamp ?? null}
-            showActionsBar={onChange ? true : false}
-            onChange={(val: Date | null) =>
-              onChange!(update(value, val !== null
-                ? { version: v => update(v ?? DUMMY_VERSION, { timestamp: { $set: val } }) }
-                : { $unset: ['version'] }))
-            }
-          />
         </FormGroup>
       </FormGroupAsCardInGrid>
 
