@@ -20,9 +20,9 @@ export const REGISTER_ITEM_QUERY = `
  * For clarifications, object path we want to match is normal
  */
 function getItemInCRQuery(cr: BaseCR): string {
-  //const affectedItemPathsQuoted: string[] = Object.entries(withCR.items).
+  //const affectedItemPathsQuoted: string[] = Object.entries(cr.items).
   //  filter(([, proposal]) => proposal.type === 'clarification' || proposal.type === 'addition').
-  //  map(([itemPath, proposal]) => proposal.type === 'clarification' ? `"${itemPath}"` : `/proposals/${withCR.id}/items/${itemPath}`);
+  //  map(([itemPath, proposal]) => proposal.type === 'clarification' ? `"${itemPath}"` : `"/proposals/${cr.id}/items/${itemPath}"`);
   const addedOrClarifiedItemPathsInCR: string[] = Object.entries(cr.items).
     filter(([, proposal]) => proposal.type !== 'amendment').
     map(([itemPath, ]) => `"${itemPathInCR(itemPath, cr.id)}"`);
