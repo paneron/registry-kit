@@ -31,7 +31,7 @@ import { REGISTER_METADATA_FILENAME } from '../common';
 import GenericRelatedItemView from './GenericRelatedItemView';
 import { BrowserCtx } from './BrowserCtx';
 import { Datestamp, _getRelatedClass } from './util';
-import RegisterHome from './detail/RegisterHome';
+import RegisterHome from './detail/RegisterHome2';
 import protocolRegistry, { Protocols, type Protocol } from './protocolRegistry';
 import {
   ChangeRequestContext,
