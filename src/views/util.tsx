@@ -135,7 +135,7 @@ export function formatDate(
     : 'yyyy-MM-dd';
   try {
     return opts?.useUTC
-      ? `${formatInTimeZone(date, fmt, 'UTC')} UTC`
+      ? `${formatInTimeZone(date, fmt, 'UTC')}${opts?.showTime ? ' UTC' : ''}`
       : format(date, fmt);
   } catch (e) {
     console.error("Failed to format date", date, typeof date);
