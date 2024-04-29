@@ -1,19 +1,23 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-//import React from 'react';
+import React, { useContext } from 'react';
 import update from 'immutability-helper';
 import { jsx, css } from '@emotion/react';
-import { Icon } from '@blueprintjs/core';
+import { Icon, Button } from '@blueprintjs/core';
 
 import type { SuperSidebarConfig } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/types';
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit';
 
 //import Browse from './Browse';
 import ItemClassTree from '../../item-classes/Tree';
+import { BrowserCtx } from '../BrowserCtx';
 //import Search from './Search';
 import { ChangeRequestHistoryBlock } from './Registration';
+import { canImportCR, canCreateCR } from '../../types/stakeholder';
 import ActionableCRTree from '../../proposals/actionableGroups/Tree';
+import { Protocols } from '../protocolRegistry';
 //import { ExportOptions, ImportOptions } from './ExportImport';
 
 
@@ -92,13 +96,29 @@ export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
   // },
 };
 
+const ProposalsBlockTitle: React.VoidFunctionComponent<Record<never, never>> = function () {
+  const { spawnTab } = useContext(TabbedWorkspaceContext);
+  const { stakeholder } = useContext(BrowserCtx);
+  return <div css={css`display: flex; justify-content: space-between; align-items: center;`}>
+    Pending proposals
+    {stakeholder && (canImportCR(stakeholder) || canCreateCR(stakeholder))
+      ? <Button minimal small intent="primary" onClick={(evt) => {
+          evt.stopPropagation();
+          spawnTab(Protocols.PROPOSAL_WORK);
+        }}>
+          Propose…
+        </Button>
+      : null}
+  </div>
+};
+
 export const sidebarConfigForStakeholder: SuperSidebarConfig<typeof sidebarIDs> = update(
   sidebarConfig, {
     Browse: {
       blocks: {
         $splice: [[0, 0, {
           key: 'proposals',
-          title: "Pending proposals",
+          title: <ProposalsBlockTitle />,
           content: <ActionableCRTree />,
           nonCollapsible: false,
           height: 200,
