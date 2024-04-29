@@ -12,6 +12,7 @@ import type { SomeCR as CR } from '../types';
 import { ChangeRequestContext } from '../ChangeRequestContext';
 import { BrowserCtx } from '../../views/BrowserCtx';
 import { getActionableProposalGroupsForRoles } from './queries';
+import { Protocols } from '../../views/protocolRegistry';
 import {
   type ActionableProposalTreeNode,
   getMapReduceChainsForActionableProposalGroups,
@@ -129,6 +130,7 @@ function ({ className }) {
       getActionableProposalGroupsAsTreeNodes(actionableProposals, {
         activeCRID: activeCR?.id,
         expandedGroupLabels: new Set(state.expandedFolderIDs),
+        onActivateCR: setActiveChangeRequestID,
         selectedGroup: state.selectedItemID
           ? actionableProposals.
             find(({ groupLabel }) => groupLabel === state.selectedItemID)
@@ -144,16 +146,16 @@ function ({ className }) {
           : undefined,
       })
     ),
-    [activeCR?.id, actionableProposals, state.selectedItemID, state.expandedFolderIDs.join(',')]);
+    [activeCR?.id, setActiveChangeRequestID, actionableProposals, state.selectedItemID, state.expandedFolderIDs.join(',')]);
 
-  const activateOrDeactivate = useCallback(((proposalID: string) => {
+  const activate = useCallback(((proposalID: string) => {
     if (proposalID === activeCR?.id) {
       // deactivate
-      setActiveChangeRequestID?.(null);
+      //setActiveChangeRequestID?.(null);
     } else {
       // activate & open proposal dashboard
       setActiveChangeRequestID?.(proposalID as string)
-      //spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
+      spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
     }
   }), [activeCR?.id, setActiveChangeRequestID, spawnTab]);
 
@@ -188,8 +190,8 @@ function ({ className }) {
             type: 'enter-folder',
             payload: { folderID: node.id as string },
           })
-        : activateOrDeactivate(node.id as string),
-  })), [dispatch, activateOrDeactivate]);
+        : activate(node.id as string),
+  })), [dispatch, activate]);
 
   return <Tree
     className={className}

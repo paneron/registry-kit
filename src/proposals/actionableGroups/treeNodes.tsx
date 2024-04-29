@@ -6,10 +6,10 @@
  * Each proposal group is top-level node, with proposals as nested nodes.
  */
 
-//import React, { useContext, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { jsx } from '@emotion/react';
 
-import { Tag } from '@blueprintjs/core';
+import { Button, Tag } from '@blueprintjs/core';
 import type { IconName, TreeNodeInfo } from '@blueprintjs/core';
 import type { RegisterStakeholder } from '../../types';
 import type { SomeCR as CR } from '../types';
@@ -31,6 +31,7 @@ export function getActionableProposalGroupsAsTreeNodes(
     selectedGroup?: string
     selectedCRID?: string
     activeCRID?: string
+    onActivateCR?: (crID: string | null) => void | Promise<void>
   },
 ): ActionableProposalTreeNode[] {
   return groups.
@@ -54,7 +55,7 @@ export function getActionableProposalGroupsAsTreeNodes(
         hasCaret: true,
         secondaryLabel:
           hasActiveProposal && !isExpanded
-            ? activeCRMarker
+            ? <ActiveMarker isActive />
             : <Tag
                   minimal={!hasProposals}
                   intent={hasProposals ? 'primary' : undefined}>
@@ -70,17 +71,41 @@ export function getActionableProposalGroupsAsTreeNodes(
           ? proposals.map(p => getActionableProposalTreeNode(p, {
               isSelected: p.id === opts?.selectedCRID,
               isActive: p.id === opts?.activeCRID,
+              onActivateCR: opts?.onActivateCR,
             }))
           : [],
       };
     });
 }
 
-const activeCRMarker = <Tag intent='danger'>active</Tag>;
+const ActiveMarker: React.FC<{
+  isActive?: boolean
+  onToggle?: () => void
+}> = function ({ onToggle, isActive }) {
+  const handleClick = useCallback(
+    ((evt: React.MouseEvent<any>) => {
+      evt.stopPropagation();
+      onToggle?.();
+    }),
+    [onToggle]);
+  return <Button
+    icon="eye-open"
+    small outlined
+    active={isActive}
+    intent={isActive ? 'danger' : undefined}
+    disabled={!onToggle}
+    onClick={handleClick}
+  />
+};
+
 
 function getActionableProposalTreeNode(
   proposal: CR,
-  opts?: { isSelected?: boolean, isActive?: boolean },
+  opts?: {
+    isSelected?: boolean
+    isActive?: boolean
+    onActivateCR?: (crID: string | null) => void
+  },
 ): ActionableProposalTreeNode {
   return {
     id: proposal.id,
@@ -89,7 +114,9 @@ function getActionableProposalTreeNode(
     </span>,
     isSelected: opts?.isSelected ?? false,
     icon: 'lightbulb',
-    secondaryLabel: opts?.isActive ? activeCRMarker : undefined,
+    secondaryLabel: opts?.isActive
+      ? <ActiveMarker isActive onToggle={opts.onActivateCR ? () => opts?.onActivateCR?.(null) : undefined} />
+      : <ActiveMarker onToggle={opts?.onActivateCR ? () => opts?.onActivateCR?.(proposal.id) : undefined} />,
     nodeData: { type: 'item' },
   };
 }
