@@ -149,13 +149,13 @@ function ({ className }) {
     [activeCR?.id, setActiveChangeRequestID, actionableProposals, state.selectedItemID, state.expandedFolderIDs.join(',')]);
 
   const activate = useCallback(((proposalID: string) => {
+    spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
     if (proposalID === activeCR?.id) {
       // deactivate
       //setActiveChangeRequestID?.(null);
     } else {
       // activate & open proposal dashboard
       setActiveChangeRequestID?.(proposalID as string)
-      spawnTab(Protocols.PROPOSAL_WORK, { atIdx: 0 });
     }
   }), [activeCR?.id, setActiveChangeRequestID, spawnTab]);
 
