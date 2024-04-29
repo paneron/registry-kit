@@ -39,10 +39,10 @@ function ({ onSelect, onOpen, extraData, itemRef: itemPath }) {
   const itemRef = itemPathToItemRef(subregisters !== undefined, itemPath);
 
   const clsConfig = getRelatedItemClassConfiguration(itemRef.classID);
-  const ListItemView = clsConfig.itemView;
+  const ListItemView = clsConfig?.itemView;
   const itemPayload: Record<string, any> | null = registerItem?.data ?? null;
  
-  const itemView = itemPayload
+  const itemView = itemPayload && ListItemView
     ? <>
         {clsConfig.title}
         &emsp;
