@@ -104,7 +104,7 @@ export const ChangeRequestListBlock: React.FC<{ impliedQuery: string, itemPath?:
     <ChangeRequestSearchResultList
       queryExpression={query}
       selectedItemPath={state.selectedItemPath}
-      keyExpression="(typeof obj.timeDisposed === 'object' ? (obj.timeDisposed ?? new Date()) : new Date(obj.timeDisposed)).getTime() + (new Date()).getTime()"
+      keyExpression="(new Date()).getTime() * 100 - (typeof obj.timeDisposed === 'object' ? (obj.timeDisposed ?? new Date()) : new Date(obj.timeDisposed)).getTime() + Math.floor(Math.random() * 1000)"
       onSelectItem={useCallback((itemPath =>
         dispatch({
           type: 'select-item',

@@ -44,7 +44,7 @@ const ProposalHistoryDrawer: React.FC<{
         style={{ padding: '0', width: 'unset' }}>
       <ProposalList
 	queryExpression={query}
-	keyExpression="(typeof obj.timeDisposed === 'object' ? (obj.timeDisposed ?? new Date()) : new Date(obj.timeDisposed)).getTime() + (new Date()).getTime()"
+	keyExpression="(new Date()).getTime() * 100 - (typeof obj.timeDisposed === 'object' ? (obj.timeDisposed ?? new Date()) : new Date(obj.timeDisposed)).getTime() + Math.floor(Math.random() * 1000)"
 	selectedItemPath={selectedItemPath}
 	onSelectItem={setSelectedItemPath}
 	onOpenItem={useCallback((itemPath =>
