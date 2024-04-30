@@ -41,6 +41,10 @@ memo(function () {
     isBusy,
   } = useContext(DatasetContext);
 
+  const handleDeactivate = useCallback(
+    (() => setActiveChangeRequestID?.(null)),
+    [setActiveChangeRequestID]);
+
   const handleDelete = useCallback(async () => {
     if (deleteCR && activeCR && setActiveChangeRequestID) {
       await deleteCR();
@@ -207,7 +211,8 @@ memo(function () {
       proposal={activeCR}
       register={register}
       stakeholder={stakeholder}
-      onDelete={deleteCR ? handleDelete : undefined}
+      onDelete={(deleteCR) ? handleDelete : undefined}
+      onDeactivate={setActiveChangeRequestID ? handleDeactivate : undefined}
     />;
   }
 });

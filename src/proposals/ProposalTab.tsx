@@ -19,10 +19,11 @@ import ProposalBrowser from './ProposalBrowser';
 
 const ProposalTab: React.VoidFunctionComponent<{
   proposal: CR
+  onDeactivate?: () => void
   onDelete?: () => void
   register: Register
   stakeholder?: RegisterStakeholder
-}> = function ({ proposal, onDelete, register, stakeholder }) {
+}> = function ({ proposal, onDeactivate, onDelete, register, stakeholder }) {
   const pending = !isDisposed(proposal);
   const proposedMarker = <>
     Proposed: {hadBeenProposed(proposal)
@@ -85,8 +86,16 @@ const ProposalTab: React.VoidFunctionComponent<{
         onClick: onDelete,
       });
     }
+    if (onDeactivate) {
+      actions.push({
+        text: "Exit proposal",
+        title: "Click to deactivate this proposal and leave it as is for now.",
+        intent: "primary" as Intent,
+        onClick: onDeactivate,
+      });
+    }
     return actions;
-  }, [onDelete]);
+  }, [onDelete, onDeactivate]);
 
   return (
     <TabContentsWithHeader
