@@ -98,10 +98,10 @@ export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
 
 const ProposalsBlockTitle: React.VoidFunctionComponent<Record<never, never>> = function () {
   const { spawnTab } = useContext(TabbedWorkspaceContext);
-  const { stakeholder } = useContext(BrowserCtx);
+  const { stakeholder, activeChangeRequestID } = useContext(BrowserCtx);
   return <div css={css`display: flex; justify-content: space-between; align-items: center;`}>
     Pending proposals
-    {stakeholder && (canImportCR(stakeholder) || canCreateCR(stakeholder))
+    {!activeChangeRequestID && stakeholder && (canImportCR(stakeholder) || canCreateCR(stakeholder))
       ? <Button minimal small intent="primary" onClick={(evt) => {
           evt.stopPropagation();
           spawnTab(Protocols.PROPOSAL_WORK);
