@@ -22,6 +22,14 @@ import ProposalDetail from './ProposalDetail';
 interface ProposalBrowserProps<CR extends Drafted> {
   proposals: CR['items']
 
+  /**
+   * Whether the proposal had been accepted.
+   * Influences the jump to current version of the item behavior
+   * (for non-accepted proposals, jumping to additions is not allowed
+   * since they would not be present in the registry).
+   */
+  hadBeenAccepted?: boolean
+
   selectedItem?: (string & keyof CR['items']) | null
   onSelectItem: (selectedItem: (string & keyof CR['items']) | null) => void
 
@@ -38,7 +46,7 @@ interface ProposalBrowserProps<CR extends Drafted> {
  * If no proposals exist, returns null.
  */
 export function ProposalBrowser<CR extends Drafted>
-({ proposals, onDeleteProposalForItemAtPath, selectedItem, onSelectItem: selectProposal }:
+({ proposals, hadBeenAccepted, onDeleteProposalForItemAtPath, selectedItem, onSelectItem: selectProposal }:
 ProposalBrowserProps<CR>) {
   const selectedProposal = selectedItem ?? null;
 
@@ -176,7 +184,7 @@ ProposalBrowserProps<CR>) {
         ? <>
             <ButtonGroup>
               <Button
-                disabled={!jumpTo || proposals[selectedProposal]?.type === 'addition'}
+                disabled={!jumpTo || (proposals[selectedProposal]?.type === 'addition' && !hadBeenAccepted)}
                 icon='open-application'
                 onClick={() => jumpTo?.(`${Protocols.ITEM_DETAILS}:${selectedProposal}`)}
                 title="Open selected item in a new tab (not applicable to proposed additions)"

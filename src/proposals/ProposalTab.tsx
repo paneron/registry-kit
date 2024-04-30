@@ -11,7 +11,7 @@ import {
 
 import type { Register, RegisterStakeholder } from '../types';
 import { TabContentsWithHeader, Datestamp } from '../views/util';
-import { type SomeCR as CR, isDisposed, hadBeenProposed } from './types';
+import { type SomeCR as CR, isDisposed, hadBeenProposed, hadBeenAccepted } from './types';
 
 import Workspace from './ProposalWorkspace';
 import ProposalBrowser from './ProposalBrowser';
@@ -100,6 +100,7 @@ const ProposalTab: React.VoidFunctionComponent<{
         onOpenItem={selectItem}
       />
       <ProposalBrowser
+        hadBeenAccepted={hadBeenAccepted(proposal)}
         proposals={proposal.items}
         onSelectItem={selectItem}
         selectedItem={selectedItem}
