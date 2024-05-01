@@ -91,6 +91,9 @@ const ActiveMarker: React.FC<{
   return <Button
     icon="eye-open"
     small outlined
+    title={isActive
+      ? "Click to deactivate (exit) this proposal"
+      : "Click to activate this proposal"}
     active={isActive}
     intent={isActive ? 'danger' : undefined}
     disabled={!onToggle}
