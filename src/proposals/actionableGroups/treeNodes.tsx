@@ -53,6 +53,9 @@ export function getActionableProposalGroupsAsTreeNodes(
         id: groupLabel,
         label: groupLabel,
         hasCaret: true,
+        className: hasActiveProposal
+          ? 'tree-node-proposal-group-with-active-proposal'
+          : undefined,
         secondaryLabel:
           hasActiveProposal && !isExpanded
             ? <ActiveMarker isActive />
@@ -90,7 +93,7 @@ const ActiveMarker: React.FC<{
     [onToggle]);
   return <Button
     icon="eye-open"
-    small outlined
+    small
     title={isActive
       ? "Click to deactivate (exit) this proposal"
       : "Click to activate this proposal"}
@@ -117,6 +120,9 @@ function getActionableProposalTreeNode(
     </span>,
     isSelected: opts?.isSelected ?? false,
     icon: 'lightbulb',
+    className: opts?.isActive
+      ? 'tree-node-active-proposal'
+      : undefined,
     secondaryLabel: opts?.isActive
       ? <ActiveMarker isActive onToggle={opts.onActivateCR ? () => opts?.onActivateCR?.(null) : undefined} />
       : <ActiveMarker onToggle={opts?.onActivateCR ? () => opts?.onActivateCR?.(proposal.id) : undefined} />,

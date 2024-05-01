@@ -3,8 +3,8 @@
 
 import React, { useContext, useCallback, useMemo } from 'react';
 import update from 'immutability-helper';
-import { jsx } from '@emotion/react';
-import { Tree } from '@blueprintjs/core';
+import { jsx, css } from '@emotion/react';
+import { Colors, Tree } from '@blueprintjs/core';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit';
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
@@ -193,6 +193,20 @@ function ({ className }) {
   return <Tree
     className={className}
     contents={nodes}
+    css={css`
+      .bp4-tree-node.tree-node-active-proposal > .bp4-tree-node-content {
+        background: ${Colors.RED5};
+      }
+      .bp4-tree-node.tree-node-proposal-group-with-active-proposal:not(.bp4-tree-node-expanded) > .bp4-tree-node-content {
+        background: ${Colors.RED5};
+      }
+      .bp4-tree-node-selected.tree-node-active-proposal > .bp4-tree-node-content {
+        background: ${Colors.RED2};
+      }
+      .bp4-tree-node-selected.tree-node-proposal-group-with-active-proposal:not(.bp4-tree-node-expanded) > .bp4-tree-node-content {
+        background: ${Colors.RED2};
+      }
+    `}
     {...eventHandlers}
   />;
 }
