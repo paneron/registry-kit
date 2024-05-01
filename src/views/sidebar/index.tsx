@@ -97,15 +97,23 @@ export const sidebarConfig: SuperSidebarConfig<typeof sidebarIDs> = {
 };
 
 const ProposalsBlockTitle: React.VoidFunctionComponent<Record<never, never>> = function () {
-  const { spawnTab } = useContext(TabbedWorkspaceContext);
+  const { spawnTab, focusedTabURI } = useContext(TabbedWorkspaceContext);
   const { stakeholder, activeChangeRequestID } = useContext(BrowserCtx);
+  const dashboardIsOpen = focusedTabURI?.startsWith(Protocols.PROPOSAL_WORK)
+  const canOpenDashboard = !activeChangeRequestID;
   return <div css={css`display: flex; justify-content: space-between; align-items: center;`}>
     Pending proposals
-    {!activeChangeRequestID && stakeholder && (canImportCR(stakeholder) || canCreateCR(stakeholder))
-      ? <Button minimal small intent="primary" onClick={(evt) => {
-          evt.stopPropagation();
-          spawnTab(Protocols.PROPOSAL_WORK);
-        }}>
+    {stakeholder && (canImportCR(stakeholder) || canCreateCR(stakeholder))
+      ? <Button
+            minimal
+            small
+            disabled={!canOpenDashboard}
+            intent={canOpenDashboard ? 'primary' : undefined}
+            active={dashboardIsOpen}
+            onClick={(evt) => {
+              evt.stopPropagation();
+              spawnTab(Protocols.PROPOSAL_WORK);
+            }}>
           Propose…
         </Button>
       : null}
