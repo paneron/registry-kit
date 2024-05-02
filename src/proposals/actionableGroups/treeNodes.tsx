@@ -115,7 +115,7 @@ function getActionableProposalTreeNode(
 ): ActionableProposalTreeNode {
   return {
     id: proposal.id,
-    label: <span title={`Double-click the proposal to activate: “${proposal.justification}”`}>
+    label: <span title={`“${proposal.justification}” — double-click to open & activate this proposal`}>
       {proposal.justification}
     </span>,
     isSelected: opts?.isSelected ?? false,
