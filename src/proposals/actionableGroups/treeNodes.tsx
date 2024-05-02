@@ -58,7 +58,10 @@ export function getActionableProposalGroupsAsTreeNodes(
           : undefined,
         secondaryLabel:
           hasActiveProposal && !isExpanded
-            ? <ActiveMarker isActive />
+            ? <ActiveMarker
+                isActive
+                title="A proposal in this group is currently active, expand group to see it"
+              />
             : <Tag
                   minimal={!hasProposals}
                   intent={hasProposals ? 'warning' : undefined}>
@@ -84,7 +87,8 @@ export function getActionableProposalGroupsAsTreeNodes(
 const ActiveMarker: React.FC<{
   isActive?: boolean
   onToggle?: () => void
-}> = function ({ onToggle, isActive }) {
+  title?: string
+}> = function ({ onToggle, title, isActive }) {
   const handleClick = useCallback(
     ((evt: React.MouseEvent<any>) => {
       evt.stopPropagation();
@@ -94,9 +98,11 @@ const ActiveMarker: React.FC<{
   return <Button
     icon="eye-open"
     small
-    title={isActive
-      ? "Click to deactivate (exit) this proposal"
-      : "Click to activate this proposal"}
+    title={title ?? (onToggle
+      ? isActive
+        ? "Click to deactivate (exit) this proposal"
+        : "Click to activate this proposal"
+      : undefined)}
     active={isActive}
     intent={isActive ? 'danger' : 'primary'}
     disabled={!onToggle}
