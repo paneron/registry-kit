@@ -61,7 +61,7 @@ export function getActionableProposalGroupsAsTreeNodes(
             ? <ActiveMarker isActive />
             : <Tag
                   minimal={!hasProposals}
-                  intent={hasProposals ? 'primary' : undefined}>
+                  intent={hasProposals ? 'warning' : undefined}>
                 {hasProposals ? proposals.length : 0}
               </Tag>,
         icon: isExpanded
@@ -98,7 +98,7 @@ const ActiveMarker: React.FC<{
       ? "Click to deactivate (exit) this proposal"
       : "Click to activate this proposal"}
     active={isActive}
-    intent={isActive ? 'danger' : undefined}
+    intent={isActive ? 'danger' : 'primary'}
     disabled={!onToggle}
     onClick={handleClick}
   />

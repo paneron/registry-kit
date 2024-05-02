@@ -194,17 +194,18 @@ function ({ className }) {
     className={className}
     contents={nodes}
     css={css`
-      .bp4-tree-node.tree-node-active-proposal > .bp4-tree-node-content {
-        background: ${Colors.RED5};
-      }
-      .bp4-tree-node.tree-node-proposal-group-with-active-proposal:not(.bp4-tree-node-expanded) > .bp4-tree-node-content {
-        background: ${Colors.RED5};
-      }
-      .bp4-tree-node-selected.tree-node-active-proposal > .bp4-tree-node-content {
-        background: ${Colors.RED2};
-      }
-      .bp4-tree-node-selected.tree-node-proposal-group-with-active-proposal:not(.bp4-tree-node-expanded) > .bp4-tree-node-content {
-        background: ${Colors.RED2};
+      .bp4-tree-node {
+        &.tree-node-active-proposal, &.tree-node-proposal-group-with-active-proposal:not(.bp4-tree-node-expanded) {
+          > .bp4-tree-node-content {
+            background: ${Colors.RED5};
+            .bp4-dark & {
+              background: ${Colors.RED2};
+            }
+          }
+          &.bp4-tree-node-selected > .bp4-tree-node-content {
+            background: ${Colors.RED3};
+          }
+        }
       }
     `}
     {...eventHandlers}
