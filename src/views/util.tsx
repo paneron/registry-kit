@@ -103,8 +103,11 @@ export const PropertyDetailView: React.FC<FormGroupProps & {
 /** Formats given date as a span with tooltip set to full ISO date & time. */
 export const Datestamp: React.FC<{
   date: Date
+  /** See formatDate(). */
   useUTC?: boolean
+  /** See formatDate(). */
   showTime?: boolean
+  /** See formatDate(). */
   showTimeIfNonZero?: boolean
   title?: string
   className?: string
@@ -138,8 +141,11 @@ function timeIsNonZero(date: Date): boolean {
 export function formatDate(
   date: Date,
   opts?: {
+    /** Show time in UTC. Will add the “UTC”, unless time is shown. */
     useUTC?: boolean
+    /** Show date along with full time, to seconds. */
     showTime?: boolean
+    /** Show time, unless it’s 00:00:00 on the day. */
     showTimeIfNonZero?: boolean
   },
 ): string {
