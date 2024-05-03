@@ -172,7 +172,9 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
           const details = input || timestamp || stakeholder
             ? <>
                 {input
-                  ? <div css={css`margin: .25em 0;`}><Val val={normalizeObjectRecursively(input)} /></div>
+                  ? <div css={css`margin: .25em 0;`}>
+                      <Val val={normalizeObjectRecursively(input)} />
+                    </div>
                   : null}
                 <small css={css`display: block;`}>
                   {stakeholder
