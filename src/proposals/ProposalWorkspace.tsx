@@ -13,12 +13,12 @@ import Workspace from '@riboseinc/paneron-extension-kit/widgets/Workspace';
 import SuperSidebar from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/SuperSidebar';
 
 import type { Register, RegisterStakeholder } from '../types';
+import Search from '../views/sidebar/Search';
 import { RegisterHelmet as Helmet } from '../views/util';
 import { MATCHES_ANY_CRITERIA } from '../views/FilterCriteria/models';
 import { type SomeCR as CR } from './types';
 import MetaProperties from './MetaProperties';
 import ProposalSearch from './Search';
-import Search from '../views/sidebar/Search';
 import TransitionOptions, { getTransitions, isFinalState } from './TransitionOptions';
 import TransitionsAndStatus, { getTransitionHistory } from './TransitionHistory';
 

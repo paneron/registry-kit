@@ -11,8 +11,8 @@ import {
 
 import type { Register, RegisterStakeholder } from '../types';
 import { TabContentsWithHeader, Datestamp } from '../views/util';
-import { type SomeCR as CR, isDisposed, hadBeenProposed, hadBeenAccepted } from './types';
 
+import { type SomeCR as CR, isDisposed, hadBeenProposed, hadBeenAccepted } from './types';
 import Workspace from './ProposalWorkspace';
 import ProposalBrowser from './ProposalBrowser';
 
@@ -36,7 +36,9 @@ const ProposalTab: React.VoidFunctionComponent<{
       ? <Datestamp date={proposal.timeDisposed} />
       : 'not yet'}
   </>;
-  const editedMarker = <>Edited: <Datestamp date={proposal.timeEdited} /></>;
+  const editedMarker = <>
+    Edited: <Datestamp date={proposal.timeEdited} />
+  </>;
   const classification = useMemo(() => {
     return [{
       icon: 'lightbulb' as IconName,
