@@ -22,6 +22,7 @@ const ProposalTab: React.VoidFunctionComponent<{
   onDeactivate?: () => void
   onDelete?: () => void
   register: Register
+  /** Currently active stakeholder. */
   stakeholder?: RegisterStakeholder
 }> = function ({ proposal, onDeactivate, onDelete, register, stakeholder }) {
   const pending = !isDisposed(proposal);
