@@ -28,12 +28,16 @@ const SIDEBAR_IDS = ['meta'] as const;
 
 const ProposalWorkspace: React.VoidFunctionComponent<{
   proposal: CR
-  register: Register
+  compareRegisterVersion?: boolean
+  register?: Register
+
+  /** Current stakeholder. */
   stakeholder?: RegisterStakeholder
 
   /** If not specified, opening an item will spawn its tab. */
   onOpenItem?: (itemPath: string | null) => void
-}> = function ({ proposal, register, stakeholder, onOpenItem }) {
+}> = function ({ proposal, compareRegisterVersion, register, stakeholder, onOpenItem }) {
+
   const sidebarConfig = useMemo(() => {
     return {
       meta: {
@@ -49,7 +53,8 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
               <MetaProperties
                 cr={proposal}
                 currentStakeholder={stakeholder}
-                registerMetadata={register}
+                register={register}
+                compareRegisterVersion={compareRegisterVersion}
               />
             </DL>
           </div>,
@@ -63,7 +68,8 @@ const ProposalWorkspace: React.VoidFunctionComponent<{
         }],
       },
     };
-  }, [register, stakeholder, proposal]);
+  }, [compareRegisterVersion, register, stakeholder, proposal]);
+
   return (
     <Workspace sidebarPosition="right" sidebar={
       <SuperSidebar

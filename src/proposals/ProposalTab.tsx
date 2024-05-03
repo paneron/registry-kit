@@ -104,6 +104,7 @@ const ProposalTab: React.VoidFunctionComponent<{
         actions={actions}>
       <Workspace
         proposal={proposal}
+        compareRegisterVersion={!hadBeenAccepted(proposal)}
         register={register}
         stakeholder={stakeholder}
         onOpenItem={selectItem}

@@ -9,7 +9,7 @@ import DL from '@riboseinc/paneron-extension-kit/widgets/DL';
 
 import MetaProperties from '../../../proposals/MetaProperties';
 import type { Register, RegisterStakeholder } from '../../../types';
-import { type SomeCR as CR } from '../../../proposals/types';
+import { type SomeCR as CR, isCreatedBy } from '../../../proposals/types';
 import TransitionOptions, { isFinalState, getTransitions, canBeTransitionedBy } from '../../../proposals/TransitionOptions';
 import TransitionsAndStatus, { getTransitionHistory } from '../../../proposals/TransitionHistory';
 import HomeBlock from './Block';
@@ -77,6 +77,8 @@ const CurrentProposal: React.VoidFunctionComponent<{
   const transitions = stakeholder
     ? getTransitions(proposal, stakeholder)
     : [];
+  const crStakeholder = (register?.stakeholders ?? []).
+    find(s => isCreatedBy(s, proposal));
 
   return (
     <>
@@ -90,7 +92,7 @@ const CurrentProposal: React.VoidFunctionComponent<{
         <MetaProperties
           cr={proposal}
           currentStakeholder={stakeholder}
-          registerMetadata={register}
+          submittingStakeholder={crStakeholder}
         />
       </DL>
       <div css={css`overflow-y: auto; flex-basis: min-content;`}>
