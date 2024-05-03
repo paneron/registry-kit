@@ -44,7 +44,7 @@ const Summary: React.FC<{
   }).value?.data[crPath ?? ''] as unknown ?? (crPath ? undefined : null);
   const versionView = previousProposal && hasSubmitterInput(previousProposal)
     ? <>
-        <ProposalAsListItem proposal={previousProposal as SomeCR} />
+        <ProposalAsListItem showTime proposal={previousProposal as SomeCR} />
         {latestAcceptedProposalID
           ? <>
               &ensp;

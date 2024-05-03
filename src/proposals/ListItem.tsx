@@ -16,9 +16,9 @@ export const ProposalAsListItem: React.FC<{
 
   return <span title={`${justification} (proposal ID: ${proposal.id})`}>
     {isDisposed(proposal)
-      ? <><Datestamp useUTC showTime={showTime} date={proposal.timeDisposed} title="Disposed" />: </>
+      ? <><Datestamp useUTC showTimeIfNonZero={showTime} date={proposal.timeDisposed} title="Disposed" />: </>
       : hadBeenProposed(proposal)
-        ? <><Datestamp useUTC showTime={showTime} date={proposal.timeProposed} title="Proposed" />: </>
+        ? <><Datestamp useUTC showTimeIfNonZero={showTime} date={proposal.timeProposed} title="Proposed" />: </>
         : null}
     {justification}
   </span>;
