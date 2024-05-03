@@ -105,10 +105,11 @@ export const Datestamp: React.FC<{
   date: Date
   useUTC?: boolean
   showTime?: boolean
+  showTimeIfNonZero?: boolean
   title?: string
   className?: string
-}> = function ({ date, useUTC, showTime, title, className }) {
-  const asString = formatDate(date, { useUTC, showTime });
+}> = function ({ date, useUTC, showTime, showTimeIfNonZero, title, className }) {
+  const asString = formatDate(date, { useUTC, showTime, showTimeIfNonZero });
   return <span
       className={className}
       title={`${title ? `${title}: ` : ''}${date?.toString() ?? 'N/A'}`}>
@@ -124,18 +125,31 @@ function formatInTimeZone(date: Date, fmt: string, tz: string) {
     { timeZone: tz });
 }
 
+function timeIsNonZero(date: Date): boolean {
+  return (
+    date.getMilliseconds() === 0 &&
+    date.getSeconds() === 0 &&
+    date.getMinutes() === 0 &&
+    date.getHours() === 0);
+}
+
 
 /** Foramts given date as plain text. */
 export function formatDate(
   date: Date,
-  opts?: { useUTC?: boolean, showTime?: boolean },
+  opts?: {
+    useUTC?: boolean
+    showTime?: boolean
+    showTimeIfNonZero?: boolean
+  },
 ): string {
-  const fmt = opts?.showTime
+  const showTime = opts?.showTime || (opts?.showTimeIfNonZero && timeIsNonZero(date));
+  const fmt = showTime
     ? 'yyyy-MM-dd HH:mm:ss'
     : 'yyyy-MM-dd';
   try {
     return opts?.useUTC
-      ? `${formatInTimeZone(date, fmt, 'UTC')}${opts?.showTime ? ' UTC' : ''}`
+      ? `${formatInTimeZone(date, fmt, 'UTC')}${showTime ? ' UTC' : ''}`
       : format(date, fmt);
   } catch (e) {
     console.error("Failed to format date", date, typeof date);
