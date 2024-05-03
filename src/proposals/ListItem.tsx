@@ -8,14 +8,17 @@ import { isDisposed, hadBeenProposed, hasSubmitterInput, type SomeCR } from './t
 
 
 
-export const ProposalAsListItem: React.FC<{ proposal: SomeCR }> = function ({ proposal }) {
+export const ProposalAsListItem: React.FC<{
+  proposal: SomeCR
+  showTime?: boolean
+}> = function ({ proposal, showTime }) {
   const justification = hasSubmitterInput(proposal) ? proposal.justification : 'N/A';
 
   return <span title={`${justification} (proposal ID: ${proposal.id})`}>
     {isDisposed(proposal)
-      ? <><Datestamp useUTC date={proposal.timeDisposed} title="Disposed" />: </>
+      ? <><Datestamp useUTC showTime={showTime} date={proposal.timeDisposed} title="Disposed" />: </>
       : hadBeenProposed(proposal)
-        ? <><Datestamp useUTC date={proposal.timeProposed} title="Proposed" />: </>
+        ? <><Datestamp useUTC showTime={showTime} date={proposal.timeProposed} title="Proposed" />: </>
         : null}
     {justification}
   </span>;
