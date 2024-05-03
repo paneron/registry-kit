@@ -10,6 +10,7 @@ import { normalizeObjectRecursively } from '@riboseinc/paneron-extension-kit/uti
 import HelpTooltip from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 
 import { Val } from '../views/diffing/InlineDiff';
+import { Datestamp } from '../views/util';
 import { registerStakeholderPlain } from '../views/RegisterStakeholder';
 import { type RegisterStakeholder } from '../types/stakeholder';
 
@@ -182,8 +183,8 @@ export const TransitionsAndStatus: React.VoidFunctionComponent<{
                       : 'unknown stakeholder'}
                   <br />
                   at {timestamp
-                    ? (timestamp.toISOString?.() || timestamp)
-                    : 'unknown time'}
+                    ? <Datestamp useUTC showTime date={timestamp} />
+                    : "unknown time"}
                 </small>
               </>
             : null;
