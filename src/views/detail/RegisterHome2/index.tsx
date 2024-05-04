@@ -37,7 +37,11 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
             registerMetadata?.contentSummary
             ?? "There is no content summary of this registry yet."
           }} />}
-          zeroResultsView={<NonIdealState icon="clean" title="No results matching query" />}
+          zeroResultsView={
+            <NonIdealState
+              icon="clean"
+              title="No results matching query"
+            />}
           //onOpenItem={onChooseItem ? handleOpenItem : undefined}
         />
       </Card>

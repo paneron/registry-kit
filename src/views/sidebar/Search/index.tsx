@@ -113,6 +113,7 @@ memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassI
     selectedRegisterItem,
     jumpTo,
   } = useContext(BrowserCtx);
+
   const { changeRequest } = useContext(ChangeRequestContext);
 
   const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)( stateName ?? 'search-sidebar',
