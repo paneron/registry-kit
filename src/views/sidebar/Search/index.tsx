@@ -217,7 +217,9 @@ memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassI
               onSelectItem={handleSelectItem}
               onOpenItem={handleOpenItem}
               extraItemViewData={extraData as any}
-              zeroResultsView={zeroResultsView}
+              zeroResultsView={effectiveQueryExpression === queryExpressionDebounced
+                ? zeroResultsView
+                : undefined}
             />}
       </div>
     </div>
