@@ -4,6 +4,7 @@
 import React, { memo, useContext, useCallback, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
+import { toJSONNormalized } from '@riboseinc/paneron-extension-kit/util';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
 import useDebounce from '@riboseinc/paneron-extension-kit/useDebounce';
@@ -50,6 +51,10 @@ const initialState: State = {
   selectedItemPath: null,
 } as const;
 
+function isInitialState(state: State): boolean {
+  return toJSONNormalized(state) === toJSONNormalized(initialState);
+}
+
 function reducer(prevState: State, action: Action) {
   switch (action.type) {
     case 'update-query':
@@ -83,15 +88,18 @@ const Search: React.FC<{
   availableClassIDs?: string[]
   onOpenItem?: (itemPath: string) => void
 
+  zeroResultsView?: JSX.Element
+  initialView?: JSX.Element
+
   stateName?: string
 
-  List?: ReturnType<typeof makeSearchResultList>,
-  extraData?: Record<string, any>,
+  List?: ReturnType<typeof makeSearchResultList>
+  extraData?: Record<string, any>
 
   className?: string
   style?: React.CSSProperties
 }> =
-memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
+memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
 
   const ListComponent = useMemo((() => List ?? RegisterItemSearchResultList), [List]);
@@ -107,8 +115,7 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
   } = useContext(BrowserCtx);
   const { changeRequest } = useContext(ChangeRequestContext);
 
-  const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)(
-    stateName ?? 'search-sidebar',
+  const [ state, dispatch, stateRecalled ] = (usePersistentDatasetStateReducer as PersistentStateReducerHook<State, Action>)( stateName ?? 'search-sidebar',
     undefined,
     isState,
     reducer,
@@ -183,6 +190,8 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
     [jumpTo]);
   const handleOpenItem = onOpenItem ?? defaultHandleOpenItem;
 
+  const showInitialScreen = initialView && isInitialState({ ...state, selectedItemPath: null });
+
   return (
     <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
       <SearchQuery
@@ -198,14 +207,17 @@ memo(function ({ implicitCriteria, availableClassIDs, stateName, onOpenItem, Lis
         css={css`padding: 2px;`}
       />
       <div css={css`flex: 1;`}>
-        <ListComponent
-          queryExpression={datasetObjectSearchQueryExpression}
-          keyExpression={keyExpression}
-          selectedItemPath={state.selectedItemPath}
-          onSelectItem={handleSelectItem}
-          onOpenItem={handleOpenItem}
-          extraItemViewData={extraData as any}
-        />
+        {showInitialScreen
+          ? initialView
+          : <ListComponent
+              queryExpression={datasetObjectSearchQueryExpression}
+              keyExpression={keyExpression}
+              selectedItemPath={state.selectedItemPath}
+              onSelectItem={handleSelectItem}
+              onOpenItem={handleOpenItem}
+              extraItemViewData={extraData as any}
+              zeroResultsView={zeroResultsView}
+            />}
       </div>
     </div>
   );
