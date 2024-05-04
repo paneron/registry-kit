@@ -3,7 +3,7 @@
 
 import React, { useContext } from 'react';
 import { jsx, css } from '@emotion/react';
-import { Button, Card } from '@blueprintjs/core';
+import { NonIdealState, Button, Card } from '@blueprintjs/core';
 
 import { TabbedWorkspaceContext } from '@riboseinc/paneron-extension-kit/widgets/TabbedWorkspace/context';
 
@@ -33,6 +33,11 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
           availableClassIDs={[]}
           stateName="item-search-global"
+          initialView={<div dangerouslySetInnerHTML={{ __html:
+            registerMetadata?.contentSummary
+            ?? "There is no content summary of this registry yet."
+          }} />}
+          zeroResultsView={<NonIdealState icon="clean" title="No results matching query" />}
           //onOpenItem={onChooseItem ? handleOpenItem : undefined}
         />
       </Card>
