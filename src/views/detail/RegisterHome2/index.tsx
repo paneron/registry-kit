@@ -29,7 +29,7 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
           or search all items:
         </p>
         <Search
-          css={css`flex: 1;`}
+          css={css`flex: 1; overflow: hidden;`}
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
           availableClassIDs={[]}
           stateName="item-search-global"

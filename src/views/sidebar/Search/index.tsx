@@ -206,7 +206,7 @@ memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassI
         ), [dispatch])}
         css={css`padding: 2px;`}
       />
-      <div css={css`flex: 1;`}>
+      <div css={css`flex: 1; overflow-y: auto;`}>
         {showInitialScreen
           ? initialView
           : <ListComponent
