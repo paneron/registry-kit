@@ -75,18 +75,15 @@ memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectI
   const { useRegisterItemData, keyExpression } = useContext(BrowserCtx);
   const proposal = extraItemViewData.proposal;
 
-  const expressionParsed =
-    new Function('objPath', 'obj', queryExpression) as (objPath: string, obj: null | RegisterItem<any> | ChangeProposal) => boolean;
-
-  const keyExpressionParsed = keyExpression
-    ? new Function('obj', `return ${keyExpression}`) as (obj: RegisterItem<any>) => any
-    : null;
-
   const proposedItemDataReq = useRegisterItemData({
     itemPaths: Object.keys(proposal.items),
   });
 
   const itemData = proposedItemDataReq.value;
+
+  const expressionParsed =
+    new Function('objPath', 'obj', queryExpression) as (objPath: string, obj: null | RegisterItem<any> | ChangeProposal) => boolean;
+
 
   const predicate = useCallback(([objPath, obj]: [string, ChangeProposal]) => {
     const objPathInCR = itemPathInCR(objPath, extraItemViewData.proposal.id);
@@ -96,29 +93,35 @@ memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectI
       || expressionParsed(objPathInCR, itemData[objPath])
       || expressionParsed(objPathInCR, obj)
     );
-  }, [queryExpression, itemData]);
+  }, [queryExpression, itemData, extraItemViewData.proposal.id]);
 
-  const matchingItems = Object.entries(proposal.items).filter(predicate);
+  const matchingItemIDs = useMemo(() => {
+    const keyExpressionParsed = keyExpression
+      ? new Function('obj', `return ${keyExpression}`) as (obj: RegisterItem<any>) => any
+      : null;
 
-  const matchingItemsWithKeys = keyExpressionParsed && !proposedItemDataReq.isUpdating
-    ? matchingItems.map(([p, ]) => {
-        try {
-          return [p, keyExpressionParsed(itemData[p]!)];
-        } catch (e) {
-          console.debug("Failed to run key expression", keyExpression, p, itemData[p], e);
-          return [p, p];
-        }
-      })
-    : matchingItems.map(([p, ]) => [p, p]);
+    const matchingItems = Object.entries(proposal.items).filter(predicate);
 
-  matchingItemsWithKeys.sort((pair1, pair2) =>
-    typeof pair1[1] === 'string'
-      ? pair1[1].localeCompare(pair2[1])
-      : typeof pair1[1] === 'number'
-        ? pair1[1] - pair2[1]
-        : 0);
+    const matchingItemsWithKeys = keyExpressionParsed && !proposedItemDataReq.isUpdating
+      ? matchingItems.map(([p, ]) => {
+          try {
+            return [p, keyExpressionParsed(itemData[p]!)];
+          } catch (e) {
+            console.debug("Failed to run key expression", keyExpression, p, itemData[p], e);
+            return [p, p];
+          }
+        })
+      : matchingItems.map(([p, ]) => [p, p]);
 
-  const matchingItemIDs = matchingItemsWithKeys.map(([p, ]) => p);
+    matchingItemsWithKeys.sort((pair1, pair2) =>
+      typeof pair1[1] === 'string'
+        ? pair1[1].localeCompare(pair2[1])
+        : typeof pair1[1] === 'number'
+          ? pair1[1] - pair2[1]
+          : 0);
+
+    return matchingItemsWithKeys.map(([p, ]) => p);
+  }, [keyExpression, itemData, predicate, proposal.items]);
 
   const extraData: ProposalListData = useMemo((() => ({
     extraItemViewData: { proposal, itemData },
