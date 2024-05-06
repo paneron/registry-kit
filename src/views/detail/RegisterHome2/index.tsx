@@ -20,23 +20,24 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
     <TabContentsWithHeader title={<>Welcome to {registerMetadata?.name ?? 'this register'}</>}>
       <Card css={css`flex: 1; box-shadow: none !important; position: absolute; border-radius: 0; display: flex; flex-flow: column nowrap; padding: 10px;`}>
         <p>
-          <Button
-              css={css`vertical-align: baseline`}
-              onClick={() => spawnTab(Protocols.REGISTER_META)}>
-            Learn more about the register
-          </Button>
-          &ensp;
-          or search all items:
+          Search all items:
         </p>
         <Search
           css={css`flex: 1; overflow: hidden;`}
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
           availableClassIDs={[]}
           stateName="item-search-global"
-          initialView={<div dangerouslySetInnerHTML={{ __html:
-            registerMetadata?.contentSummary
-            ?? "There is no content summary of this registry yet."
-          }} />}
+          initialView={<>
+            <div dangerouslySetInnerHTML={{ __html:
+              registerMetadata?.contentSummary
+              ?? "There is no content summary of this registry yet."
+            }} />
+            <Button
+                css={css`vertical-align: baseline`}
+                onClick={() => spawnTab(Protocols.REGISTER_META)}>
+              View register metadata
+            </Button>
+          </>}
           zeroResultsView={
             <NonIdealState
               icon="clean"
