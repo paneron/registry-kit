@@ -33,7 +33,7 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
               ?? "There is no content summary of this registry yet."
             }} />
             <Button
-                css={css`vertical-align: baseline`}
+                css={css`vertical-align: baseline; margin-top: .5em;`}
                 onClick={() => spawnTab(Protocols.REGISTER_META)}>
               View register metadata
             </Button>
