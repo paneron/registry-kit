@@ -28,7 +28,7 @@ export default function useRegisterVersion(): Date {
   });
 
   const result = latestAcceptedProposalDisposedTimestamp.value.unnamedChain as Date;
-  if (result) {
+  if (result && result.getSeconds !== undefined) {
     return result;
   } else {
     //console.error("Invalid register version value", result);
