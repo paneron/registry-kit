@@ -74,10 +74,10 @@ function RegistryWorkspace () {
 
   let version: JSX.Element;
   try {
-    version = <Datestamp date={useRegisterVersion()} showTime useUTC />;
+    version = <>Viewing register as of <span title="Date of latest accepted proposal"><Datestamp date={useRegisterVersion()} showTime useUTC /></span></>;
   } catch (e) {
     //console.error("Failed to get register version", e);
-    version = <>N/A</>;
+    version = <>Viewing published register (version not available)</>;
   }
 
   const globalMode: TabbedWorkspaceProps<any>['globalMode'] = useMemo(
@@ -90,9 +90,7 @@ function RegistryWorkspace () {
           onClick: () => spawnTab(Protocols.PROPOSAL_WORK),
         }
       : {
-          content: <>
-            Viewing register as of <span title="Date of latest accepted proposal">{version}</span>
-          </>,
+          content: version,
           intent: 'none',
           minimal: true,
         }),
