@@ -172,6 +172,7 @@ const RegisterMetaForm: React.FC<{
               value={value.operatingLanguage?.country ?? ''}
               onChange={handleOperatingLanguageChange('country')} />
             <InputGroup
+              css={css`width: 4em;`}
               readOnly={!onChange}
               placeholder="3-character language code from ISO 639-2"
               value={value.operatingLanguage?.languageCode ?? ''}
