@@ -130,8 +130,16 @@ const RegisterMetaForm: React.FC<{
   return (
     <>
 
-      <FormGroupAsCardInGrid label="Basics:" paddingPx={PADDING_PX}>
-        <FormGroup label="Name:">
+      <FormGroupAsCardInGrid label="Basics:" paddingPx={PADDING_PX}
+          css={css`
+            min-width: 100%;
+            > .bp4-form-content {
+              flex-flow: row wrap;
+              justify-content: stretch;
+              align-items: stretch;
+            }
+          `}>
+        <FormGroup label="Name:" css={css`flex-grow: 1;`}>
           <InputGroup
             fill
             value={value.name || ''}
@@ -140,7 +148,7 @@ const RegisterMetaForm: React.FC<{
           />
         </FormGroup>
 
-        <FormGroup label="Uniform resource identifier:">
+        <FormGroup label="Uniform resource identifier:" css={css`flex-grow: 1;`}>
           <InputGroup
             fill
             type="url"
@@ -150,17 +158,8 @@ const RegisterMetaForm: React.FC<{
           />
         </FormGroup>
 
-        <FormGroup label="Content summary:" helpText="HTML is allowed.">
-          <TextArea
-            fill
-            value={value.contentSummary || ''}
-            readOnly={!onChange}
-            onChange={makeFormEventHandler<HTMLTextAreaElement>(val => ({ contentSummary: { $set: val } }))}
-          />
-        </FormGroup>
-
         <FormGroup label="Operating language (locale):" helperText="Name, country and ISO 639-2 language code.">
-          <ControlGroup vertical>
+          <ControlGroup>
             <InputGroup
               readOnly={!onChange}
               placeholder="E.g., Welsh"
@@ -178,6 +177,21 @@ const RegisterMetaForm: React.FC<{
               value={value.operatingLanguage?.languageCode ?? ''}
               onChange={handleOperatingLanguageChange('languageCode')} />
           </ControlGroup>
+        </FormGroup>
+      </FormGroupAsCardInGrid>
+
+      <FormGroupAsCardInGrid
+          label="Content summary:"
+          paddingPx={PADDING_PX}
+          css={css`min-width: 100%;`}>
+        <FormGroup helperText="HTML is allowed.">
+          <TextArea
+            fill
+            css={css`height: 8em !important;`}
+            value={value.contentSummary || ''}
+            readOnly={!onChange}
+            onChange={makeFormEventHandler<HTMLTextAreaElement>(val => ({ contentSummary: { $set: val } }))}
+          />
         </FormGroup>
       </FormGroupAsCardInGrid>
 
