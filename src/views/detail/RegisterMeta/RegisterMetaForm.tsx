@@ -150,7 +150,7 @@ const RegisterMetaForm: React.FC<{
           />
         </FormGroup>
 
-        <FormGroup label="Content summary:">
+        <FormGroup label="Content summary:" helpText="HTML is allowed.">
           <TextArea
             fill
             value={value.contentSummary || ''}
