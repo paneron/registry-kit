@@ -49,31 +49,59 @@ const Summary: React.FC<{
     (() => (register?.stakeholders ?? []).find(s => isCreatedBy(s, cr))),
     [register, cr]);
 
-  const isCurrentMarker = cr.registerVersion && compareRegisterVersion
-    ? cr.registerVersion === currentVersion
-        ? <Tag css={css`display: inline;`} intent='success' minimal round>
-            current
-            {" "}
-            <HelpTooltip intent='success' content={<>
-              Published version of the register
-              {" "}
-              had not changed since this proposal started.
-            </>} />
-          </Tag>
-        : <Tag css={css`display: inline;`} intent='warning' minimal round>
-            not current
-            {" "}
-            <HelpTooltip intent='warning' icon='warning-sign' content={<>
-              Register is currently at version <strong>{currentVersion}</strong>,
-              {" "}
-              which is different from version proposal author may have had in mind.
-              {" "}
-              It is recommended that proposed changes are reviewed to avoid unintentionally
-              {" "}
-              undoing a prior change.
-            </>} />
-          </Tag>
-    : null;
+  const isCurrentMarker = useMemo(() => {
+    const proposedAgainstCurrentVersion = cr.registerVersion === currentVersion;
+    const shouldShowMarker = compareRegisterVersion && cr.registerVersion;
+    const marker = shouldShowMarker
+      ? <Tag
+            css={css`display: inline;`}
+            intent={currentVersion
+              ? proposedAgainstCurrentVersion
+                ? 'success'
+                : 'warning'
+              : undefined}
+            minimal
+            round>
+          {currentVersion
+            ? proposedAgainstCurrentVersion
+              ? <>
+                  current
+                  {" "}
+                  <HelpTooltip intent='success' content={<>
+                    Published version of the register
+                    {" "}
+                    had not changed since this proposal started.
+                  </>} />
+                </>
+              : <>
+                  not current
+                  {" "}
+                  <HelpTooltip intent='warning' icon='warning-sign' content={<>
+                    Register is currently at version <strong>{currentVersion}</strong>,
+                    {" "}
+                    which is different from version proposal author may have had in mind.
+                    {" "}
+                    It is recommended that proposed changes are reviewed to avoid unintentionally
+                    {" "}
+                    undoing a prior change.
+                  </>} />
+                </>
+            : <>
+                unable to compare
+                {" "}
+                <HelpTooltip intent={undefined} icon='warning-sign' content={<>
+                  Unable to determine current register version.
+                  {" "}
+                  This may be the case if there are no accepted proposals
+                  (since register version is derived from latest accepted proposal).
+                  {" "}
+                  Barring that, there may be a data integrity issue.
+                </>} />
+              </>}
+        </Tag>
+      : null;
+    return marker ? <>&ensp;{marker}</> : null;
+  }, [cr.registerVersion, currentVersion, compareRegisterVersion]);
 
   return (
     <>
@@ -98,7 +126,7 @@ const Summary: React.FC<{
         </dt>
         <dd>
           {registerVersion}
-          {isCurrentMarker ? <>&ensp;{isCurrentMarker}</> : null}
+          {isCurrentMarker}
         </dd>
       </div>
 
