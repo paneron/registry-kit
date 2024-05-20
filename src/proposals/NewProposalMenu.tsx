@@ -32,7 +32,7 @@ const NewProposalMenu: React.FC<{
     const createMenu = (
       <Menu css={css`overflow-y: auto; background: none !important;`}>
         <MenuItem 
-          text="Start new proposal"
+          text="Start a proposal from scratch"
           onClick={(onCreateBlank && !createMode)
             ? (() => setCreateMode(true))
             : undefined}
@@ -42,7 +42,7 @@ const NewProposalMenu: React.FC<{
           icon="add"
         />
         <MenuItem
-          text="Import new proposal"
+          text="Import a pre-existing proposal"
           onClick={onImport}
           disabled={!onImport || creatingBlank}
           icon="import"
@@ -51,13 +51,13 @@ const NewProposalMenu: React.FC<{
     );
 
     stack.push({
-      title: "",
+      title: "Start new proposal",
       renderPanel: () => createMenu,
     });
 
     if (creatingBlank) {
       stack.push({
-        title: "Start new proposal",
+        title: "Start a proposal from scratch",
         renderPanel: () =>
           <NewProposal
             previousVersion={previousVersion}
