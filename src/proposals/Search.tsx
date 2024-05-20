@@ -61,8 +61,7 @@ function ({ onSelect, onOpen, extraData, itemRef: itemPath }) {
         onSelect={onSelect}
         onOpen={onOpen}
         //contentClassName={(isUpdating && !objData) ? Classes.SKELETON : undefined}
-        entityType={{ name: proposalItem.type }}
-        >
+        entityType={{ name: proposalItem.type }}>
       {itemView}
     </LabelledListIcon>
   );
