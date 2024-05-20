@@ -19,7 +19,7 @@ import { getMaybeGroupedItemClassesAsTreeNodes } from './treeNodes';
 
 const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = function () {
 
-  const { performOperation, updateObjects, makeRandomID } = useContext(DatasetContext);
+  const { isBusy, performOperation, updateObjects, makeRandomID } = useContext(DatasetContext);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   const { changeRequest: activeCR, canEdit: activeCRIsEditable } = useContext(ChangeRequestContext);
   const { subregisters, itemClasses, itemClassGroups } = useContext(BrowserCtx);
@@ -68,9 +68,9 @@ const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = functio
       getMaybeGroupedItemClassesAsTreeNodes(itemClasses, itemClassGroups, {
         selectedItemID: state.selectedItemID ?? undefined,
         expandedGroupLabels: new Set(state.expandedItemIDs),
-        onProposeItem: handleAdd,
+        onProposeItem: !isBusy ? handleAdd : undefined,
       })),
-    [itemClasses, itemClassGroups, handleAdd],
+    [isBusy, itemClasses, itemClassGroups, handleAdd],
   );
 
   return <GenericStatefulTree
