@@ -44,8 +44,7 @@ function ({ onSelect, onOpen, extraData, itemRef: itemPath }) {
  
   const itemView = itemPayload && ListItemView
     ? <>
-        {clsConfig.title}
-        &emsp;
+        <div>{clsConfig.title}</div>
         <ListItemView
           itemData={itemPayload}
           itemRef={itemRef}
@@ -57,6 +56,7 @@ function ({ onSelect, onOpen, extraData, itemRef: itemPath }) {
 
   return (
     <LabelledListIcon
+        contentStyle={{ display: 'flex', flexFlow: 'row nowrap', gap: '10px' }}
         isSelected={extraData.selectedItemPath === itemPath}
         onSelect={onSelect}
         onOpen={onOpen}
