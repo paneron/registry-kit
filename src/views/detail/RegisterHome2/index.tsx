@@ -43,7 +43,6 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
               icon="clean"
               title="No results matching query"
             />}
-          //onOpenItem={onChooseItem ? handleOpenItem : undefined}
         />
       </Card>
     </TabContentsWithHeader>
