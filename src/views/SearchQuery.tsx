@@ -94,7 +94,8 @@ const SearchQuery: React.FC<{
           small
           minimal
           icon="cross"
-          title="Clear quick search" />}
+          title="Clear quick search"
+        />}
         onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)}
       />
       <ButtonGroup fill>
