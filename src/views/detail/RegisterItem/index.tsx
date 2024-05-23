@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { useContext, useState, useMemo, memo, useCallback } from 'react';
+import React, { useContext, useState, useMemo, useRef, useLayoutEffect, memo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import {
   Button, type ButtonProps,
@@ -618,6 +618,24 @@ export const ItemDetail: React.VoidFunctionComponent<{
   ) ? `Proposal ${maybeEllipsizeString(activeCR.justification, 20)}…`
     : `${itemClass.meta.title ?? 'register item'} #${item.id}`;
 
+  const detailsDivRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (itemBefore?.data && detailsDivRef.current) {
+      //console.debug("observing", detailsDivRef.current, observer, itemBefore.data);
+      OBSERVER.observe(detailsDivRef.current, {
+        attributeFilter: ['value'],
+        attributes: true,
+        subtree: true,
+        childList: true,
+      });
+    }
+    return function cleanUp() {
+      //console.debug("disconnecting observer");
+      OBSERVER.disconnect();
+    };
+  }, [detailsDivRef.current, itemBefore?.data]);
+
   return (
     <TabContentsWithHeader
         smallTitle={compactHeader}
@@ -631,7 +649,9 @@ export const ItemDetail: React.VoidFunctionComponent<{
           onClose={() => setHistoryDrawerOpenState(false)}
           itemPath={itemPath}
         />
-        {details}
+        <div id="detailsDiv" ref={detailsDivRef} data-observer-root="true">
+          {details}
+        </div>
       </Card>
     </TabContentsWithHeader>
   );
@@ -658,3 +678,59 @@ export default {
   main: MaybeItemDetail,
   title: ItemTitle,
 } as const;
+
+
+const CHANGED_ITEM_HIGHLIGHT_MS = 1000;
+const OBSERVER = new MutationObserver((mutationList: MutationRecord[]) => {
+  const changed: [HTMLElement, 'added' | 'removed' | 'changed'][] = [];
+
+  function maybeAddChanged(el: HTMLElement, changeType: 'added' | 'changed') {
+    if (!el.parentElement?.getAttribute('data-observer-root')) {
+      changed.push([el, changeType]);
+    }
+  }
+
+  mutationList.forEach((mutation) => {
+    switch (mutation.type) {
+      case 'childList':
+        mutation.addedNodes.forEach((node) => {
+          maybeAddChanged(node as HTMLElement, 'added')
+        });
+        //mutation.removedNodes.forEach((node) => {
+        //  //changedNodes.push([node as HTMLElement, 'removed']);
+        //  console.log('node removed', node);
+        //});
+        break;
+      case 'attributes':
+        maybeAddChanged(mutation.target as HTMLElement, 'changed')
+        break;
+    }
+  });
+  const nodesWithBackground: [HTMLElement, string, string, string][] = [];
+  for (const [_el, change] of changed) {
+    // FIXME: Walk parent elements until one that actually exists?
+    const el = change === 'removed' ? _el.parentElement! : _el;
+    nodesWithBackground.push([el, el.style.transition, el.style.backgroundColor, el.style.color]);
+    el.style.transition = 'none';
+    el.style.color = 'white';
+    if (change === 'removed') {
+      el.style.backgroundColor = Colors.RED2;
+    } else {
+      el.style.backgroundColor = change === 'added'
+        ? Colors.GREEN2
+        : Colors.INDIGO2;
+    }
+  }
+  setTimeout(() => {
+    for (const [el, , bgc, tc] of nodesWithBackground) {
+      el.style.transition = 'background-color linear 1s, color linear 1s';
+      el.style.backgroundColor = bgc;
+      el.style.color = tc;
+    }
+    setTimeout(() => {
+      for (const [el, tr] of nodesWithBackground) {
+        el.style.transition = tr;
+      }
+    }, CHANGED_ITEM_HIGHLIGHT_MS);
+  }, 1);
+});
