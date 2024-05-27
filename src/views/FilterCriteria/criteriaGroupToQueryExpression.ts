@@ -16,7 +16,11 @@ export default function criteriaGroupToQueryExpression(cg: CriteriaGroup): strin
         exps.push(`${criteriaGroupToQueryExpression(c)}`);
       }
     } else {
-      exps.push(c.query);
+      if (c.query.trim() !== '') {
+        exps.push(c.query.trim());
+      } else {
+        console.warn("Empty query when processing criteria group", c);
+      }
     }
   }
 

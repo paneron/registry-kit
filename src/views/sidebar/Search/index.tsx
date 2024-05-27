@@ -177,7 +177,7 @@ memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassI
   );
 
   const datasetObjectSearchQueryExpression = useMemo((() =>
-    queryExpressionDebounced != 'false'
+    queryExpressionDebounced.trim() !== '' && queryExpressionDebounced != 'false'
       ? getRegisterItemQuery(queryExpressionDebounced, changeRequest ?? undefined)
       : 'return false'
   ), [queryExpressionDebounced, changeRequest]);
