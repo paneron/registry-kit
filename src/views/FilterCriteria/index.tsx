@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 
 import { jsx, css } from '@emotion/react';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Button, ButtonGroup, type TreeNodeInfo, Tree } from '@blueprintjs/core';
 import type { ItemClassConfigurationSet, Subregisters } from '../../types';
 import { type CriteriaGroup, makeBlankCriteria, type Criterion, type CompositionOperator, COMPOSITION_OPERATORS } from './models';
@@ -83,7 +83,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
 
   return (
     <Tree
-      contents={[ ...implied, ...nodes ]}
+      contents={useMemo(() => [ ...implied, ...nodes ], [implied, nodes])}
       className={className}
       css={css`
         .bp4-tree-node-content { height: unset; }
