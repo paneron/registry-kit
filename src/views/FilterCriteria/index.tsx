@@ -34,24 +34,24 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     updateCriteria(criteria);
   }, [JSON.stringify(criteria)]);
 
-  function onAddGroup(parent: number[]) {
+  const onAddGroup = useCallback(function (parent: number[]) {
     const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     const newGroup: CriteriaGroup = makeBlankCriteria();
     mutateGroup(newCriteria, p, { action: 'insert', item: newGroup });
     updateCriteria(newCriteria[0]);
     onChange!(newCriteria[0]);
-  }
+  }, [crit, updateCriteria, onChange]);
 
-  function onDelete(parent: number[], idx: number) {
+  const onDelete = useCallback(function (parent: number[], idx: number) {
     const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     mutateGroup(newCriteria, p, { action: 'delete', idx });
     updateCriteria(newCriteria[0]);
     onChange!(newCriteria[0]);
-  }
+  }, [crit, updateCriteria, onChange]);
 
-  function onEditItem(parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) {
+  const onEditItem = useCallback(function (parent: number[], idx: number, newItem: CriteriaGroup | Criterion, commit?: true) {
     const p = reverseArray(parent);
     var newCriteria = JSON.parse(JSON.stringify([crit]));
     mutateGroup(newCriteria, p, { action: 'edit', idx, item: newItem });
@@ -59,7 +59,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     if (commit) {
       onChange!(newCriteria[0]);
     }
-  }
+  }, [onChange, updateCriteria, crit]);
 
   const nodes: TreeNodeInfo[] = useMemo(() => criteriaToNodes([crit], {
     onEditItem: onChange ? onEditItem : undefined,
@@ -68,7 +68,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
     itemClasses,
     subregisters,
     availableClassIDs,
-  }), [crit, onChange]);
+  }), [itemClasses, subregisters, availableClassIDs, crit, onChange, onEditItem, onAddGroup, onDelete]);
 
   const implied: TreeNodeInfo[] = useMemo((() =>
     impliedCriteria !== undefined
@@ -79,7 +79,7 @@ function ({ criteria, impliedCriteria, onChange, availableClassIDs, itemClasses,
           availableClassIDs,
         })
       : []
-  ), [impliedCriteria]);
+  ), [impliedCriteria, itemClasses, availableClassIDs, subregisters]);
 
   return (
     <Tree
