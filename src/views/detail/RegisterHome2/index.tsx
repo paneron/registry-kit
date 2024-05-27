@@ -25,7 +25,6 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
         <Search
           css={css`flex: 1; overflow: hidden;`}
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
-          availableClassIDs={[]}
           stateName="item-search-home"
           initialView={<>
             <div dangerouslySetInnerHTML={{ __html:
