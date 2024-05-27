@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 
-import React, { memo, useEffect, useRef, useState, useContext, useCallback } from 'react';
+import React, { memo, useMemo, useEffect, useRef, useState, useContext, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import { Button, ControlGroup, Colors, InputGroup, Tag, ButtonGroup } from '@blueprintjs/core';
 import CriteriaTree from './FilterCriteria';
@@ -33,7 +33,13 @@ const SearchQuery: React.FC<{
 
   const [ editingAdvanced, toggleEditingAdvanced ] = useState<boolean>(false);
 
-  const classIDs = availableClassIDs ?? Object.keys(itemClasses);
+  const classIDs = useMemo(
+    (() =>
+      availableClassIDs === undefined
+        ? Object.keys(itemClasses)
+        : availableClassIDs
+    ),
+    [availableClassIDs, itemClasses]);
 
   const hasAdvancedQuery = rootCriteria.criteria.length > 0;
 
