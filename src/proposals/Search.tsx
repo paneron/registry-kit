@@ -80,31 +80,47 @@ memo(function ({ extraItemViewData, queryExpression, selectedItemPath, onSelectI
 
   const itemData = proposedItemDataReq.value;
 
-  const expressionParsed =
-    new Function('objPath', 'obj', queryExpression) as (objPath: string, obj: null | RegisterItem<any> | ChangeProposal) => boolean;
+  let expressionParsed: (objPath: string, obj: null | RegisterItem<any> | ChangeProposal) => boolean;
+  try {
+    expressionParsed = new Function('objPath', 'obj', queryExpression) as typeof expressionParsed;
+  } catch (e) {
+    console.error("Parsing query expression failed", e);
+    expressionParsed = () => false;
+  }
 
 
   const predicate = useCallback(([objPath, obj]: [string, ChangeProposal]) => {
     const objPathInCR = itemPathInCR(objPath, extraItemViewData.proposal.id);
-    return (
-      expressionParsed(objPath, itemData[objPath])
-      || expressionParsed(objPath, obj)
-      || expressionParsed(objPathInCR, itemData[objPath])
-      || expressionParsed(objPathInCR, obj)
-    );
+    try {
+      return (
+        expressionParsed(objPath, itemData[objPath])
+        || expressionParsed(objPath, obj)
+        || expressionParsed(objPathInCR, itemData[objPath])
+        || expressionParsed(objPathInCR, obj)
+      );
+    } catch (e) {
+      console.error("Predicate failed", e);
+      return false;
+    }
   }, [queryExpression, itemData, extraItemViewData.proposal.id]);
 
   const matchingItemIDs = useMemo(() => {
-    const keyExpressionParsed = keyExpression
-      ? new Function('obj', `return ${keyExpression}`) as (obj: RegisterItem<any>) => any
-      : null;
+    let keyExpressionParsed: null | ((obj: RegisterItem<any>) => any);
+    try {
+      keyExpressionParsed = keyExpression
+        ? new Function('obj', `return ${keyExpression}`) as (obj: RegisterItem<any>) => any
+        : null;
+    } catch (e) {
+      console.error("Parsing key expression failed", e);
+      keyExpressionParsed = null;
+    }
 
     const matchingItems = Object.entries(proposal.items).filter(predicate);
 
     const matchingItemsWithKeys = keyExpressionParsed && !proposedItemDataReq.isUpdating
       ? matchingItems.map(([p, ]) => {
           try {
-            return [p, keyExpressionParsed(itemData[p]!)];
+            return [p, keyExpressionParsed!(itemData[p]!)];
           } catch (e) {
             console.debug("Failed to run key expression", keyExpression, p, itemData[p], e);
             return [p, p];
