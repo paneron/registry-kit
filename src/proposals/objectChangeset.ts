@@ -82,7 +82,6 @@ export async function importedProposalToCRObjectChangeset(
   const crPath = crIDToCRPath(crID);
 
   const itemPaths = Object.keys(proposalDraft.items);
-  const proposals = Object.values(proposalDraft.items);
 
   for (const itemPath of itemPaths) {
     const itemRef = itemPathToItemRef(false, itemPath);
@@ -91,13 +90,25 @@ export async function importedProposalToCRObjectChangeset(
     }
   }
 
-  if (proposals.find(prop => prop.type !== 'addition')) {
-    throw new Error("Only addition proposals can be imported at this time");
+  //const proposals = Object.values(proposalDraft.items);
+  // if (proposals.find(prop => prop.type !== 'addition')) {
+  //   throw new Error("Only addition proposals can be imported at this time");
+  // }
+
+  const additionalItemPaths = Object.entries(proposalDraft.items).
+    filter(([, prop]) => prop.type === 'addition').
+    map(([path, ]) => path);
+  const existingItems = (await getObjectData({ objectPaths: additionalItemPaths })).data;
+  if (Object.values(existingItems).find(v => v !== null)) {
+    throw new Error("Register already contains item(s) being added in this proposal");
   }
 
-  const existingItems = (await getObjectData({ objectPaths: itemPaths })).data;
-  if (Object.values(existingItems).find(v => v !== null)) {
-    throw new Error("Register already contains item(s) in this proposal");
+  const clarifiedItemPaths = Object.entries(proposalDraft.items).
+    filter(([, prop]) => prop.type === 'clarification').
+    map(([path, ]) => path);
+  const clarifiedItems = (await getObjectData({ objectPaths: clarifiedItemPaths })).data;
+  if (Object.values(clarifiedItems).find(v => v === null)) {
+    throw new Error("Register does not contain some of the item(s) being clarified in this proposal");
   }
 
   const changeset: ObjectChangeset = {
