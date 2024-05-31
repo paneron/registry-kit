@@ -8,7 +8,7 @@ import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import type { PersistentStateReducerHook } from '@riboseinc/paneron-extension-kit/usePersistentStateReducer';
 //import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import makeSearchResultList from '@riboseinc/paneron-extension-kit/widgets/SearchResultList';
-import { type Base as BaseCR, type SomeCR } from '../../../proposals/types';
+import { type Base as BaseCR, type SomeCR, State } from '../../../proposals/types';
 import { CR_BASE_QUERY, DISPOSED_CR_QUERY } from '../../../proposals/queries';
 import { BrowserCtx } from '../../BrowserCtx';
 import { itemRefToItemPath } from '../../itemPathUtils';
@@ -30,7 +30,7 @@ export const PendingChangeRequestsBlock: React.FC<Record<never, never>> = functi
 
 
 export const ChangeRequestHistoryBlock: React.FC<Record<never, never>> = function () {
-  return <ChangeRequestListBlock impliedQuery={DISPOSED_CR_QUERY} />;
+  return <ChangeRequestListBlock impliedQuery={`(${DISPOSED_CR_QUERY}) && (obj.state === "${State.ACCEPTED}" || obj.state === "${State.ACCEPTED_ON_APPEAL}")`} />;
 };
 
 interface ChangeRequestBlockState {
