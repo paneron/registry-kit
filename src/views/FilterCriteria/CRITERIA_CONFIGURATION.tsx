@@ -135,6 +135,7 @@ export const CUSTOM_CONDITION: CriterionConfiguration<{ customExpression?: strin
     return (
       <TextInput
         className={className}
+        title="If this expression returns ‘false’ for an item, that item is excluded from the list below. Expression must be written in JavaScript and can use special variables ‘obj’ and ‘objPath’."
         value={data.customExpression ?? 'true'}
         placeholder="Enter a valid query expression…"
         onChange={onChange
