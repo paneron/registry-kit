@@ -12,21 +12,30 @@ import { itemPathToItemRef } from '../itemPathUtils';
 const ListItem: React.FC<{ objectData: RegisterItem<any>, objectPath: string }> =
 memo(function ({ objectData, objectPath }) {
   const { subregisters, getRelatedItemClassConfiguration } = useContext(BrowserCtx);
-  const itemRef = itemPathToItemRef(subregisters !== undefined, objectPath);
-  const clsConfig = getRelatedItemClassConfiguration(itemRef.classID);
-  const ListItemView = clsConfig.itemView;
-  const itemPayload = objectData?.data;
 
-  const itemView = itemPayload
-    ? <ListItemView
-        itemData={itemPayload}
-        itemRef={itemRef}
-      />
-    : <span css={css`opacity: .4`}>
-        (missing item data at {objectPath})
-      </span>;
+  const fallbackView = (
+    <span css={css`opacity: .4`}>
+      (missing item data at {objectPath})
+    </span>
+  );
 
-  return itemView;
+  try {
+    const itemRef = itemPathToItemRef(subregisters !== undefined, objectPath);
+    const clsConfig = getRelatedItemClassConfiguration(itemRef.classID);
+    const ListItemView = clsConfig.itemView;
+    const itemPayload = objectData?.data;
+
+    const itemView = itemPayload
+      ? <ListItemView
+          itemData={itemPayload}
+          itemRef={itemRef}
+        />
+      : fallbackView;
+
+    return itemView;
+  } catch (e) {
+    return fallbackView;
+  }
 });
 
 
