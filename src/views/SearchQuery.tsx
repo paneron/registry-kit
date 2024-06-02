@@ -66,7 +66,7 @@ const SearchQuery: React.FC<{
       return {
         key: 'custom',
         query: CUSTOM_CONDITION.toQuery(
-          { customExpression: 'false' },
+          { customExpression: 'true' },
           { itemClasses, subregisters },
         ),
       }
