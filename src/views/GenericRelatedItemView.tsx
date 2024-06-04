@@ -173,7 +173,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
     : undefined;
 
   /** Input ref for using within this component */
-  const cbRef = useRef<HTMLDivElement | null>(null);
+  //const cbRef = useRef<HTMLDivElement | null>(null);
   const _drawerContainerRef = useRef<HTMLElement | null>(null);
   const closePeekingDrawer = useCallback(
     (() => setPeekingDrawerState(false)),
@@ -189,7 +189,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         title={itemTitle}
         {...controlGroupProps}>
 
-      <div ref={cbRef} />
+      {/*<div ref={cbRef} />*/}
 
       <InputGroup
         fill={hasItem}
