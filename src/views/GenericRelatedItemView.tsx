@@ -220,7 +220,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
           }
           flex-shrink: 1;
           .bp4-input {
-            color: rgba(125, 125, 125, 0.5);
+            color: rgba(125, 125, 125, 0);
             font-family: monospace;
           }
         `}
