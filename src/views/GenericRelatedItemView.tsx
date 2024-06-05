@@ -191,6 +191,12 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
       {/*<div ref={cbRef} />*/}
 
+      {/*
+        It could technically be a div, since input is empty,
+        but that input is useful
+        if callers utilize inputRef for form validation API,
+        for example.
+      */}
       <InputGroup
         readOnly={!onChange && !onClear}
         inputRef={inputRef}
