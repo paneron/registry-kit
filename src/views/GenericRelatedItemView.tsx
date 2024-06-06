@@ -204,6 +204,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         css={css`
           /* leftElement which displays itemView */
           .bp4-input-left-container {
+            /* Some obscure magic, since we augment bp4’s styling here. */
             top: unset;
             bottom: .42em;
             padding-left: 10px;
