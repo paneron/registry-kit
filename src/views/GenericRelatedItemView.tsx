@@ -226,7 +226,11 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
             font-family: monospace;
           }
         `}
-        leftElement={itemView}
+        leftElement={
+          <a onClick={() => setPeekingDrawerState(true)}>
+            {itemView}
+          </a>
+        }
         value={itemID ?? ''}
         title={itemTitle}
       />
