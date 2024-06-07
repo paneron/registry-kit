@@ -198,6 +198,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         for example.
       */}
       <InputGroup
+        fill={hasItem}
         readOnly={!onChange && !onClear}
         inputRef={inputRef}
         onChange={useCallback(() => void 0, [])}
