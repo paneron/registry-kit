@@ -203,6 +203,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         inputRef={inputRef}
         onChange={useCallback(() => void 0, [])}
         css={css`
+          flex-shrink: 1;
+
           /* leftElement which displays itemView */
           .bp4-input-left-container {
             /* Some obscure magic, since we augment bp4’s styling here. */
@@ -220,7 +222,6 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
             max-width: 70%;
           }
-          flex-shrink: 1;
           .bp4-input {
             color: rgba(125, 125, 125, 0);
             font-family: monospace;
