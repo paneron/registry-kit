@@ -226,7 +226,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
           }
         `}
         leftElement={canJump
-          ? <a onClick={() => setPeekingDrawerState(true)}>
+          ? <a onClick={jump}>
               {itemView}
             </a>
           : itemView}
@@ -234,9 +234,9 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
         title={itemTitle}
       />
 
-      {canJump
+      {/*canJump
         ? <Button outlined onClick={jump} icon="maximize" />
-        : null}
+        : null*/}
 
       {itemButtons.map((props, idx) =>
         <Button key={idx} outlined {...props} />
