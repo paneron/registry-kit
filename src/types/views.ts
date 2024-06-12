@@ -231,6 +231,13 @@ export interface GenericRelatedItemViewProps {
   inputRef?: React.Ref<HTMLInputElement>
 
   /**
+   * If true, related item’s class title is NOT shown as part of item view.
+   * Handy when displaying a related item of which item class
+   * is already known.
+   */
+  hideItemClassTitle?: boolean
+
+  /**
    * By default, clicking the item will spawn a tab via TabbedWorkspace context.
    * This prop can customize that behavior.
    */

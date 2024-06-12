@@ -32,6 +32,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
   onJump,
   inputRef,
   controlGroupProps,
+  hideItemClassTitle,
   // availableSubregisterIDs,
   // itemSorter,
 }) {
@@ -121,8 +122,8 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
               Not found: {itemID ?? 'N/A'}
             </span>
           : <span>Not specified</span>;
-    return <>{itemView}&emsp;{classView}</>;
-  }, [itemID, classID, itemClassTitle, subregisterID, item?.data, hasItem, itemIsMissing]);
+    return <>{itemView}{!hideItemClassTitle ? <>&emsp;{classView}</> : null}</>;
+  }, [itemID, classID, !hideItemClassTitle && itemClassTitle, subregisterID, item?.data, hasItem, itemIsMissing]);
 
   const itemButtons = useMemo(() => {
     const canAutoCreateRelatedItem = itemID === '' && onCreateNew && !itemResult.isUpdating;
