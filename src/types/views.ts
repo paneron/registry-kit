@@ -227,7 +227,10 @@ export interface GenericRelatedItemViewProps {
   /** Currently selected item’s ref. */
   itemRef?: InternalItemReference
 
-  /** Allows to grab a ref of the input displaying the selected item. */
+  /**
+   * Allows to grab a ref of the input displaying the selected item.
+   * Useful to, e.g., display validation.
+   */
   inputRef?: React.Ref<HTMLInputElement>
 
   /**
