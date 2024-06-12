@@ -218,11 +218,12 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
 
             display: block;
 
-            max-width: 70%;
+            max-width: 100%;
           }
           .bp4-input {
             color: rgba(125, 125, 125, 0);
             font-family: monospace;
+            padding-left: 0 !important;
           }
         `}
         leftElement={canJump
