@@ -621,7 +621,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
   const detailsDivRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
-    if (itemBefore?.data && detailsDivRef.current) {
+    if (itemBefore?.data && detailsDivRef.current && proposal !== null) {
       //console.debug("observing", detailsDivRef.current, observer, itemBefore.data);
       OBSERVER.observe(detailsDivRef.current, {
         attributeFilter: ['value'],
@@ -634,7 +634,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
       //console.debug("disconnecting observer");
       OBSERVER.disconnect();
     };
-  }, [detailsDivRef.current, itemBefore?.data]);
+  }, [detailsDivRef.current, itemBefore?.data, proposal === null]);
 
   return (
     <TabContentsWithHeader
