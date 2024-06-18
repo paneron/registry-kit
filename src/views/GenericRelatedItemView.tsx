@@ -116,6 +116,7 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
       ? <Item
           itemRef={{ classID, itemID, subregisterID }}
           itemData={item.data}
+          css={css`overflow: hidden; text-overflow: ellipsis;`}
         />
       : itemIsMissing
           ? <span css={css`overflow: hidden; text-overflow: ellipsis;`}>
