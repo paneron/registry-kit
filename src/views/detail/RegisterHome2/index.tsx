@@ -18,7 +18,15 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   return (
     <TabContentsWithHeader title={<>Welcome to {registerMetadata?.name ?? 'this register'}</>}>
-      <Card css={css`flex: 1; box-shadow: none !important; position: absolute; border-radius: 0; display: flex; flex-flow: column nowrap; padding: 10px;`}>
+      <Card css={css`
+            flex: 1;
+            box-shadow: none !important;
+            position: absolute;
+            border-radius: 0;
+            display: flex;
+            flex-flow: column nowrap;
+            padding: 10px;
+          `}>
         <p>
           Search all items:
         </p>
