@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { isObject } from '@riboseinc/paneron-extension-kit/util';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
 import { CR_BASE_QUERY } from '../../proposals/queries';
 import {
@@ -30,9 +31,9 @@ export default function useLatestAcceptedProposal(): Accepted | AcceptedOnAppeal
   });
 
   const result = latestAcceptedProposalDisposedTimestamp.value.unnamedChain;
-  if (result) {
-    if (isAccepted(result) || isAcceptedOnAppeal(result)) {
-      return result;
+  if (result && isObject(result) && Object.keys(result).length > 0) {
+    if (isAccepted(result as Accepted | AcceptedOnAppeal) || isAcceptedOnAppeal(result as Accepted | AcceptedOnAppeal)) {
+      return result as Accepted | AcceptedOnAppeal;
     } else {
       throw new Error("Failed to obtain latest accepted proposal: invalid proposal shape")
     }
