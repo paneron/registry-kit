@@ -230,7 +230,13 @@ export const GenericRelatedItemView: React.FC<GenericRelatedItemViewProps & {
           }
         `}
         leftElement={canJump
-          ? <a onClick={jump} css={css`display: flex; flex-flow: row nowrap; align-items: baseline;`}>
+          ? <a
+                onClick={jump}
+                css={css`
+                  display: flex;
+                  flex-flow: row nowrap;
+                  align-items: baseline;
+                `}>
               {itemView}
             </a>
           : itemView}
