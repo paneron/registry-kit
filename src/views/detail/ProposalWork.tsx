@@ -56,7 +56,7 @@ memo(function () {
   try {
     latestAcceptedProposal = useLatestAcceptedProposal();
   } catch (e) {
-    console.error("Failed to obtain latest accepted proposal");
+    console.error("Failed to obtain latest accepted proposal", e);
     latestAcceptedProposal = undefined;
   }
   const getNewEmptyCRChangeset:
