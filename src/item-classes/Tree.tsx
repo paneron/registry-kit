@@ -38,7 +38,7 @@ const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = functio
     const initialItemData = clsConfig?.defaults ?? {};
     const itemID = await makeRandomID();
     const ref: InternalItemReference = { classID, itemID, subregisterID };
-    const registerItem: RegisterItem<any> = {
+    const registerItem: Readonly<RegisterItem<any>> = {
       id: itemID,
       dateAccepted: new Date(),
       status: 'valid',
