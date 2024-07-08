@@ -43,7 +43,7 @@ const ItemClassTree: React.VoidFunctionComponent<Record<never, never>> = functio
       dateAccepted: new Date(),
       status: 'valid',
       data: initialItemData,
-    };
+    } as const;
     const itemPath = itemRefToItemPath(ref);
     await updateObjects({
       commitMessage: `propose to add new ${ref.classID}`,
