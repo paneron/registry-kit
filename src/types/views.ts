@@ -64,6 +64,9 @@ export type ItemClassConfigurationSet = {
 
 
 
+/**
+ * Other formats that item data can be represented in.
+ */
 export interface ExportFormatConfiguration<P extends Payload> {
   /** The name of the export format. */
   label: string
@@ -87,6 +90,14 @@ export interface ExportFormatConfiguration<P extends Payload> {
       logger?: { log: Console["log"], error: Console["error"], debug: Console["debug"] },
     },
   ) => Promise<Uint8Array>
+
+  /**
+   * If true, then it will not be pre-generated in applicable environments
+   * (e.g., when rendering the register as a static site).
+   *
+   * Instead, it would be an export option that can be triggered by the user.
+   */
+  defer?: boolean
 }
 
 
