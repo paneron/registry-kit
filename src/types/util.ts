@@ -31,6 +31,7 @@ export interface Citation {
 
   alternateTitles?: string[]
 
+  doi?: string
   uri?: string
 
   //publicationDate: Date
