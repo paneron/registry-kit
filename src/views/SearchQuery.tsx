@@ -122,7 +122,7 @@ const SearchQuery: React.FC<{
             rightIcon={rootCriteria.criteria.length > 0
               ? <Tag intent="success" round>on</Tag>
               : <Tag round>off</Tag>}>
-          Advanced
+          Advanced search
         </Button>
       </ButtonGroup>
       {hasAdvancedQuery && editingAdvanced
