@@ -213,7 +213,7 @@ memo(function ({ scope, implicitCriteria, initialView, zeroResultsView, availabl
         onQuickSearchStringChange={useCallback((
           substring => dispatch({ type: 'update-quick-substring-query', payload: { substring } })
         ), [dispatch])}
-        css={css`padding: 2px;`}
+        css={css`padding: 2px; margin-bottom: 10px;`}
       />
       <div css={css`flex: 1; overflow-y: auto;`}>
         {showInitialScreen

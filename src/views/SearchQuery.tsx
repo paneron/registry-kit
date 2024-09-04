@@ -119,40 +119,40 @@ const SearchQuery: React.FC<{
               />}
         onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)}
       />
-      <ButtonGroup fill>
-        <Button
-            fill
-            small
-            minimal
-            title="Edit advanced search query"
-            icon='filter'
-            onClick={!hasAdvancedQuery
-              ? (() => {
-                  onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
-                  toggleEditingAdvanced(true);
-                })
-              : () => toggleEditingAdvanced(v => !v)}
-                        rightIcon={rootCriteria.criteria.length > 0
-              ? <Tag intent="success" round>on</Tag>
-              : <Tag round>off</Tag>}>
-          {editingAdvanced && hasAdvancedQuery
-            ? "Advanced search query"
-            : hasAdvancedQuery
-              ? "Advanced search query"
-              : "Enable advanced search"}
-        </Button>
-        {onCriteriaChange && hasAdvancedQuery
-          ? <Button
+      {stakeholder
+        ? <ButtonGroup fill>
+            <Button
                 fill
                 small
-                minimal
-                title="Remove advanced search query"
-                icon='filter-remove'
-                onClick={() => onCriteriaChange!(BLANK_CRITERIA)}>
-              Clear advanced search
+                title="Edit advanced search query"
+                icon='filter'
+                onClick={!hasAdvancedQuery
+                  ? (() => {
+                      onCriteriaChange!({ criteria: [makeDefaultCriteria()], require: 'all' });
+                      toggleEditingAdvanced(true);
+                    })
+                  : () => toggleEditingAdvanced(v => !v)}
+                            rightIcon={rootCriteria.criteria.length > 0
+                  ? <Tag intent="success" round>on</Tag>
+                  : <Tag round>off</Tag>}>
+              {editingAdvanced && hasAdvancedQuery
+                ? "Advanced search query"
+                : hasAdvancedQuery
+                  ? "Advanced search query"
+                  : "Enable advanced search"}
             </Button>
-          : null}
-      </ButtonGroup>
+            {onCriteriaChange && hasAdvancedQuery
+              ? <Button
+                    fill
+                    small
+                    title="Remove advanced search query"
+                    icon='filter-remove'
+                    onClick={() => onCriteriaChange!(BLANK_CRITERIA)}>
+                  Clear advanced search
+                </Button>
+              : null}
+          </ButtonGroup>
+        : null}
       {hasAdvancedQuery && editingAdvanced
         ? <>
             <CriteriaTree
