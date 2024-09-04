@@ -5,6 +5,7 @@ import React, { memo, useMemo, useEffect, useRef, useState, useContext, useCallb
 import { jsx, css } from '@emotion/react';
 import { Button, ControlGroup, Colors, InputGroup, Tag, ButtonGroup } from '@blueprintjs/core';
 import CriteriaTree from './FilterCriteria';
+import { BLANK_CRITERIA } from './FilterCriteria/models';
 import { CUSTOM_CONDITION, RAW_SUBSTRING } from './FilterCriteria/CRITERIA_CONFIGURATION';
 import { CriteriaGroup, Criterion } from './FilterCriteria/models';
 import criteriaGroupToQueryExpression from './FilterCriteria/criteriaGroupToQueryExpression';
@@ -94,14 +95,16 @@ const SearchQuery: React.FC<{
           ? "Searching common item attributes (such as names, descriptions, identifiers)."
           : "Advanced query overrides quick search. Remove advanced query to re-enable."}
         css={css`width: 200px; ${quickSearchString !== '' && !hasAdvancedQuery ? 'input { font-weight: bold; }' : ''}`}
-        rightElement={<Button
-          disabled={!onQuickSearchStringChange || quickSearchString === '' || hasAdvancedQuery}
-          onClick={() => onQuickSearchStringChange?.('')}
-          small
-          minimal
-          icon="cross"
-          title="Clear quick search"
-        />}
+        rightElement={
+          !onQuickSearchStringChange || quickSearchString === '' || hasAdvancedQuery
+            ? undefined
+            : <Button
+                onClick={() => onQuickSearchStringChange?.('')}
+                small
+                minimal
+                icon="cross"
+                title="Clear quick search"
+              />}
         onChange={evt => onQuickSearchStringChange?.(evt.currentTarget.value)}
       />
       <ButtonGroup fill>
@@ -117,13 +120,26 @@ const SearchQuery: React.FC<{
                   toggleEditingAdvanced(true);
                 })
               : () => toggleEditingAdvanced(v => !v)}
-            active={editingAdvanced && hasAdvancedQuery}
-            disabled={!hasAdvancedQuery && !onCriteriaChange}
-            rightIcon={rootCriteria.criteria.length > 0
+                        rightIcon={rootCriteria.criteria.length > 0
               ? <Tag intent="success" round>on</Tag>
               : <Tag round>off</Tag>}>
-          Advanced search
+          {editingAdvanced && hasAdvancedQuery
+            ? "Advanced search query"
+            : hasAdvancedQuery
+              ? "Advanced search query"
+              : "Enable advanced search"}
         </Button>
+        {onCriteriaChange && hasAdvancedQuery
+          ? <Button
+                fill
+                small
+                minimal
+                title="Remove advanced search query"
+                icon='filter-remove'
+                onClick={() => onCriteriaChange!(BLANK_CRITERIA)}>
+              Clear advanced search
+            </Button>
+          : null}
       </ButtonGroup>
       {hasAdvancedQuery && editingAdvanced
         ? <>
