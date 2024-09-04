@@ -14,6 +14,13 @@ import { BrowserCtx } from './BrowserCtx';
 
 
 const SearchQuery: React.FC<{
+  /**
+   * Human-readable description of what would be searched.
+   * Optional, but if provided must be a lower-case noun
+   * to be integrated in GUI copy.
+   */
+  scope?: string;
+
   rootCriteria: CriteriaGroup;
   onCriteriaChange?: (rootCriteria: CriteriaGroup) => void;
 
@@ -23,6 +30,7 @@ const SearchQuery: React.FC<{
   availableClassIDs?: string[];
   className?: string;
 }> = memo(function ({
+  scope,
   rootCriteria,
   onCriteriaChange,
   quickSearchString,
@@ -30,7 +38,7 @@ const SearchQuery: React.FC<{
   availableClassIDs,
   className,
 }) {
-  const { itemClasses, subregisters, getQuickSearchPredicate } = useContext(BrowserCtx);
+  const { itemClasses, subregisters, stakeholder, getQuickSearchPredicate } = useContext(BrowserCtx);
 
   const [ editingAdvanced, toggleEditingAdvanced ] = useState<boolean>(false);
 
@@ -82,6 +90,10 @@ const SearchQuery: React.FC<{
     }
   }, []);
 
+  const quickSearchLabel = scope
+    ? `Quick search across ${scope}`
+    : "Quick search";
+
   return (
     <ControlGroup fill vertical className={className}>
       <InputGroup
@@ -90,7 +102,7 @@ const SearchQuery: React.FC<{
         disabled={!quickSearchIsEnabled}
         value={hasAdvancedQuery ? '' : quickSearchString}
         leftIcon="search"
-        placeholder="Quick search"
+        placeholder={quickSearchLabel}
         title={!hasAdvancedQuery
           ? "Searching common item attributes (such as names, descriptions, identifiers)."
           : "Advanced query overrides quick search. Remove advanced query to re-enable."}

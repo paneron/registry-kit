@@ -27,13 +27,11 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
             flex-flow: column nowrap;
             padding: 10px;
           `}>
-        <p>
-          Search all items:
-        </p>
         <Search
           css={css`flex: 1; overflow: hidden;`}
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
           stateName="item-search-home"
+          scope="all items"
           initialView={<>
             <div dangerouslySetInnerHTML={{ __html:
               registerMetadata?.contentSummary

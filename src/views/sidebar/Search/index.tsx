@@ -79,6 +79,13 @@ function reducer(prevState: State, action: Action) {
 
 const Search: React.FC<{
   /**
+   * Human-readable description of what would be searched.
+   * Optional, but if provided must be a lower-case noun
+   * to be integrated in GUI copy.
+   */
+  scope?: string,
+
+  /**
    * Criteria that will always apply.
    * Used e.g. in superseding item selection
    * (to limit to the same item class).
@@ -99,7 +106,7 @@ const Search: React.FC<{
   className?: string
   style?: React.CSSProperties
 }> =
-memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
+memo(function ({ scope, implicitCriteria, initialView, zeroResultsView, availableClassIDs, stateName, onOpenItem, List, extraData, className, style }) {
   const { usePersistentDatasetStateReducer } = useContext(DatasetContext);
 
   const ListComponent = useMemo((() => List ?? RegisterItemSearchResultList), [List]);
@@ -196,6 +203,7 @@ memo(function ({ implicitCriteria, initialView, zeroResultsView, availableClassI
   return (
     <div css={css`display: flex; flex-flow: column nowrap;`} className={className} style={style}>
       <SearchQuery
+        scope={scope}
         rootCriteria={state.query.criteria}
         quickSearchString={state.quickSubstringQuery}
         availableClassIDs={availableClassIDs}

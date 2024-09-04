@@ -87,6 +87,7 @@ const ItemClass: React.VoidFunctionComponent<{
         <Helmet><title>{itemClass.meta.title}</title></Helmet>
         <Search
           css={css`flex: 1;`}
+          scope={itemClass.meta.description ?? "this register item class"}
           //style={{ height: '100vh', width: '50vw', minWidth: '500px', maxWidth: '90vw' }}
           availableClassIDs={availableClassIDs}
           implicitCriteria={implicitCriteria}
