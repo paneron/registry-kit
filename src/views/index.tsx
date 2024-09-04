@@ -139,11 +139,13 @@ function RegistryWorkspace () {
             `}>
           {registerMetadata?.name ?? 'Register'}
         </h1>
+        {/*
         <span css={css`font-size: 50%; display: flex; gap: 10px; align-self: flex-end; display: none;`}>
           <a>Documentation</a>
           •
           <a>Feedback</a>
         </span>
+        */}
       </header>
       <TabbedWorkspace
         css={css`flex: 1 1 auto;`}
