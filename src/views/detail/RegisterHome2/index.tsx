@@ -14,7 +14,7 @@ import { Protocols } from '../../protocolRegistry';
 
 
 const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = function () {
-  const { registerMetadata } = useContext(BrowserCtx);
+  const { registerMetadata, stakeholder } = useContext(BrowserCtx);
   const { spawnTab } = useContext(TabbedWorkspaceContext);
   return (
     <TabContentsWithHeader title={<>Welcome to {registerMetadata?.name ?? 'this register'}</>}>
@@ -37,11 +37,13 @@ const RegisterHome2: React.VoidFunctionComponent<Record<never, never>> = functio
               registerMetadata?.contentSummary
               ?? "There is no content summary of this registry yet."
             }} />
-            <Button
-                css={css`vertical-align: baseline; margin-top: .5em;`}
-                onClick={() => spawnTab(Protocols.REGISTER_META)}>
-              View register metadata
-            </Button>
+            {stakeholder
+              ? <Button
+                    css={css`vertical-align: baseline; margin-top: .5em;`}
+                    onClick={() => spawnTab(Protocols.REGISTER_META)}>
+                  View register metadata
+                </Button>
+              : null}
           </>}
           zeroResultsView={
             <NonIdealState
