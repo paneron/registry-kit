@@ -490,37 +490,17 @@ const RegisterManagerNotesWidget: React.FC<{
 };
 
 
-const ControlBodyNotesWidget: React.FC<{
-  value: CR.ControlBodyInput
-  onChange?: (newVal: CR.ControlBodyInput) => void
-}> = function ({ value, onChange }) {
-  return (
-    <FormGroup label="Control Body notes:">
-      <TransitionInputTextArea
-        value={value.controlBodyNotes}
-        required
-        onChange={evt =>
-          onChange?.({
-            controlBodyNotes: evt.currentTarget.value,
-            controlBodyDecisionEvent: value.controlBodyDecisionEvent,
-          })
-        }
-      />
-    </FormGroup>
-  );
-};
-
-
 const ControlBodyDecisionWidget: React.FC<{
   value: CR.ControlBodyInput
   onChange?: (newVal: CR.ControlBodyInput) => void
 }> = function ({ value, onChange }) {
   return (
     <>
+      {/*
       <ControlBodyNotesWidget
         value={value}
         onChange={onChange}
-      />
+      />*/}
       <FormGroup label="Control Body decision event:">
         <TransitionInputTextArea
           value={value.controlBodyDecisionEvent}
@@ -631,7 +611,7 @@ const TRANSITIONS: CR.Transitions = {
       title: "Return for clarification",
       targetState: CR.State.RETURNED_FOR_CLARIFICATION,
       canBeTransitionedBy: (s) => isOwner(s) || isControlBody(s),
-      Widget: ControlBodyNotesWidget,
+      Widget: ControlBodyDecisionWidget,
       func: applyControlBodyDecision,
     },
     [CR.State.ACCEPTED]: {

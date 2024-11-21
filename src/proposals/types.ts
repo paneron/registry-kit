@@ -447,12 +447,12 @@ export function hasRegisterManagerInput(val: any): val is RegisterManagerInput {
   return val.hasOwnProperty('registerManagerNotes') && typeof val.registerManagerNotes === 'string';
 }
 export interface ControlBodyInput {
-  controlBodyNotes: string;
+  //controlBodyNotes: string;
   controlBodyDecisionEvent: string;
 }
 export function hasControlBodyInput(val: any): val is ControlBodyInput {
   return (
-    val.hasOwnProperty('controlBodyNotes') && typeof val.controlBodyNotes === 'string' &&
+    //val.hasOwnProperty('controlBodyNotes') && typeof val.controlBodyNotes === 'string' &&
     val.hasOwnProperty('controlBodyDecisionEvent') && typeof val.controlBodyDecisionEvent === 'string');
 }
 export interface AppealRequest {
