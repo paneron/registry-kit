@@ -179,7 +179,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
   children,
 }) {
 
-  const { useObjectData, useRemoteUsername } = useContext(DatasetContext);
+  const { useObjectData, useRemoteUsername, useInjectedJs } = useContext(DatasetContext);
   const { focusedTabURI, spawnTab } = useContext(TabbedWorkspaceContext);
 
 
@@ -300,6 +300,8 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
 
   const remoteUsername: string | undefined = useRemoteUsername().value.username;
 
+  const injectedJs: string | undefined = useInjectedJs().value.injectedJs;
+
   const stakeholder: RegisterStakeholder | undefined = useMemo((() => remoteUsername
     ? (registerMetadata?.stakeholders ?? []).
         find(s => s.gitServerUsername === remoteUsername)
@@ -328,6 +330,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           stakeholder,
           registerMetadata,
           offline: remoteUsername === undefined ? true : undefined,
+          injectedJs,
 
           subregisters,
           alterApprovedCR,
@@ -354,6 +357,7 @@ const BrowserCtxProvider: React.FC<RegistryViewProps> = function BrowserCtxProvi
           stakeholder,
           registerMetadata,
           remoteUsername,
+          injectedJs,
           subregisters,
           handleJumpTo,
           useRegisterItemData,
