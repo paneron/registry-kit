@@ -25,14 +25,14 @@ endif::[]
 
 A common case of structured data is _registers_, as defined by ISO 19135-1 standard.
 
-RegistryKit defines a model for expressing ISO 19135-1 register data as a collection of YAML files,
+Registry kit defines a model for expressing ISO 19135-1 register data as a collection of YAML files,
 and simplifies creating Paneron extensions that work with that data.
 
 
 == Extension development
 
 See
-link:https://github.com/paneron/extension-kit/blob/master/EXTENSION_DEVELOPMENT.adoc[ExtensionKit’s documentation^]
+link:https://github.com/paneron/extension-kit/blob/master/EXTENSION_DEVELOPMENT.adoc[extension kit’s documentation^]
 for general extension development notes.
 
 
@@ -42,7 +42,7 @@ An extension is essentially a React component that is given as props
 some functions that simplify interaction with underlying data repository.
 
 In case of registry type extensions, instead of writing your own repository view component from scratch,
-with the registry kit you can import its registry view component
+with registry kit you can import its registry view component
 and pass it a configuration of register item classes that your register supports
 alongside props passed by Paneron to your extension.
 
@@ -59,4 +59,9 @@ The configuration of register item classes includes the following:
 -- Displaying item in list
 
 For an example of a Paneron extension built with registry kit, see the
-link:https://github.com/paneron/extension-geodetic-registry/[ISO/TC 211 Geodetic registry extension].
+link:https://github.com/paneron/extension-geodetic-registry/[ISO/TC 211 Geodetic registry extension^].
+
+
+==== License
+
+See link:./LICENSE[`LICENSE`^] for license information.
