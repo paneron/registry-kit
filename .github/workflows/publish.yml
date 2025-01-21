@@ -1,0 +1,135 @@
+name: publish
+
+on:
+  workflow_call:
+    inputs:
+      next_version:
+        description: |
+          Next release version. Possible values: x.y.z, major, minor, patch
+        required: true
+        type: string
+      # XXX: does not skip for some reason
+      # skip_tests:
+      #   description: |
+      #     Skip tests iff === 'true'
+      #   required: true
+      #   default: 'false'
+    secrets:
+      NPM_AUTH_TOKEN:
+        description: |
+          Auth token to publish to the NPM registry.  To be passed from calling workflow.
+        required: true
+
+env:
+  # Disable git hooks
+  HUSKY: 0
+
+jobs:
+  publish:
+    name: Publish to NPM Registry
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # Has to be run before actions/setup-node.
+      # See: https://github.com/actions/setup-node/issues/480
+      - name: Enable corepack for yarn
+        run: corepack enable
+
+      - name: Install Nodejs
+        uses: actions/setup-node@v4
+        id: setup-node
+        with:
+          node-version: ${{ vars.PANERON_DEFAULT_NODE_VERSION }}
+          cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --immutable
+
+      - name: Create a new version
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.next_version != 'skip' }}
+        shell: bash
+        id: new-version
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          # Running `npm version` to translate `minor` to semver string:
+          new_version=$(npm version --no-git-tag-version --new-version ${{ github.event.inputs.next_version }})
+          git add -u
+          git commit -m "chore(package.json): bump version to ${new_version}"
+          git pull --rebase
+          git tag -a "${new_version}" -mBump
+          echo "new_tag=${new_version}" >> $GITHUB_OUTPUT
+          # Push commit along with tag
+          git push origin --tags :
+
+      - name: Build all packages
+        run: yarn run build
+
+      - name: Publish to npm
+        run: |
+          # Check if node auth token is valid
+          if [[ -z "${NODE_AUTH_TOKEN:-}" ]]; then
+            printf "\e[1;31mError:\e[m Missing NODE_AUTH_TOKEN\n" >&2
+            exit 1
+          fi
+
+          # # Debug what files are in dist/
+          # ls -la dist >&2 || :
+
+          # Verify total files and shasum of `pack` and `publish` are the same
+          pack_filename=$(npm pack | tail -n1)
+          publish_sout=$(npm publish --access public --no-git-checks --dry-run 2>&1)
+
+          printf "\e[1mnpm publish (dry run):\e[m\n" >&2
+          printf "$publish_sout\n\n\n" >&2
+
+          pack_shasum=$(shasum -b -a 1 "${pack_filename}" | awk '{ print $1 }')
+          publish_shasum=$(<<< "$publish_sout" command sed '/shasum/!d; s/.*:\s*\(.*\)$/\1/')
+
+          pack_total_files=$(tar -tvf "${pack_filename}" | wc -l)
+          publish_total_files=$(<<< "$publish_sout" command sed '/total.files/!d; s/.*:\s*\(.*\)$/\1/')
+
+          has_error=
+          if [[ "$pack_shasum" != "$publish_shasum" ]]; then
+            printf "\e[1;31mError:\e[m Package shasum do not match:\n" >&2
+            printf "  npm pack    shasum: $pack_shasum\n" >&2
+            printf "  npm publish shasum: $publish_shasum\n" >&2
+            has_error=1
+          fi
+
+          if (( pack_total_files != publish_total_files )); then
+            printf "\e[1;31mError:\e[m Package total files do not match:\n" >&2
+            printf "  npm pack    total files: $pack_total_files\n" >&2
+            printf "  npm publish total files: $publish_total_files\n" >&2
+            has_error=1
+          fi
+
+          if [[ -n "$has_error" ]]; then
+            printf "\e[1;38;5;208mWarning:\e[m Aborting due to previous errors.\n" >&2
+
+            # Revert tag
+            printf "\e[1;38;5;208mWarning:\e[m Unpublishing release tag ${{ steps.new-version.outputs.new_tag }}.\n" >&2
+            git tag -d "${{ steps.new-version.outputs.new_tag }}"
+            git push --delete origin "${{ steps.new-version.outputs.new_tag }}"
+
+            # Revert commit
+            printf "\e[1;38;5;208mWarning:\e[m Unpublishing release commit.\n" >&2
+            git reset --hard HEAD^
+            git push origin --force-with-lease
+
+            printf "\e[1;38;5;208mWarning:\e[m Clean up done.\n" >&2
+            exit 1
+          fi
+
+          npm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

@@ -1,0 +1,35 @@
+name: (Test and) Release
+
+on:
+  workflow_call:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      next_version:
+        description: |
+          Next release version. Possible values: x.y.z, major, minor, patch
+        required: true
+        default: patch
+        type: string
+      # XXX: does not skip for some reason
+      # skip_tests:
+      #   description: |
+      #     Skip tests iff === 'true'
+      #   required: true
+      #   default: 'false'
+
+jobs:
+  tests:
+    # XXX: does not skip for some reason
+    # if: github.events.inputs.skip_tests != 'true'
+    uses: ./.github/workflows/tests.yml
+
+  publish:
+    # needs: [tests]
+    uses: ./.github/workflows/publish.yml
+    with:
+      next_version: ${{ github.event.inputs.next_version }}
+    secrets:
+      NPM_AUTH_TOKEN: ${{ secrets.PANERON_CI_NPM_TOKEN }}

@@ -1,13 +1,40 @@
 = Paneron registry kit
 
+ifdef::env-github[]
+image:https://github.com/paneron/registry-kit/actions/workflows/tests.yml/badge.svg[
+  "Test Status",
+  link="https://github.com/paneron/registry-kit/actions/workflows/tests.yml"]
+image:https://github.com/paneron/registry-kit/actions/workflows/audit.yml/badge.svg[
+  "Audit Status",
+  link="https://github.com/paneron/registry-kit/actions/workflows/audit.yml"]
+
+image:https://github.com/paneron/registry-kit/actions/workflows/release.yml/badge.svg[
+  "Release Status",
+  link="https://github.com/paneron/registry-kit/actions/workflows/release.yml"]
+
+image:https://img.shields.io/npm/v/%40riboseinc%2Fpaneron-registry-kit[
+  NPM release,
+  link="https://www.npmjs.com/package/@riboseinc/paneron-registry-kit"]
+
+// image:https://img.shields.io/github/v/release/paneron/registry-kit?display_name=tag&include_prereleases&sort=semver[
+//   GitHub release (latest SemVer including pre-releases),
+//   link="https://www.npmjs.com/package/@paneron/registry-kit"
+// ]
+endif::[]
+
+
 A common case of structured data is _registers_, as defined by ISO 19135-1 standard.
 
-Registry kit defines a model for expressing ISO 19135-1 register data as a collection of YAML files,
+RegistryKit defines a model for expressing ISO 19135-1 register data as a collection of YAML files,
 and simplifies creating Paneron extensions that work with that data.
+
 
 == Extension development
 
-See ExtensionKit’s documentation for general extension development notes.
+See
+link:https://github.com/paneron/extension-kit/blob/master/EXTENSION_DEVELOPMENT.adoc[ExtensionKit’s documentation^]
+for general extension development notes.
+
 
 == Extensions for editing registry data
 
