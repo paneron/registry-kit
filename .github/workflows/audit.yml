@@ -21,6 +21,9 @@ jobs:
       # Has to be run before actions/setup-node.
       # See: https://github.com/actions/setup-node/issues/480
       - name: Enable corepack for yarn
+        if: |
+          startsWith(vars.PANERON_DEFAULT_NODE_VERSION, '18') ||
+          startsWith(vars.PANERON_DEFAULT_NODE_VERSION, '2')
         run: corepack enable
 
       - name: Install Nodejs

@@ -33,6 +33,9 @@ jobs:
       # Has to be run before actions/setup-node.
       # See: https://github.com/actions/setup-node/issues/480
       - name: Enable corepack for yarn
+        if: |
+          startsWith(matrix.node, '18') ||
+          startsWith(matrix.node, '2')
         run: corepack enable
 
       - name: Install Nodejs
