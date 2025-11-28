@@ -26,10 +26,13 @@ memo(function ({ objectData, objectPath }) {
     const itemPayload = objectData?.data;
 
     const itemView = itemPayload
-      ? <ListItemView
-          itemData={itemPayload}
-          itemRef={itemRef}
-        />
+      ? <>
+          <div>{clsConfig.title}</div>
+          <ListItemView
+            itemData={itemPayload}
+            itemRef={itemRef}
+          />
+        </>
       : fallbackView;
 
     return itemView;
