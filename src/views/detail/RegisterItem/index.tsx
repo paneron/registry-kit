@@ -391,9 +391,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
         : item.status === 'retired'
           ? 'warning-sign'
           : 'tick',
-      tooltip: isSuperseded
-        ? supersedingItemsTooltip
-        : undefined,
+      tooltip: undefined,
     });
 
     if (proposal) {
