@@ -344,7 +344,7 @@ export const ItemDetail: React.VoidFunctionComponent<{
 
   const supersedingItemsTooltip: HelpTooltipProps = useMemo(() => ({
     icon: 'info-sign',
-    content: 
+    content:
       <RelatedItems
         css={css`background-color: ${Colors.LIGHT_GRAY3}; padding: 5px;`}
         availableClassIDs={[itemClass.meta.id]}
