@@ -7,7 +7,7 @@ import { format as formatTZ, utcToZonedTime } from 'date-fns-tz';
 
 import React, { memo, useContext } from 'react';
 import { Helmet, type HelmetProps } from 'react-helmet';
-import { css, jsx } from '@emotion/react';
+import { ClassNames, css, jsx } from '@emotion/react';
 import {
   Card, type CardProps,
   Icon,
@@ -292,31 +292,43 @@ function ({ title, smallTitle, classification, actions, layout, layoutOptions, c
             {classification!.map((p, idx) =>
               <>
                 {p.tooltip
-                  ? <Tooltip2
-                        hoverCloseDelay={600}
-                        hoverOpenDelay={600}
-                        interactionKind={Popover2InteractionKind.HOVER}
-                        intent={p.tooltip.intent}
-                        {...p.tooltip}
-                        css={css`
-                          cursor: help;
-                        `}
-                        content={p.tooltip.content}>
-                      <Tag
-                        key={idx}
-                        minimal
-                        {...p}
-                        large={!smallTitle}
-                      >
-                        {p.children}
-                        &ensp;
-                        <Icon
-                          icon="help"
-                          css={css`margin-bottom: 1px; opacity: .5`}
-                          size={12}
-                        />
-                      </Tag>
-                    </Tooltip2>
+                  ? <ClassNames>
+                      {({ css: css2, cx }) => (
+                        <Tooltip2
+                            popoverClassName={`${css2`
+                              .bp4-popover2-content {
+                                min-width: 500px;
+                                a {
+                                  color: black !important;
+                                }
+                              }
+                            `}`}
+                            hoverCloseDelay={600}
+                            hoverOpenDelay={600}
+                            interactionKind={Popover2InteractionKind.HOVER}
+                            intent={p.tooltip!.intent}
+                            {...p.tooltip}
+                            css={css`
+                              cursor: help;
+                            `}
+                            content={p.tooltip!.content}>
+                          <Tag
+                            key={idx}
+                            minimal
+                            {...p}
+                            large={!smallTitle}
+                          >
+                            {p.children}
+                            &ensp;
+                            <Icon
+                              icon="help"
+                              css={css`margin-bottom: 1px; opacity: .5`}
+                              size={12}
+                            />
+                          </Tag>
+                        </Tooltip2>
+                      )}
+                    </ClassNames>
                   : <Tag
                       key={idx}
                       minimal
