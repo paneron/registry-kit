@@ -253,7 +253,7 @@ function TransitionOptions<C extends CR.SomeCR>
                     payload: { state: evt.currentTarget.value },
                   })
                 : void 0}>
-            {transitions.map(([state, cfg]) => 
+            {transitions.map(([state, cfg]) =>
               <Radio
                 key={state}
                 label={cfg.title}
