@@ -365,13 +365,13 @@ const applyControlBodyDecision: CR.Transition<
 | CR.Rejected
 | CR.ReturnedForClarificationByControlBody,
   CR.ControlBodyInput> =
-function applyControlBodyDecision (cr, { controlBodyNotes, controlBodyDecisionEvent }) {
-  if (!controlBodyNotes?.trim()) {
-    throw new Error("Control body decision is required.");
-  }
+function applyControlBodyDecision (cr, { controlBodyDecisionEvent }) {
+  //if (!controlBodyNotes?.trim()) {
+  //  throw new Error("Control body decision is required.");
+  //}
   return {
     ...cr,
-    controlBodyNotes,
+    //controlBodyNotes,
     controlBodyDecisionEvent,
   };
 }
@@ -507,7 +507,7 @@ const ControlBodyDecisionWidget: React.FC<{
           required
           onChange={evt =>
             onChange?.({
-              controlBodyNotes: value.controlBodyNotes,
+              //controlBodyNotes: value.controlBodyNotes,
               controlBodyDecisionEvent: evt.currentTarget.value,
             })
           }

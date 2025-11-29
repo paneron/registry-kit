@@ -82,7 +82,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         toState: CR.State.RETURNED_FOR_CLARIFICATION,
         input: {
           registerManagerNotes: cr.registerManagerNotes,
-          controlBodyNotes: (cr as any).controlBodyNotes,
+          //controlBodyNotes: (cr as any).controlBodyNotes,
           controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
@@ -100,7 +100,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         toState: CR.State.ACCEPTED,
         timestamp: cr.timeDisposed,
         input: {
-          controlBodyNotes: (cr as any).controlBodyNotes,
+          //controlBodyNotes: (cr as any).controlBodyNotes,
           controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
@@ -110,7 +110,7 @@ export function getTransitionHistory(cr: CR.Base): TransitionHistoryEntry[] {
         toState: CR.State.REJECTED,
         timestamp: cr.timeDisposed,
         input: {
-          controlBodyNotes: (cr as any).controlBodyNotes,
+          //controlBodyNotes: (cr as any).controlBodyNotes,
           controlBodyDecisionEvent: (cr as any).controlBodyDecisionEvent,
         },
       });
