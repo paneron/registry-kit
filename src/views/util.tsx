@@ -123,8 +123,8 @@ export const Datestamp: React.FC<{
 
 function formatInTimeZone(date: Date, fmt: string, tz: string) {
   return formatTZ(
-    utcToZonedTime(date, tz), 
-    fmt, 
+    utcToZonedTime(date, tz),
+    fmt,
     { timeZone: tz });
 }
 
