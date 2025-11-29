@@ -10,6 +10,7 @@ import { Helmet, type HelmetProps } from 'react-helmet';
 import { css, jsx } from '@emotion/react';
 import {
   Card, type CardProps,
+  Icon,
   Classes,
   FormGroup, type FormGroupProps,
   H3, H4,
@@ -19,9 +20,10 @@ import {
   Tag, type TagProps,
   Colors,
 } from '@blueprintjs/core';
+import { Popover2InteractionKind, Tooltip2 } from '@blueprintjs/popover2';
 import { Popover2 as Popover } from '@blueprintjs/popover2';
 import { DatasetContext } from '@riboseinc/paneron-extension-kit/context';
-import HelpTooltip, { type HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
+import { type HelpTooltipProps } from '@riboseinc/paneron-extension-kit/widgets/HelpTooltip';
 import { BrowserCtx } from './BrowserCtx';
 import type { ItemClassConfiguration, RelatedItemClassConfiguration } from '../types';
 export { GenericRelatedItemView } from './GenericRelatedItemView';
@@ -288,15 +290,40 @@ function ({ title, smallTitle, classification, actions, layout, layoutOptions, c
             gap: ${paddingPx}px;
           `}>
             {classification!.map((p, idx) =>
-              <Tag
-                key={idx}
-                minimal
-                {...p}
-                large={!smallTitle}
-                rightIcon={p.tooltip
-                  ? <HelpTooltip {...p.tooltip} />
-                  : undefined}
-              />
+              <>
+                {p.tooltip
+                  ? <Tooltip2
+                        hoverCloseDelay={600}
+                        hoverOpenDelay={600}
+                        interactionKind={Popover2InteractionKind.HOVER}
+                        intent={p.tooltip.intent}
+                        {...p.tooltip}
+                        css={css`
+                          cursor: help;
+                        `}
+                        content={p.tooltip.content}>
+                      <Tag
+                        key={idx}
+                        minimal
+                        {...p}
+                        large={!smallTitle}
+                      >
+                        {p.children}
+                        &ensp;
+                        <Icon
+                          icon="help"
+                          css={css`margin-bottom: 1px; opacity: .5`}
+                          size={12}
+                        />
+                      </Tag>
+                    </Tooltip2>
+                  : <Tag
+                      key={idx}
+                      minimal
+                      {...p}
+                      large={!smallTitle}
+                    />}
+              </>
             )}
           </div>
         : null}
