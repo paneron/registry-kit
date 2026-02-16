@@ -215,7 +215,7 @@ memo(function ({ scope, implicitCriteria, initialView, zeroResultsView, availabl
         ), [dispatch])}
         css={css`padding: 2px; margin-bottom: 10px;`}
       />
-      <div css={css`flex: 1; overflow-y: auto;`}>
+      <div css={css`flex: 1; overflow-y: auto; scrollbar-gutter: stable;`}>
         {showInitialScreen
           ? initialView
           : <ListComponent
