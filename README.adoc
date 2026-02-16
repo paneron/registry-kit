@@ -29,6 +29,17 @@ Registry kit defines a model for expressing ISO 19135-1 register data as a colle
 and simplifies creating Paneron extensions that work with that data.
 
 
+== Release sequence
+
+- Update version in package.json
+- Build the extension without errors or warnings: `yarn build`
+- The package is built in `dist/` directory
+- Test that it works in integration with Paneron, RegistryKit and extensions
+- Commit package.json with new version
+- Tag repository (e.g., `git tag -s 2.3.4`)
+- From within the `dist/` directory, publish the built package to NPM
+
+
 == Extension development
 
 See
